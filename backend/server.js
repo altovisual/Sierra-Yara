@@ -1,0 +1,159 @@
+require('dotenv').config();
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const connectDB = require('./config/database');
+
+// Importar rutas
+const productosRoutes = require('./routes/productos');
+const mesasRoutes = require('./routes/mesas');
+const pedidosRoutes = require('./routes/pedidos');
+
+// Inicializar Express
+const app = express();
+const server = http.createServer(app);
+
+// Configurar Socket.io
+const io = socketIo(server, {
+  cors: {
+    origin: '*', // Permitir todas las conexiones para desarrollo
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  }
+});
+
+// Conectar a la base de datos
+connectDB();
+
+// Middleware
+app.use(cors({
+  origin: '*' // Permitir todas las conexiones para desarrollo
+}));
+// Aumentar límite para imágenes en base64 (10MB)
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
+// Hacer io accesible en las rutas
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+// Rutas de la API
+app.use('/api/productos', productosRoutes);
+app.use('/api/mesas', mesasRoutes);
+app.use('/api/pedidos', pedidosRoutes);
+
+// Ruta para obtener información de pago
+app.get('/api/config/pago', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      pagoMovil: {
+        ci: process.env.PAGO_MOVIL_CI,
+        telefono: process.env.PAGO_MOVIL_TELEFONO,
+        banco: process.env.PAGO_MOVIL_BANCO
+      },
+      transferencia: {
+        banco: process.env.TRANSFERENCIA_BANCO,
+        cuenta: process.env.TRANSFERENCIA_CUENTA,
+        titular: process.env.TRANSFERENCIA_TITULAR,
+        rif: process.env.TRANSFERENCIA_RIF
+      },
+      zelle: {
+        email: process.env.ZELLE_EMAIL
+      },
+      paypal: {
+        email: process.env.PAYPAL_EMAIL
+      }
+    }
+  });
+});
+
+// Ruta de prueba
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Sierra Yara API funcionando correctamente',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Manejo de WebSockets
+io.on('connection', (socket) => {
+  console.log(`✅ Cliente conectado: ${socket.id}`);
+
+  // Unirse a una sala de mesa específica
+  socket.on('unirse_mesa', (numeroMesa) => {
+    socket.join(`mesa_${numeroMesa}`);
+    console.log(`📍 Cliente ${socket.id} se unió a la mesa ${numeroMesa}`);
+  });
+
+  // Notificar nuevo pedido
+  socket.on('nuevo_pedido', (data) => {
+    // Notificar a todos los dispositivos en la mesa
+    io.to(`mesa_${data.numeroMesa}`).emit('pedido_actualizado', data);
+    
+    // Notificar al panel de administración
+    io.emit('pedido_nuevo_admin', data);
+    
+    console.log(`🍽️  Nuevo pedido en mesa ${data.numeroMesa}`);
+  });
+
+  // Actualizar estado de pedido
+  socket.on('actualizar_estado_pedido', (data) => {
+    // Notificar a la mesa
+    io.to(`mesa_${data.numeroMesa}`).emit('estado_pedido_actualizado', data);
+    
+    console.log(`📊 Estado de pedido actualizado: ${data.estado}`);
+  });
+
+  // Solicitar mesonero
+  socket.on('llamar_mesonero', (data) => {
+    io.emit('mesonero_solicitado', data);
+    console.log(`🔔 Mesonero solicitado en mesa ${data.numeroMesa}`);
+  });
+
+  // Actualizar cuenta de mesa
+  socket.on('actualizar_cuenta', (data) => {
+    io.to(`mesa_${data.numeroMesa}`).emit('cuenta_actualizada', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`❌ Cliente desconectado: ${socket.id}`);
+  });
+});
+
+// Manejo de errores
+app.use((err, req, res, next) => {
+  console.error('❌ Error:', err.stack);
+  res.status(500).json({
+    success: false,
+    error: 'Error interno del servidor',
+    message: err.message
+  });
+});
+
+// Manejo de rutas no encontradas
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'Ruta no encontrada'
+  });
+});
+
+// Iniciar servidor
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`
+╔═══════════════════════════════════════════════╗
+║   🏔️  Sierra Yara Café - Sistema de Menú    ║
+║   🚀 Servidor corriendo en puerto ${PORT}      ║
+║   📡 WebSocket habilitado                     ║
+║   🌐 Acceso local: http://192.168.1.105:${PORT}  ║
+╚═══════════════════════════════════════════════╝
+  `);
+});
+
+module.exports = { app, server, io };
