@@ -11,7 +11,8 @@ import {
   LogoutOutlined,
   BellOutlined,
   UserOutlined,
-  CloseOutlined
+  CloseOutlined,
+  TagOutlined
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
@@ -64,6 +65,11 @@ const AdminLayout = ({ children, title, extra }) => {
       label: <Link to="/admin/productos">Productos</Link>,
     },
     {
+      key: 'promociones',
+      icon: <TagOutlined />,
+      label: <Link to="/admin/promociones">Promociones</Link>,
+    },
+    {
       key: 'qr',
       icon: <QrcodeOutlined />,
       label: <Link to="/admin/generar-qr">Generar QR</Link>,
@@ -76,6 +82,7 @@ const AdminLayout = ({ children, title, extra }) => {
     if (path === '/admin' || path === '/admin/') return 'dashboard';
     if (path.includes('/pedidos')) return 'pedidos';
     if (path.includes('/productos')) return 'productos';
+    if (path.includes('/promociones')) return 'promociones';
     if (path.includes('/generar-qr')) return 'qr';
     return 'dashboard';
   };

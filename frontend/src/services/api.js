@@ -66,6 +66,17 @@ export const pedidosAPI = {
   obtenerEstadisticasDia: () => api.get('/pedidos/estadisticas/dia'),
 };
 
+// ============ PROMOCIONES ============
+export const promocionesAPI = {
+  obtenerTodas: () => api.get('/promociones'),
+  obtenerActivas: () => api.get('/promociones/activas'),
+  obtenerPorId: (id) => api.get(`/promociones/${id}`),
+  crear: (data) => api.post('/promociones', data),
+  actualizar: (id, data) => api.put(`/promociones/${id}`, data),
+  eliminar: (id) => api.delete(`/promociones/${id}`),
+  toggleActiva: (id) => api.patch(`/promociones/${id}/toggle`),
+};
+
 // ============ CONFIGURACIÓN ============
 export const configAPI = {
   obtenerDatosPago: () => api.get('/config/pago'),

@@ -5,7 +5,7 @@ import { agruparPorCategoria, formatearPrecio } from '../../utils/helpers';
 import { useCarrito } from '../../context/CarritoContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
-import { ShoppingCart, Plus, Search, ClipboardList } from 'lucide-react';
+import { ShoppingCart, Plus, Search, ClipboardList, Tag } from 'lucide-react';
 
 /**
  * Componente del menú interactivo
@@ -84,14 +84,23 @@ const Menu = () => {
             <p className="text-primary-100 text-sm">Explora nuestro menú</p>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Botón Promociones */}
+            <button
+              onClick={() => navigate('/promociones')}
+              className="flex items-center gap-2 bg-yellow-500/90 hover:bg-yellow-500 px-3 py-2 rounded-lg transition-colors shadow-md"
+            >
+              <Tag size={18} />
+              <span className="hidden sm:inline text-sm font-medium">Promos</span>
+            </button>
+
             {/* Botón Mis Pedidos */}
             <button
               onClick={() => navigate('/mis-pedidos')}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-colors"
             >
-              <ClipboardList size={20} />
-              <span className="hidden sm:inline">Mis Pedidos</span>
+              <ClipboardList size={18} />
+              <span className="hidden sm:inline text-sm">Pedidos</span>
             </button>
 
             {/* Botón Carrito (solo si hay productos) */}

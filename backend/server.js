@@ -10,6 +10,7 @@ const connectDB = require('./config/database');
 const productosRoutes = require('./routes/productos');
 const mesasRoutes = require('./routes/mesas');
 const pedidosRoutes = require('./routes/pedidos');
+const promocionesRoutes = require('./routes/promociones');
 
 // Inicializar Express
 const app = express();
@@ -44,6 +45,7 @@ app.use((req, res, next) => {
 app.use('/api/productos', productosRoutes);
 app.use('/api/mesas', mesasRoutes);
 app.use('/api/pedidos', pedidosRoutes);
+app.use('/api/promociones', promocionesRoutes);
 
 // Ruta para obtener información de pago
 app.get('/api/config/pago', (req, res) => {

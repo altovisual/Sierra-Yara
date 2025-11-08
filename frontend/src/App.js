@@ -10,6 +10,7 @@ import Carrito from './components/cliente/Carrito';
 import MisPedidos from './components/cliente/MisPedidos';
 import Pago from './components/cliente/Pago';
 import CuentaMesa from './components/cliente/CuentaMesa';
+import Promociones from './components/cliente/Promociones';
 
 // Rutas de administración
 import AdminRoutes from './routes/AdminRoutes';
@@ -27,6 +28,7 @@ function App() {
             <Route path="/" element={<EscanearQR />} />
             <Route path="/mesa/:numeroMesa" element={<EscanearQR />} />
             <Route path="/menu" element={<Menu />} />
+            <Route path="/promociones" element={<Promociones />} />
             <Route path="/carrito" element={<Carrito />} />
             <Route path="/mis-pedidos" element={<MisPedidos />} />
             <Route path="/pago/:pedidoId" element={<Pago />} />
