@@ -1,6 +1,6 @@
-# 🏔️ Sierra Yara Café - Sistema de Menú Inteligente
+# 🏔️ Sierra Yara - Sistema de Menú Inteligente
 
-Sistema completo de menú digital con gestión de pedidos en tiempo real para Sierra Yara Café, ubicado en Yaracuy, Venezuela.
+Sistema completo de menú digital con gestión de pedidos en tiempo real para restaurantes y cafeterías.
 
 ## 📋 Características Principales
 
@@ -76,7 +76,7 @@ PAGO_MOVIL_BANCO=Banco de Venezuela
 
 TRANSFERENCIA_BANCO=Banco de Venezuela
 TRANSFERENCIA_CUENTA=01020123456789012345
-TRANSFERENCIA_TITULAR=Sierra Yara Café C.A.
+TRANSFERENCIA_TITULAR=Nombre del Titular
 TRANSFERENCIA_RIF=J123456789
 
 ZELLE_EMAIL=pagos@sierrayara.com
@@ -296,18 +296,18 @@ categoria: {
 
 ## 🤝 Contribución
 
-Este es un proyecto privado para Sierra Yara Café. Para sugerencias o mejoras, contactar al equipo de desarrollo.
+Para sugerencias o mejoras, contactar al equipo de desarrollo de Altovisual.
 
 ## 📄 Licencia
 
-Copyright © 2024 Sierra Yara Café. Todos los derechos reservados.
+MIT License - Copyright © 2024 Altovisual
 
 ## 📞 Contacto
 
-**Sierra Yara Café**
-- Instagram: [@sierrayaracafe](https://instagram.com/sierrayaracafe)
-- Ubicación: Yaracuy, Venezuela
+**Altovisual**
+- GitHub: [@altovisual](https://github.com/altovisual)
+- Repositorio: [Sierra-Yara](https://github.com/altovisual/Sierra-Yara)
 
 ---
 
-Desarrollado con ❤️ para Sierra Yara Café
+Desarrollado con ❤️ por Altovisual

@@ -188,4 +188,4 @@ El sistema está funcionando. Ahora puedes:
 
 ---
 
-**Desarrollado para Sierra Yara Café** 🏔️☕
+**Desarrollado por Altovisual** 🚀

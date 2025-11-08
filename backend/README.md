@@ -1,4 +1,4 @@
-# Backend - Sierra Yara Café
+# Backend - Sierra Yara
 
 API REST con WebSockets para el sistema de menú inteligente.
 
@@ -32,7 +32,7 @@ PAGO_MOVIL_BANCO=Banco de Venezuela
 
 TRANSFERENCIA_BANCO=Banco de Venezuela
 TRANSFERENCIA_CUENTA=01020123456789012345
-TRANSFERENCIA_TITULAR=Sierra Yara Café C.A.
+TRANSFERENCIA_TITULAR=Nombre del Titular
 TRANSFERENCIA_RIF=J123456789
 
 ZELLE_EMAIL=pagos@sierrayara.com

@@ -419,7 +419,7 @@ Crear archivo de configuración centralizado:
 ```javascript
 module.exports = {
   negocio: {
-    nombre: 'Sierra Yara Café',
+    nombre: 'Tu Negocio',
     telefono: '0414-1234567',
     direccion: 'Yaracuy, Venezuela',
     instagram: '@sierrayaracafe'
@@ -439,7 +439,7 @@ Centralizar mensajes en archivo de constantes:
 **Frontend - `src/constants/messages.js`:**
 ```javascript
 export const MESSAGES = {
-  BIENVENIDA: 'Bienvenido a Sierra Yara Café',
+  BIENVENIDA: 'Bienvenido a Tu Negocio',
   CARRITO_VACIO: 'Tu carrito está vacío',
   PEDIDO_CONFIRMADO: '¡Pedido confirmado!',
   // ...

@@ -1,4 +1,4 @@
-# Frontend - Sierra Yara Café
+# Frontend - Sierra Yara
 
 Aplicación Web Progresiva (PWA) para el sistema de menú inteligente.
 
