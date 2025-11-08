@@ -1,0 +1,69 @@
+# Dependencias
+node_modules/
+package-lock.json
+
+# Variables de entorno (datos sensibles)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Archivos de base de datos
+*.sqlite
+*.db
+*.sql
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Build
+dist/
+build/
+.next/
+out/
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos temporales
+tmp/
+temp/
+*.tmp
+
+# Códigos QR generados (pueden contener URLs con datos sensibles)
+qr-codes/
+*.png
+*.jpg
+*.jpeg
+
+# Certificados y claves
+*.pem
+*.key
+*.cert
+*.crt
+
+# Backups
+*.backup
+*.bak
