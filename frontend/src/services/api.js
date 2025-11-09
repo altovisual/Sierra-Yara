@@ -5,7 +5,20 @@ import axios from 'axios';
  * Detecta automáticamente si estamos en localhost o en red local
  */
 const getApiUrl = () => {
-  // FORZAR localhost para desarrollo
+  // Si hay variable de entorno, usarla
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Detectar si estamos accediendo desde la red local
+  const hostname = window.location.hostname;
+  
+  // Si el hostname es una IP local (no localhost), usar esa IP para el backend
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    return `http://${hostname}:5000/api`;
+  }
+  
+  // Por defecto, usar localhost
   return 'http://localhost:5000/api';
 };
 
@@ -20,6 +33,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 segundos de timeout
 });
 
 // Interceptor para manejo de errores

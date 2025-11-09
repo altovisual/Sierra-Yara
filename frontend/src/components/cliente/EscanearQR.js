@@ -26,7 +26,18 @@ const EscanearQR = () => {
       await conectarMesa(parseInt(numeroMesa), nombreUsuario);
       navigate('/menu');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al conectar a la mesa');
+      console.error('Error completo:', err);
+      
+      // Mensajes de error más específicos
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        setError('⏱️ Tiempo de espera agotado. Verifica que el servidor esté corriendo.');
+      } else if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
+        setError('🌐 No se puede conectar al servidor. Verifica tu conexión WiFi y que el backend esté corriendo.');
+      } else if (err.response?.status === 404) {
+        setError('❌ Mesa no encontrada. Verifica el número de mesa.');
+      } else {
+        setError(err.response?.data?.error || '❌ Error al conectar a la mesa. Revisa la consola para más detalles.');
+      }
     }
   };
 

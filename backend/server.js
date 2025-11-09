@@ -19,8 +19,9 @@ const server = http.createServer(app);
 // Configurar Socket.io
 const io = socketIo(server, {
   cors: {
-    origin: '*', // Permitir todas las conexiones para desarrollo
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
+    origin: process.env.CORS_ORIGIN || '*', // Permitir origen configurado o todos para desarrollo
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
   }
 });
 
@@ -29,7 +30,8 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: '*' // Permitir todas las conexiones para desarrollo
+  origin: process.env.CORS_ORIGIN || '*', // Permitir origen configurado o todos para desarrollo
+  credentials: true
 }));
 // Aumentar límite para imágenes en base64 (10MB)
 app.use(bodyParser.json({ limit: '10mb' }));
