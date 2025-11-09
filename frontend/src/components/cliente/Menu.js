@@ -4,9 +4,11 @@ import { productosAPI, promocionesAPI } from '../../services/api';
 import { agruparPorCategoria, formatearPrecio } from '../../utils/helpers';
 import { useCarrito } from '../../context/CarritoContext';
 import { useFavoritos } from '../../context/FavoritosContext';
+import { useTasaBCV } from '../../context/TasaBCVContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
 import { MenuGridSkeleton } from '../common/SkeletonLoaders';
+import IndicadorTasa from './IndicadorTasa';
 import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Bell, Heart } from 'lucide-react';
 import logo from '../../assets/logo.png';
 
@@ -25,6 +27,7 @@ const Menu = () => {
   
   const { agregarItem, obtenerCantidadTotal } = useCarrito();
   const { toggleFavorito, esFavorito } = useFavoritos();
+  const { formatearPrecioDual } = useTasaBCV();
   const { toasts, removeToast, success, info } = useToast();
   const [llamandoMesonero, setLlamandoMesonero] = useState(false);
 
@@ -228,6 +231,9 @@ const Menu = () => {
       </div>
 
       <div className="max-w-4xl mx-auto p-4">
+        {/* Indicador de Tasa BCV */}
+        <IndicadorTasa />
+
         {/* Barra de búsqueda */}
         <div className="mb-6">
           <div className="relative">
@@ -360,19 +366,34 @@ const Menu = () => {
                         <div className="flex justify-between items-end">
                           <div className="flex flex-col gap-1">
                             {/* Precio con descuento */}
-                            <div className="flex items-baseline gap-2">
-                              <span className={`font-bold text-xl ${
-                                producto.esPromocion ? 'text-orange-600' : 'text-primary-600'
-                              }`}>
-                                {formatearPrecio(producto.precio)}
-                              </span>
-                              
-                              {/* Precio original tachado */}
-                              {producto.esPromocion && producto.precioOriginal && (
-                                <span className="text-gray-400 text-sm line-through">
-                                  {formatearPrecio(producto.precioOriginal)}
+                            <div className="flex flex-col gap-0.5">
+                              {/* Precio en USD */}
+                              <div className="flex items-baseline gap-2">
+                                <span className={`font-bold text-xl ${
+                                  producto.esPromocion ? 'text-orange-600' : 'text-primary-600'
+                                }`}>
+                                  {formatearPrecioDual(producto.precio).usd}
                                 </span>
-                              )}
+                                
+                                {/* Precio original tachado */}
+                                {producto.esPromocion && producto.precioOriginal && (
+                                  <span className="text-gray-400 text-sm line-through">
+                                    {formatearPrecioDual(producto.precioOriginal).usd}
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {/* Precio en Bs */}
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-gray-600 text-sm font-semibold">
+                                  {formatearPrecioDual(producto.precio).bs}
+                                </span>
+                                {producto.esPromocion && producto.precioOriginal && (
+                                  <span className="text-gray-400 text-xs line-through">
+                                    {formatearPrecioDual(producto.precioOriginal).bs}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             
                             {/* Ahorro */}

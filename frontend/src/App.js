@@ -4,6 +4,7 @@ import { MesaProvider } from './context/MesaContext';
 import { CarritoProvider } from './context/CarritoContext';
 import { FavoritosProvider } from './context/FavoritosContext';
 import { AdminDataProvider } from './context/AdminDataContext';
+import { TasaBCVProvider } from './context/TasaBCVContext';
 
 // Componentes del cliente
 import EscanearQR from './components/cliente/EscanearQR';
@@ -23,11 +24,12 @@ import AdminRoutes from './routes/AdminRoutes';
 function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <AdminDataProvider>
-      <MesaProvider>
-        <CarritoProvider>
-          <FavoritosProvider>
-            <Routes>
+      <TasaBCVProvider>
+        <AdminDataProvider>
+          <MesaProvider>
+            <CarritoProvider>
+              <FavoritosProvider>
+                <Routes>
             {/* Rutas del cliente */}
             <Route path="/" element={<EscanearQR />} />
             <Route path="/mesa/:numeroMesa" element={<EscanearQR />} />
@@ -43,11 +45,12 @@ function App() {
 
             {/* Ruta por defecto */}
             <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </FavoritosProvider>
-        </CarritoProvider>
-      </MesaProvider>
-      </AdminDataProvider>
+                </Routes>
+              </FavoritosProvider>
+            </CarritoProvider>
+          </MesaProvider>
+        </AdminDataProvider>
+      </TasaBCVProvider>
     </Router>
   );
 }
