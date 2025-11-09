@@ -1,27 +1,41 @@
 # 🏔️ Sierra Yara - Sistema de Menú Inteligente
 
-Sistema completo de menú digital con gestión de pedidos en tiempo real para restaurantes y cafeterías.
+[![Deploy Status](https://img.shields.io/badge/deploy-success-brightgreen)](https://sierra-yara.vercel.app)
+[![Backend](https://img.shields.io/badge/backend-online-blue)](https://sierra-yara.onrender.com)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+Sistema completo de menú digital con gestión de pedidos en tiempo real, tasa BCV automática y panel de administración avanzado.
+
+🌐 **Demo en Vivo:** [sierra-yara.vercel.app](https://sierra-yara.vercel.app)  
+📊 **Panel Admin:** [sierra-yara.vercel.app/admin](https://sierra-yara.vercel.app/admin)
 
 ## 📋 Características Principales
 
 ### Para Clientes
 - ✅ Acceso al menú mediante código QR por mesa
 - ✅ Navegación intuitiva del menú por categorías
-- ✅ Carrito de compras individual
+- ✅ **Precios duales (USD y Bs)** con tasa BCV en tiempo real
+- ✅ Sistema de favoritos
+- ✅ Carrito de compras con persistencia
+- ✅ Aplicación de promociones automáticas
 - ✅ Seguimiento de pedidos en tiempo real
-- ✅ División automática de cuenta por persona
-- ✅ Múltiples métodos de pago (Pago Móvil, Transferencia, Efectivo, Zelle, Punto de Venta)
+- ✅ Múltiples métodos de pago
 - ✅ Sistema de propinas integrado
-- ✅ Aplicación Web Progresiva (PWA) - funciona como app nativa
+- ✅ **PWA instalable** - funciona como app nativa
+- ✅ **Sesión persistente** - no pierde datos al cerrar navegador
+- ✅ Botón de llamar mesonero
 
 ### Para Administradores
-- ✅ Panel de control en tiempo real
-- ✅ Gestión de mesas y su estado
-- ✅ Visualización de pedidos activos
-- ✅ Actualización de estado de pedidos
-- ✅ Notificaciones instantáneas de nuevos pedidos
-- ✅ Estadísticas de ventas del día
-- ✅ Gestión completa del menú (CRUD)
+- ✅ Dashboard en tiempo real con estadísticas
+- ✅ Gestión completa de pedidos (CRUD)
+- ✅ Gestión de productos y categorías
+- ✅ **Sistema de promociones** con horarios
+- ✅ **Control de inventario** con alertas
+- ✅ **Gestión de tasa BCV** automática y manual
+- ✅ Generador de códigos QR por mesa
+- ✅ Notificaciones instantáneas con sonido
+- ✅ Visualización de mesas en tiempo real
+- ✅ Estadísticas de ventas y reportes
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -282,17 +296,70 @@ categoria: {
 - Usar HTTPS en producción
 - Implementar rate limiting para prevenir abuso de la API
 
-## 📈 Mejoras Futuras
+## 📚 Documentación
 
-- [ ] Sistema de autenticación para administradores
-- [ ] Reportes y analytics avanzados
-- [ ] Integración con impresoras de cocina
-- [ ] Sistema de reservas
-- [ ] Programa de lealtad y puntos
+- 📖 **[Documentación Técnica Completa](DOCUMENTACION_TECNICA.md)** - Arquitectura, modelos, API, contextos
+- 📄 **[Whitepaper](WHITEPAPER.md)** - Propuesta de valor, casos de uso, ROI
+- 💾 **[Persistencia de Datos](PERSISTENCIA_DATOS.md)** - LocalStorage, caché, estrategias
+- 💱 **[Sistema de Tasa BCV](TASA_BCV_README.md)** - Configuración, uso, APIs
+- 🚀 **[Guía de Despliegue](DEPLOY_RENDER.md)** - Render, Vercel, troubleshooting
+
+## 🆕 Características Recientes
+
+### ✅ Sistema de Tasa BCV (v1.0)
+- Actualización automática cada 6 horas desde API externa
+- Conversión USD → Bs en tiempo real
+- Panel admin para gestión manual
+- Histórico completo de cambios
+- Estadísticas de variación
+
+### ✅ Persistencia Completa (v1.0)
+- Sesión de mesa en localStorage
+- Carrito persistente
+- Favoritos guardados
+- Promociones aplicadas
+- Auto-restauración al reabrir
+
+### ✅ Panel Admin Mejorado (v1.0)
+- Diseño consistente con TailwindCSS
+- Gestión de tasa BCV
+- Control de inventario
+- Sistema de promociones
+- Generador de QR
+- Endpoint de limpieza de pedidos
+
+## 📈 Roadmap
+
+### Fase 1: MVP ✅ (Completado)
+- [x] Sistema de mesas y pedidos
+- [x] Panel de administración
+- [x] Gestión de productos
+- [x] Sistema de tasa BCV
+- [x] Notificaciones en tiempo real
+- [x] Generador de QR
+- [x] PWA instalable
+- [x] Persistencia de datos
+
+### Fase 2: Optimización 🔄 (En Progreso)
+- [x] Gestión de promociones
+- [x] Control de inventario
+- [ ] Reportes avanzados
+- [ ] Modo offline completo
+- [ ] Sistema de autenticación
+
+### Fase 3: Expansión 📅 (Q1 2026)
 - [ ] Notificaciones push
+- [ ] Sistema de reservas
+- [ ] Integración con POS
+- [ ] Programa de lealtad
 - [ ] Múltiples idiomas
-- [ ] Modo oscuro
-- [ ] Integración con pasarelas de pago
+- [ ] App móvil nativa
+
+### Fase 4: Inteligencia 🤖 (Q2 2026)
+- [ ] Recomendaciones con IA
+- [ ] Análisis predictivo
+- [ ] Optimización automática de precios
+- [ ] Chatbot de atención
 
 ## 🤝 Contribución
 

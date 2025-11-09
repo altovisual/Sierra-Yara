@@ -15,6 +15,9 @@ import Pago from './components/cliente/Pago';
 import CuentaMesa from './components/cliente/CuentaMesa';
 import Promociones from './components/cliente/Promociones';
 
+// Componente de protección
+import ProtectedRoute from './components/common/ProtectedRoute';
+
 // Rutas de administración
 import AdminRoutes from './routes/AdminRoutes';
 
@@ -30,22 +33,24 @@ function App() {
             <CarritoProvider>
               <FavoritosProvider>
                 <Routes>
-            {/* Rutas del cliente */}
-            <Route path="/" element={<Menu />} />
+            {/* Rutas públicas (sin protección) */}
             <Route path="/escanear" element={<EscanearQR />} />
             <Route path="/mesa/:numeroMesa" element={<EscanearQR />} />
-            <Route path="/menu" element={<Menu />} />
-            <Route path="/promociones" element={<Promociones />} />
-            <Route path="/carrito" element={<Carrito />} />
-            <Route path="/mis-pedidos" element={<MisPedidos />} />
-            <Route path="/pago/:pedidoId" element={<Pago />} />
-            <Route path="/cuenta-mesa" element={<CuentaMesa />} />
+            
+            {/* Rutas protegidas (requieren estar conectado a una mesa) */}
+            <Route path="/" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
+            <Route path="/menu" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
+            <Route path="/promociones" element={<ProtectedRoute><Promociones /></ProtectedRoute>} />
+            <Route path="/carrito" element={<ProtectedRoute><Carrito /></ProtectedRoute>} />
+            <Route path="/mis-pedidos" element={<ProtectedRoute><MisPedidos /></ProtectedRoute>} />
+            <Route path="/pago/:pedidoId" element={<ProtectedRoute><Pago /></ProtectedRoute>} />
+            <Route path="/cuenta-mesa" element={<ProtectedRoute><CuentaMesa /></ProtectedRoute>} />
 
             {/* Rutas de administración */}
             <Route path="/admin/*" element={<AdminRoutes />} />
 
             {/* Ruta por defecto */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/escanear" replace />} />
                 </Routes>
               </FavoritosProvider>
             </CarritoProvider>
