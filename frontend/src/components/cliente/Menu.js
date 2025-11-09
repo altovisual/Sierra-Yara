@@ -214,7 +214,7 @@ const Menu = () => {
               placeholder="Buscar productos..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white"
             />
           </div>
         </div>
@@ -250,7 +250,17 @@ const Menu = () => {
           <MenuGridSkeleton count={6} />
         ) : Object.keys(productosAgrupados).length === 0 ? (
           <div className="text-center py-12 fade-in">
-            <p className="text-gray-500 text-lg">No se encontraron productos</p>
+            <div className="text-gray-400 mb-4">
+              <Search size={64} className="mx-auto mb-4 opacity-50" />
+            </div>
+            <p className="text-gray-600 text-lg font-semibold mb-2">
+              {busqueda ? 'No se encontraron resultados' : 'No hay productos disponibles'}
+            </p>
+            {busqueda && (
+              <p className="text-gray-500 text-sm">
+                Intenta con otro término de búsqueda
+              </p>
+            )}
           </div>
         ) : (
           Object.entries(productosAgrupados).map(([categoria, items], idx) => (
