@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ConfigProvider, Layout, Menu, Typography, Avatar, Badge, Dropdown, Drawer, Button } from 'antd';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ConfigProvider, Layout, Menu, Typography, Avatar, Dropdown, Drawer, Button } from 'antd';
 import themeConfig from '../../themes/theme';
+import NotificacionesPedidos from './NotificacionesPedidos';
 import {
   DashboardOutlined,
   ShoppingCartOutlined,
@@ -9,10 +10,10 @@ import {
   MenuOutlined,
   AppstoreOutlined,
   LogoutOutlined,
-  BellOutlined,
   UserOutlined,
   CloseOutlined,
-  TagOutlined
+  TagOutlined,
+  InboxOutlined
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
@@ -68,6 +69,11 @@ const AdminLayout = ({ children, title, extra }) => {
       key: 'promociones',
       icon: <TagOutlined />,
       label: <Link to="/admin/promociones">Promociones</Link>,
+    },
+    {
+      key: 'inventario',
+      icon: <InboxOutlined />,
+      label: <Link to="/admin/inventario">Inventario</Link>,
     },
     {
       key: 'qr',
@@ -253,9 +259,7 @@ const AdminLayout = ({ children, title, extra }) => {
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <Badge count={5} size="small">
-                <BellOutlined style={{ fontSize: '20px', cursor: 'pointer' }} />
-              </Badge>
+              <NotificacionesPedidos />
               <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
                 <div style={{ 
                   display: 'flex', 

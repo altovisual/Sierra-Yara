@@ -4,6 +4,7 @@ import Dashboard from '../components/admin/Dashboard';
 import GestionPedidos from '../components/admin/GestionPedidos';
 import GestionProductos from '../components/admin/GestionProductos';
 import GestionPromociones from '../components/admin/GestionPromociones';
+import GestionInventario from '../components/admin/GestionInventario';
 import GeneradorQR from '../components/admin/GeneradorQR';
 
 const AdminRoutes = () => {
@@ -13,6 +14,7 @@ const AdminRoutes = () => {
       <Route path="/pedidos" element={<GestionPedidos />} />
       <Route path="/productos" element={<GestionProductos />} />
       <Route path="/promociones" element={<GestionPromociones />} />
+      <Route path="/inventario" element={<GestionInventario />} />
       <Route path="/generar-qr" element={<GeneradorQR />} />
       <Route path="*" element={<Navigate to="/admin" replace />} />
     </Routes>
