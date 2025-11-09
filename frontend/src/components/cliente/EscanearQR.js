@@ -114,21 +114,31 @@ const EscanearQR = () => {
         {/* Formulario */}
         <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20 transform hover:shadow-3xl transition-all duration-300">
           <div className="text-center mb-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">
-              ¡Bienvenido! 👋
-            </h2>
             {mesaDesdeQR ? (
-              <div className="mt-3">
-                <p className="text-gray-600 text-sm mb-2">Estás en la</p>
-                <div className="inline-flex items-center gap-2 bg-primary-100 text-primary-700 px-4 py-2 rounded-lg font-bold text-lg">
-                  <Hash size={20} />
-                  Mesa {mesaDesdeQR}
+              <>
+                <h2 className="text-3xl font-bold text-gray-800 mb-3">
+                  ¡Bienvenido! 👋
+                </h2>
+                <div className="mt-3 mb-4">
+                  <p className="text-gray-600 text-sm mb-2">Conectándote a la</p>
+                  <div className="inline-flex items-center gap-2 bg-primary-100 text-primary-700 px-5 py-3 rounded-xl font-bold text-xl shadow-md">
+                    <Hash size={22} />
+                    Mesa {mesaDesdeQR}
+                  </div>
                 </div>
-              </div>
+                <p className="text-gray-600 text-sm mt-4">
+                  Solo necesitamos tu nombre para continuar
+                </p>
+              </>
             ) : (
-              <p className="text-gray-600 text-sm">
-                Ingresa tu mesa para comenzar
-              </p>
+              <>
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                  ¡Bienvenido! 👋
+                </h2>
+                <p className="text-gray-600 text-sm">
+                  Ingresa tu mesa para comenzar
+                </p>
+              </>
             )}
           </div>
 
