@@ -25,17 +25,18 @@ const EscanearQR = () => {
     // Obtener número de mesa desde URL (parámetro de ruta o query param)
     const mesaDesdeRuta = mesaParam || searchParams.get('mesa');
     
-    // Si ya está conectado Y no hay nueva mesa en la URL, redirigir al menú
-    if (estaConectado() && !mesaDesdeRuta) {
-      console.log('✅ Usuario ya conectado, redirigiendo al menú...');
-      navigate('/menu', { replace: true });
-      return;
-    }
-    
-    // Si hay número de mesa en la URL, pre-llenar el formulario
+    // Si hay número de mesa en la URL, SIEMPRE mostrar el formulario
     if (mesaDesdeRuta) {
+      console.log('📱 QR escaneado - Mesa:', mesaDesdeRuta);
       setMesaDesdeQR(mesaDesdeRuta);
       setNumeroMesa(mesaDesdeRuta);
+      return; // No redirigir, mostrar formulario
+    }
+    
+    // Solo si NO hay mesa en URL Y ya está conectado, redirigir al menú
+    if (estaConectado()) {
+      console.log('✅ Usuario ya conectado, redirigiendo al menú...');
+      navigate('/menu', { replace: true });
     }
   }, [mesaParam, searchParams, estaConectado, navigate]);
 
