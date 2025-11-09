@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ConfigProvider, Layout, Menu, Typography, Avatar, Dropdown, Drawer, Button } from 'antd';
-import themeConfig from '../../themes/theme';
 import NotificacionesPedidos from './NotificacionesPedidos';
 import {
   DashboardOutlined,
@@ -120,18 +119,19 @@ const AdminLayout = ({ children, title, extra }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: isMobile ? 'space-between' : 'center',
-          borderBottom: '1px solid #f0f0f0',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           marginBottom: '8px'
         }}>
           <div style={{ 
-            color: '#1890ff', 
+            color: '#ffffff', 
             fontSize: isMobile ? '20px' : '18px',
             fontWeight: 'bold',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
-            textOverflow: 'ellipsis'
+            textOverflow: 'ellipsis',
+            letterSpacing: '0.5px'
           }}>
-            {!collapsed || isMobile ? 'Admin Panel' : 'AP'}
+            {!collapsed || isMobile ? 'Sierra Yara' : 'SY'}
           </div>
           {isMobile && (
             <Button 
@@ -144,7 +144,7 @@ const AdminLayout = ({ children, title, extra }) => {
         </div>
         
         <Menu
-          theme="light"
+          theme="dark"
           mode="inline"
           selectedKeys={[selectedKey]}
           onClick={closeDrawer}
@@ -152,7 +152,8 @@ const AdminLayout = ({ children, title, extra }) => {
           inlineCollapsed={collapsed && !isMobile}
           style={{ 
             borderRight: 0, 
-            padding: isMobile ? '8px' : 0
+            padding: isMobile ? '8px' : 0,
+            background: 'transparent'
           }}
         />
       </>
@@ -190,8 +191,8 @@ const AdminLayout = ({ children, title, extra }) => {
           left: 0,
           top: 0,
           bottom: 0,
-          boxShadow: '2px 0 8px 0 rgba(0, 0, 0, 0.05)',
-          background: '#fff',
+          boxShadow: '2px 0 12px 0 rgba(0, 0, 0, 0.15)',
+          background: '#3d5a5c',
           zIndex: 10,
           transition: 'all 0.1s'
         }}
@@ -201,23 +202,56 @@ const AdminLayout = ({ children, title, extra }) => {
     );
   };
 
+  // Tema personalizado Sierra Yara
+  const sierraYaraTheme = {
+    token: {
+      colorPrimary: '#456366', // Teal principal de Sierra Yara
+      colorBgContainer: '#ffffff',
+      colorBgLayout: '#f5f1e8', // Beige claro de fondo
+      colorText: '#2c3e3f',
+      colorTextSecondary: '#6b7c7d',
+      borderRadius: 8,
+      colorBorder: '#d4cfc4',
+    },
+    components: {
+      Layout: {
+        headerBg: '#456366', // Header con color Sierra Yara
+        headerPadding: '0 16px',
+        headerHeight: 56,
+        siderBg: '#3d5a5c', // Sidebar con teal oscuro
+      },
+      Menu: {
+        itemBg: 'transparent',
+        itemSelectedBg: 'rgba(255, 255, 255, 0.1)',
+        itemSelectedColor: '#ffffff',
+        itemColor: 'rgba(255, 255, 255, 0.85)',
+        itemHoverBg: 'rgba(255, 255, 255, 0.08)',
+        itemHoverColor: '#ffffff',
+        iconSize: 18,
+      },
+      Button: {
+        colorPrimary: '#456366',
+        colorPrimaryHover: '#3d5a5c',
+        colorPrimaryActive: '#2f4547',
+      },
+      Card: {
+        colorBgContainer: '#ffffff',
+        boxShadowTertiary: '0 1px 2px 0 rgba(61, 90, 92, 0.05)',
+      },
+      Tag: {
+        colorSuccess: '#52c41a',
+        colorWarning: '#faad14',
+        colorError: '#ff4d4f',
+        colorInfo: '#456366',
+      },
+    },
+  };
+
   return (
-    <ConfigProvider
-      theme={{
-        token: themeConfig.token,
-        components: {
-          ...themeConfig.components,
-          Layout: {
-            headerBg: '#fff',
-            headerPadding: '0 16px',
-            headerHeight: 56,
-          },
-        },
-      }}
-    >
+    <ConfigProvider theme={sierraYaraTheme}>
       <Layout style={{ 
         minHeight: '100vh', 
-        background: themeConfig.token.colorBgLayout,
+        background: '#f5f1e8',
         position: 'relative'
       }}>
         {renderSider()}
@@ -233,11 +267,11 @@ const AdminLayout = ({ children, title, extra }) => {
           <Header
             style={{
               padding: '0 16px',
-              background: '#fff',
+              background: '#456366',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              boxShadow: '0 1px 4px rgba(0, 21, 41, 0.08)',
+              boxShadow: '0 2px 8px rgba(61, 90, 92, 0.15)',
               position: 'sticky',
               top: 0,
               zIndex: 9,
@@ -248,12 +282,12 @@ const AdminLayout = ({ children, title, extra }) => {
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {isMobile ? (
                 <MenuOutlined
-                  style={{ fontSize: '20px', cursor: 'pointer' }}
+                  style={{ fontSize: '20px', cursor: 'pointer', color: '#ffffff' }}
                   onClick={toggleDrawer}
                 />
               ) : (
                 <MenuOutlined
-                  style={{ fontSize: '18px', marginRight: '16px', cursor: 'pointer' }}
+                  style={{ fontSize: '18px', marginRight: '16px', cursor: 'pointer', color: '#ffffff' }}
                   onClick={() => setCollapsed(!collapsed)}
                 />
               )}
@@ -272,12 +306,12 @@ const AdminLayout = ({ children, title, extra }) => {
                   <Avatar 
                     icon={<UserOutlined />} 
                     style={{ 
-                      backgroundColor: '#1890ff',
+                      backgroundColor: '#2f4547',
                       verticalAlign: 'middle'
                     }} 
                   />
                   {!isMobile && !collapsed && (
-                    <Text style={{ marginLeft: '4px' }}>Admin</Text>
+                    <Text style={{ marginLeft: '4px', color: '#ffffff' }}>Admin</Text>
                   )}
                 </div>
               </Dropdown>
