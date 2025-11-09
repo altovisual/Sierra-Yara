@@ -1378,7 +1378,7 @@ const Dashboard = () => {
                 <div>
                   <Text type="secondary">Mesa:</Text>
                   <Text strong style={{ marginLeft: '8px' }}>
-                    {pedidoSeleccionado.mesa?.numero || 'N/A'}
+                    {pedidoSeleccionado.mesaId?.numeroMesa || pedidoSeleccionado.mesa?.numero || 'N/A'}
                   </Text>
                 </div>
                 <div>
