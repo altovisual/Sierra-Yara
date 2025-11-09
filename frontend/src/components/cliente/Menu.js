@@ -6,6 +6,7 @@ import { useCarrito } from '../../context/CarritoContext';
 import { useFavoritos } from '../../context/FavoritosContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
+import { MenuGridSkeleton } from '../common/SkeletonLoaders';
 import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Bell, Heart } from 'lucide-react';
 
 /**
@@ -258,21 +259,23 @@ const Menu = () => {
         </div>
 
         {/* Lista de productos por categoría */}
-        {Object.keys(productosAgrupados).length === 0 ? (
-          <div className="text-center py-12">
+        {cargando ? (
+          <MenuGridSkeleton count={6} />
+        ) : Object.keys(productosAgrupados).length === 0 ? (
+          <div className="text-center py-12 fade-in">
             <p className="text-gray-500 text-lg">No se encontraron productos</p>
           </div>
         ) : (
-          Object.entries(productosAgrupados).map(([categoria, items]) => (
-            <div key={categoria} className="mb-8">
-              <h2 className="text-2xl font-display font-bold text-gray-800 mb-4">
+          Object.entries(productosAgrupados).map(([categoria, items], idx) => (
+            <div key={categoria} className={`mb-8 slide-in-up delay-${Math.min(idx + 1, 5)}`}>
+              <h2 className="text-2xl font-display font-bold text-gray-800 mb-4 fade-in">
                 {categoria}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {items.map(producto => (
+                {items.map((producto, prodIdx) => (
                   <div
                     key={producto._id}
-                    className={`group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden transform hover:scale-[1.02] ${
+                    className={`group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden transform hover:scale-[1.02] hover-lift slide-in-up delay-${Math.min(prodIdx + 1, 5)} ${
                       producto.esPromocion ? 'ring-2 ring-yellow-400 shadow-yellow-100' : ''
                     }`}
                     onClick={() => setProductoSeleccionado(producto)}
