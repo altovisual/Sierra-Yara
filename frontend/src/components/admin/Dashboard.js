@@ -81,6 +81,17 @@ const Dashboard = () => {
 
       const mesasData = mesasRes.data.data || [];
       const pedidosData = pedidosRes.data.data || [];
+      
+      // Debug: Ver estructura de un pedido
+      if (pedidosData.length > 0) {
+        console.log('📦 Estructura del primer pedido:', {
+          _id: pedidosData[0]._id,
+          mesaId: pedidosData[0].mesaId,
+          mesa: pedidosData[0].mesa,
+          estado: pedidosData[0].estado,
+          keys: Object.keys(pedidosData[0])
+        });
+      }
 
       // Ordenar mesas por número
       const mesasOrdenadas = [...mesasData].sort((a, b) => a.numero - b.numero);
