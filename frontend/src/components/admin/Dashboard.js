@@ -2,12 +2,14 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { mesasAPI, pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
 import { formatearPrecio, obtenerTextoEstado } from '../../utils/helpers';
+import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
 import {
   ShoppingOutlined,
   TableOutlined,
   ClockCircleOutlined,
   DollarOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import {
   Card,
@@ -18,7 +20,8 @@ import {
   Typography,
   Tag,
   Empty,
-  Modal
+  Modal,
+  Tooltip
 } from 'antd';
 import AdminLayout from './AdminLayout';
 import dayjs from 'dayjs';
@@ -44,6 +47,7 @@ const Dashboard = () => {
     pedidosPendientes: 0
   });
   const [ventasDia, setVentasDia] = useState(null);
+  const [mostrarAtajos, setMostrarAtajos] = useState(false);
 
   // Obtener los últimos pedidos
   const ultimosPedidos = useMemo(() => {
@@ -370,6 +374,30 @@ const Dashboard = () => {
     };
   }, [agregarNotificacion, cargarDatos, reproducirSonido]);
 
+  // Configurar atajos de teclado
+  useKeyboardShortcuts({
+    'ctrl+r': {
+      action: () => {
+        message.info('⚡ Actualizando datos...');
+        cargarDatos();
+      },
+      allowWhileTyping: true
+    },
+    'f5': {
+      action: () => {
+        message.info('⚡ Actualizando datos...');
+        cargarDatos();
+      },
+      allowWhileTyping: true
+    },
+    '?': {
+      action: () => setMostrarAtajos(true)
+    },
+    'escape': {
+      action: () => setMostrarAtajos(false),
+      allowWhileTyping: true
+    }
+  });
 
   return (
     <AdminLayout>
@@ -380,9 +408,20 @@ const Dashboard = () => {
         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)'
       }}>
         {/* Header */}
-        <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 600, margin: 0, marginBottom: '4px' }}>Panel de Administración</h1>
-          <p style={{ color: '#8c8c8c', margin: 0 }}>Sierra Yara Café - Todo en un solo lugar</p>
+        <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: 600, margin: 0, marginBottom: '4px' }}>Panel de Administración</h1>
+            <p style={{ color: '#8c8c8c', margin: 0 }}>Sierra Yara Café - Todo en un solo lugar</p>
+          </div>
+          <Tooltip title="Atajos de teclado (?)">
+            <Button
+              icon={<InfoCircleOutlined />}
+              onClick={() => setMostrarAtajos(true)}
+              size="large"
+            >
+              Atajos
+            </Button>
+          </Tooltip>
         </div>
 
         {/* Sección de Estadísticas */}
@@ -907,6 +946,85 @@ const Dashboard = () => {
           </Col>
         </Row>
       </div>
+
+      {/* Modal de Atajos de Teclado */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <InfoCircleOutlined />
+            <span>Atajos de Teclado</span>
+          </div>
+        }
+        open={mostrarAtajos}
+        onCancel={() => setMostrarAtajos(false)}
+        footer={[
+          <Button key="close" type="primary" onClick={() => setMostrarAtajos(false)}>
+            Entendido
+          </Button>
+        ]}
+        width={600}
+      >
+        <div style={{ padding: '16px 0' }}>
+          <p style={{ marginBottom: '16px', color: '#6b7280' }}>
+            Usa estos atajos para trabajar más rápido:
+          </p>
+          
+          <div style={{ display: 'grid', gap: '12px' }}>
+            {[
+              { keys: ['Ctrl', 'R'], desc: 'Actualizar datos del dashboard' },
+              { keys: ['F5'], desc: 'Actualizar datos del dashboard' },
+              { keys: ['?'], desc: 'Mostrar esta ayuda' },
+              { keys: ['Esc'], desc: 'Cerrar modales y paneles' },
+            ].map((atajo, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px',
+                  background: '#f9fafb',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb'
+                }}
+              >
+                <span style={{ color: '#1f2937' }}>{atajo.desc}</span>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {atajo.keys.map((key, keyIdx) => (
+                    <kbd
+                      key={keyIdx}
+                      style={{
+                        padding: '4px 8px',
+                        background: '#fff',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        color: '#374151',
+                        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                      }}
+                    >
+                      {key}
+                    </kbd>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{
+            marginTop: '16px',
+            padding: '12px',
+            background: '#eff6ff',
+            borderRadius: '8px',
+            border: '1px solid #bfdbfe'
+          }}>
+            <p style={{ margin: 0, fontSize: '12px', color: '#1e40af' }}>
+              💡 <strong>Tip:</strong> Los atajos funcionan en cualquier momento, incluso cuando estás escribiendo.
+            </p>
+          </div>
+        </div>
+      </Modal>
     </AdminLayout>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, InputNumber, Tag, message, Modal, Form, Input, Select, Space } from 'antd';
+import { Card, Table, Button, InputNumber, Tag, message, Modal, Form, Select, Space } from 'antd';
 import { 
   InboxOutlined, 
   PlusOutlined, 
@@ -40,19 +40,6 @@ const GestionInventario = () => {
     }
   };
 
-  const actualizarStock = async (productoId, nuevoStock) => {
-    try {
-      await productosAPI.actualizar(productoId, { 
-        stock: nuevoStock,
-        disponible: nuevoStock > 0 
-      });
-      message.success('Stock actualizado');
-      cargarProductos();
-    } catch (error) {
-      console.error('Error al actualizar stock:', error);
-      message.error('Error al actualizar el stock');
-    }
-  };
 
   const toggleDisponibilidad = async (producto) => {
     try {
@@ -127,7 +114,6 @@ const GestionInventario = () => {
       width: '15%',
       align: 'center',
       render: (stock, record) => {
-        const estado = obtenerEstadoStock(record);
         return (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{stock || 0}</span>
