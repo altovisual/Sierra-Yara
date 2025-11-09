@@ -268,7 +268,7 @@ const Menu = () => {
                     {/* Badge de promoción */}
                     {producto.esPromocion && (
                       <div className="absolute top-3 right-3 z-10">
-                        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg animate-pulse">
+                        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
                           <Tag size={14} />
                           {producto.tipoDescuento === 'porcentaje' 
                             ? `-${producto.descuento}%` 
@@ -350,14 +350,13 @@ const Menu = () => {
                               e.stopPropagation();
                               handleAgregarAlCarrito(producto);
                             }}
-                            className={`relative p-3 rounded-xl transition-all transform hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl ${
+                            className={`p-3 rounded-xl transition-all transform hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl ${
                               producto.esPromocion
                                 ? 'bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white'
                                 : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white'
                             }`}
                           >
                             <Plus size={22} className="drop-shadow-sm" />
-                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-ping"></span>
                           </button>
                         </div>
                       </div>
