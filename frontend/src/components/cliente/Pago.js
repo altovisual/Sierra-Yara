@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { pedidosAPI, configAPI } from '../../services/api';
 import { formatearPrecio, calcularPropina } from '../../utils/helpers';
 import { CreditCard, Smartphone, DollarSign, ArrowLeft, Copy, Check, Fingerprint, Gift, CheckCircle, Users } from 'lucide-react';
+import { useTasaBCV } from '../../context/TasaBCVContext';
 
 /**
  * Componente para procesar el pago de un pedido
@@ -10,6 +11,7 @@ import { CreditCard, Smartphone, DollarSign, ArrowLeft, Copy, Check, Fingerprint
 const Pago = () => {
   const { pedidoId } = useParams();
   const navigate = useNavigate();
+  const { formatearPrecioDual } = useTasaBCV();
   
   const [pedido, setPedido] = useState(null);
   const [datosPago, setDatosPago] = useState(null);
@@ -255,7 +257,14 @@ const Pago = () => {
           <div className="border-t-2 border-gray-200 mt-4 pt-4">
             <div className="flex justify-between items-center">
               <span className="text-lg font-semibold text-gray-700">Subtotal:</span>
-              <span className="text-2xl font-bold text-primary-600">{formatearPrecio(pedido.total)}</span>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-primary-600">
+                  ${pedido.total.toFixed(2)}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {formatearPrecioDual(pedido.total).bs}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -298,7 +307,8 @@ const Pago = () => {
             className="input-field"
           />
           <div className="mt-3 text-sm text-gray-600">
-            Propina: <span className="font-semibold">{formatearPrecio(calcularPropinaTotal())}</span>
+            Propina: <span className="font-semibold">${calcularPropinaTotal().toFixed(2)}</span>
+            <span className="text-xs ml-2">({formatearPrecioDual(calcularPropinaTotal()).bs})</span>
           </div>
         </div>
 
@@ -358,7 +368,8 @@ const Pago = () => {
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border-2 border-blue-200">
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-1">Cada persona paga:</p>
-                <p className="text-3xl font-bold text-blue-600">{formatearPrecio(calcularPorPersona())}</p>
+                <p className="text-3xl font-bold text-blue-600">${calcularPorPersona().toFixed(2)}</p>
+                <p className="text-sm text-gray-600 mt-1">{formatearPrecioDual(calcularPorPersona()).bs}</p>
                 <p className="text-xs text-gray-500 mt-2">
                   {incluirPropinaEnDivision ? 'Incluye propina' : 'Sin propina'}
                 </p>
@@ -622,17 +633,28 @@ const Pago = () => {
           <div className="space-y-2 mb-4">
             <div className="flex justify-between text-sm text-gray-600">
               <span>Subtotal:</span>
-              <span>{formatearPrecio(pedido.total)}</span>
+              <div className="text-right">
+                <div>${pedido.total.toFixed(2)}</div>
+                <div className="text-xs">{formatearPrecioDual(pedido.total).bs}</div>
+              </div>
             </div>
             <div className="flex justify-between text-sm text-gray-600">
               <span>Propina:</span>
-              <span>{formatearPrecio(calcularPropinaTotal())}</span>
+              <div className="text-right">
+                <div>${calcularPropinaTotal().toFixed(2)}</div>
+                <div className="text-xs">{formatearPrecioDual(calcularPropinaTotal()).bs}</div>
+              </div>
             </div>
             <div className="flex justify-between items-center border-t pt-2">
               <span className="text-lg font-semibold text-gray-700">Total a Pagar:</span>
-              <span className="text-2xl font-bold text-primary-600">
-                {formatearPrecio(calcularTotalConPropina())}
-              </span>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-primary-600">
+                  ${calcularTotalConPropina().toFixed(2)}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {formatearPrecioDual(calcularTotalConPropina()).bs}
+                </div>
+              </div>
             </div>
           </div>
           <button
