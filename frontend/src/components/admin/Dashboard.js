@@ -145,6 +145,13 @@ const Dashboard = () => {
 
   // Abrir modal de mesa con detalles
   const verDetalleMesa = useCallback((mesa) => {
+    console.log('🏠 Mesa seleccionada:', {
+      _id: mesa._id,
+      numero: mesa.numero,
+      numeroMesa: mesa.numeroMesa,
+      estado: mesa.estado,
+      keys: Object.keys(mesa)
+    });
     setMesaSeleccionada(mesa);
     setModalMesaVisible(true);
   }, []);
@@ -1198,7 +1205,7 @@ const Dashboard = () => {
               {pedidos.filter(p => {
                 // Filtrar solo pedidos activos de esta mesa específica
                 const mesaPedidoNumero = p.mesaId?.numeroMesa;
-                const mesaSeleccionadaNumero = mesaSeleccionada.numero;
+                const mesaSeleccionadaNumero = mesaSeleccionada.numeroMesa || mesaSeleccionada.numero;
                 const esDeLaMesa = mesaPedidoNumero === mesaSeleccionadaNumero;
                 const esActivo = !['entregado', 'cancelado'].includes(p.estado);
                 console.log('🔍 Filtro:', {
@@ -1207,14 +1214,15 @@ const Dashboard = () => {
                   mesaSeleccionada: mesaSeleccionadaNumero,
                   coincide: esDeLaMesa,
                   estado: p.estado,
-                  activo: esActivo
+                  activo: esActivo,
+                  mesaCompleta: mesaSeleccionada
                 });
                 return esDeLaMesa && esActivo;
               }).length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {pedidos
                     .filter(p => {
-                      const esDeLaMesa = p.mesaId?.numeroMesa === mesaSeleccionada.numero;
+                      const esDeLaMesa = p.mesaId?.numeroMesa === (mesaSeleccionada.numeroMesa || mesaSeleccionada.numero);
                       const esActivo = !['entregado', 'cancelado'].includes(p.estado);
                       return esDeLaMesa && esActivo;
                     })
@@ -1222,31 +1230,59 @@ const Dashboard = () => {
                       <div
                         key={pedido._id}
                         style={{
-                          padding: '12px',
-                          background: '#fafafa',
+                          padding: '16px',
+                          background: '#fff',
                           borderRadius: '8px',
-                          border: '1px solid #e5e7eb'
+                          border: '2px solid #e5e7eb',
+                          cursor: 'pointer'
                         }}
+                        onClick={() => verDetallePedido(pedido)}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <Text strong>Pedido #{pedido._id.slice(-6).toUpperCase()}</Text>
-                          <Text strong>{formatearPrecio(pedido.total)}</Text>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                          <div>
+                            <Text strong style={{ fontSize: '14px' }}>Pedido #{pedido._id.slice(-6).toUpperCase()}</Text>
+                            <div>
+                              <Text type="secondary" style={{ fontSize: '12px' }}>Cliente: {pedido.nombreUsuario || 'Anónimo'}</Text>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <Text strong style={{ fontSize: '16px', color: '#1890ff' }}>{formatearPrecio(pedido.total)}</Text>
+                            <div>
+                              <Tag color={
+                                pedido.estado === 'recibido' ? 'orange' :
+                                pedido.estado === 'en_preparacion' ? 'blue' :
+                                pedido.estado === 'listo' ? 'green' : 'cyan'
+                              } style={{ marginTop: '4px' }}>
+                                {obtenerTextoEstado(pedido.estado)}
+                              </Tag>
+                            </div>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Text type="secondary">Cliente: {pedido.nombreUsuario || 'Anónimo'}</Text>
-                          <Tag color={
-                            pedido.estado === 'pendiente' ? 'orange' :
-                            pedido.estado === 'en_preparacion' ? 'blue' :
-                            pedido.estado === 'listo' ? 'green' : 'cyan'
-                          }>
-                            {obtenerTextoEstado(pedido.estado)}
-                          </Tag>
+                        
+                        {/* Lista de items del pedido */}
+                        <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e5e7eb' }}>
+                          <Text strong style={{ fontSize: '12px', display: 'block', marginBottom: '8px' }}>Items:</Text>
+                          {pedido.items?.map((item, idx) => (
+                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                              <Text style={{ fontSize: '12px' }}>
+                                {item.cantidad}x {item.nombreProducto}
+                              </Text>
+                              <Text style={{ fontSize: '12px', color: '#6b7280' }}>
+                                {formatearPrecio(item.subtotal)}
+                              </Text>
+                            </div>
+                          ))}
+                          {pedido.propina > 0 && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #e5e7eb' }}>
+                              <Text style={{ fontSize: '12px' }}>Propina:</Text>
+                              <Text style={{ fontSize: '12px', color: '#10b981' }}>{formatearPrecio(pedido.propina)}</Text>
+                            </div>
+                          )}
                         </div>
-                        <div style={{ marginTop: '8px' }}>
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            Items: {pedido.items?.length || 0} | 
-                            Propina: {formatearPrecio(pedido.propina || 0)} |
-                            {pedido.pagado ? ' ✅ Pagado' : ' ⏳ Pendiente'}
+                        
+                        <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e5e7eb' }}>
+                          <Text type="secondary" style={{ fontSize: '11px' }}>
+                            {pedido.pagado ? '✅ Pagado' : '⏳ Pago pendiente'} • Click para ver detalles
                           </Text>
                         </div>
                       </div>
