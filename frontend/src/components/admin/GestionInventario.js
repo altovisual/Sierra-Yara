@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Table, Button, InputNumber, Tag, message, Modal, Form, Select, Space } from 'antd';
+import { StatCardSkeleton } from '../common/SkeletonLoaders';
 import { 
   InboxOutlined, 
   PlusOutlined, 
@@ -216,31 +217,41 @@ const GestionInventario = () => {
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
           gap: '16px', 
           marginBottom: '24px' 
-        }}>
-          <Card size="small" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#16a34a' }}>
-                {productosDisponibles}
-              </div>
-              <div style={{ color: '#15803d' }}>Productos Disponibles</div>
-            </div>
-          </Card>
-          <Card size="small" style={{ background: '#fef3c7', border: '1px solid #fde047' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#ca8a04' }}>
-                {productosBajoStock}
-              </div>
-              <div style={{ color: '#a16207' }}>Stock Bajo</div>
-            </div>
-          </Card>
-          <Card size="small" style={{ background: '#fee2e2', border: '1px solid #fca5a5' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#dc2626' }}>
-                {productosAgotados}
-              </div>
-              <div style={{ color: '#991b1b' }}>Agotados</div>
-            </div>
-          </Card>
+        }} className="fade-in">
+          {cargando ? (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          ) : (
+            <>
+              <Card size="small" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#16a34a' }}>
+                    {productosDisponibles}
+                  </div>
+                  <div style={{ color: '#15803d' }}>Productos Disponibles</div>
+                </div>
+              </Card>
+              <Card size="small" style={{ background: '#fef3c7', border: '1px solid #fde047' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#ca8a04' }}>
+                    {productosBajoStock}
+                  </div>
+                  <div style={{ color: '#a16207' }}>Stock Bajo</div>
+                </div>
+              </Card>
+              <Card size="small" style={{ background: '#fee2e2', border: '1px solid #fca5a5' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#dc2626' }}>
+                    {productosAgotados}
+                  </div>
+                  <div style={{ color: '#991b1b' }}>Agotados</div>
+                </div>
+              </Card>
+            </>
+          )}
         </div>
 
         {/* Tabla de Productos */}

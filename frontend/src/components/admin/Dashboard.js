@@ -3,6 +3,7 @@ import { mesasAPI, pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
 import { formatearPrecio, obtenerTextoEstado } from '../../utils/helpers';
 import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
+import { StatCardSkeleton, PedidoSkeleton } from '../common/SkeletonLoaders';
 import {
   ShoppingOutlined,
   TableOutlined,
@@ -39,6 +40,7 @@ dayjs.locale('es');
 const Dashboard = () => {
   const [mesas, setMesas] = useState([]);
   const [pedidos, setPedidos] = useState([]);
+  const [cargandoInicial, setCargandoInicial] = useState(true);
   const [estadisticas, setEstadisticas] = useState({
     mesasOcupadas: 0,
     pedidosActivos: 0,
@@ -62,6 +64,7 @@ const Dashboard = () => {
 
   const cargarDatos = useCallback(async () => {
     try {
+      setCargandoInicial(true);
       const [mesasRes, pedidosRes, ventasRes] = await Promise.all([
         mesasAPI.obtenerTodas(),
         pedidosAPI.obtenerTodos(),
@@ -109,6 +112,8 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error al cargar datos:', error);
       message.error('Error al cargar los datos');
+    } finally {
+      setCargandoInicial(false);
     }
   }, []);
 
@@ -425,7 +430,16 @@ const Dashboard = () => {
         </div>
 
         {/* Sección de Estadísticas */}
-        <Row gutter={[16, 16]} style={{ marginBottom: '32px' }}>
+        <Row gutter={[16, 16]} style={{ marginBottom: '32px' }} className="fade-in">
+          {cargandoInicial ? (
+            <>
+              <Col xs={24} sm={12} md={6}><StatCardSkeleton /></Col>
+              <Col xs={24} sm={12} md={6}><StatCardSkeleton /></Col>
+              <Col xs={24} sm={12} md={6}><StatCardSkeleton /></Col>
+              <Col xs={24} sm={12} md={6}><StatCardSkeleton /></Col>
+            </>
+          ) : (
+            <>
           <Col xs={24} sm={12} md={6}>
             <Card 
               hoverable
@@ -611,6 +625,8 @@ const Dashboard = () => {
               </div>
             </Card>
           </Col>
+            </>
+          )}
         </Row>
 
         {/* SECCIÓN DE PEDIDOS PENDIENTES URGENTES */}

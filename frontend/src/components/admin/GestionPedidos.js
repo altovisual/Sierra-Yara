@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
 import { formatearPrecio, obtenerTextoEstado } from '../../utils/helpers';
+import { TableSkeleton } from '../common/SkeletonLoaders';
 import AdminLayout from './AdminLayout';
 import { 
   Table, 
@@ -35,6 +36,7 @@ dayjs.locale('es');
  */
 const GestionPedidos = () => {
   const [pedidos, setPedidos] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [filtroPago, setFiltroPago] = useState('todos');
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
@@ -56,15 +58,18 @@ const GestionPedidos = () => {
 
   const cargarPedidos = async () => {
     try {
+      setCargando(true);
       const response = await pedidosAPI.obtenerTodos();
       // Ordenar por fecha de creación (más recientes primero)
-      const pedidosOrdenados = response.data.data.sort((a, b) => 
+      const pedidosOrdenados = (response.data.data || []).sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
       );
       setPedidos(pedidosOrdenados);
-    } catch (err) {
-      message.error('Error al cargar pedidos');
-      console.error(err);
+    } catch (error) {
+      console.error('Error al cargar pedidos:', error);
+      message.error('Error al cargar los pedidos');
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -345,17 +350,22 @@ const GestionPedidos = () => {
         </Card>
 
         {/* Tabla de pedidos */}
-        <Table 
-          columns={columns}
-          dataSource={pedidosFiltrados}
-          rowKey="_id"
-          scroll={{ x: 1200 }}
-          pagination={{
-            pageSize: 20,
-            showSizeChanger: true,
-            showTotal: (total) => `Total: ${total} pedidos`
-          }}
-        />
+        {cargando ? (
+          <TableSkeleton rows={8} />
+        ) : (
+          <Table 
+            columns={columns}
+            dataSource={pedidosFiltrados}
+            rowKey="_id"
+            scroll={{ x: 1200 }}
+            pagination={{
+              pageSize: 20,
+              showSizeChanger: true,
+              showTotal: (total) => `Total: ${total} pedidos`
+            }}
+            className="fade-in"
+          />
+        )}
 
         {/* Modal de detalle */}
         <Modal
