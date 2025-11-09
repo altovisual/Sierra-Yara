@@ -4,7 +4,7 @@ import { useCarrito } from '../../context/CarritoContext';
 import { useMesa } from '../../context/MesaContext';
 import { pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
-import { formatearPrecio } from '../../utils/helpers';
+import { useTasaBCV } from '../../context/TasaBCVContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
@@ -16,6 +16,7 @@ const Carrito = () => {
   const navigate = useNavigate();
   const { items, total, actualizarCantidad, eliminarItem, limpiarCarrito, estaVacio, promocionAplicada, descuentoTotal, quitarPromocion } = useCarrito();
   const { mesaActual, dispositivoId, nombreUsuario } = useMesa();
+  const { formatearPrecioDual } = useTasaBCV();
   const [enviando, setEnviando] = useState(false);
   const [notas, setNotas] = useState('');
   const { toasts, removeToast, success, error } = useToast();
@@ -125,9 +126,10 @@ const Carrito = () => {
                 />
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800 mb-1">{item.nombre}</h3>
-                  <p className="text-primary-600 font-bold mb-2">
-                    {formatearPrecio(item.precio)}
-                  </p>
+                  <div className="mb-2">
+                    <p className="text-primary-600 font-bold">${item.precio.toFixed(2)}</p>
+                    <p className="text-xs text-gray-500">{formatearPrecioDual(item.precio).bs}</p>
+                  </div>
                   
                   {/* Controles de cantidad */}
                   <div className="flex items-center gap-3">
@@ -151,13 +153,15 @@ const Carrito = () => {
                 <div className="flex flex-col items-end justify-between">
                   <button
                     onClick={() => eliminarItem(item.productoId, item.personalizaciones)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
+                    className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                    aria-label="Eliminar producto"
                   >
                     <Trash2 size={20} />
                   </button>
-                  <span className="font-bold text-gray-800">
-                    {formatearPrecio(item.precio * item.cantidad)}
-                  </span>
+                  <div className="text-right">
+                    <div className="font-bold text-gray-800">${(item.precio * item.cantidad).toFixed(2)}</div>
+                    <div className="text-xs text-gray-500">{formatearPrecioDual(item.precio * item.cantidad).bs}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -202,9 +206,10 @@ const Carrito = () => {
                     ? `Descuento ${promocionAplicada.descuento}%`
                     : 'Descuento fijo'}
                 </span>
-                <span className="text-green-600 font-bold">
-                  -{formatearPrecio(descuentoTotal)}
-                </span>
+                <div className="text-right">
+                  <div className="text-green-600 font-bold">-${descuentoTotal.toFixed(2)}</div>
+                  <div className="text-xs text-gray-500">-{formatearPrecioDual(descuentoTotal).bs}</div>
+                </div>
               </div>
             </div>
           )}
@@ -213,15 +218,19 @@ const Carrito = () => {
           {promocionAplicada && (
             <div className="flex justify-between items-center mb-2 text-sm text-gray-600">
               <span>Subtotal:</span>
-              <span>{formatearPrecio(total + descuentoTotal)}</span>
+              <div className="text-right">
+                <div>${(total + descuentoTotal).toFixed(2)}</div>
+                <div className="text-xs">{formatearPrecioDual(total + descuentoTotal).bs}</div>
+              </div>
             </div>
           )}
           
           <div className="flex justify-between items-center mb-4">
             <span className="text-lg font-semibold text-gray-700">Total:</span>
-            <span className="text-2xl font-bold text-primary-600">
-              {formatearPrecio(total)}
-            </span>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-primary-600">${total.toFixed(2)}</div>
+              <div className="text-sm text-gray-600">{formatearPrecioDual(total).bs}</div>
+            </div>
           </div>
           
           <button
