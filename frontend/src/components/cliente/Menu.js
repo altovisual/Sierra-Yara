@@ -248,27 +248,29 @@ const Menu = () => {
           </div>
         </div>
 
-        {/* Filtro de categorías */}
-        <div className="mb-6 overflow-x-auto">
-          <div className="flex gap-2 pb-2">
-            {categorias.map(categoria => (
-              <button
-                key={categoria}
-                onClick={() => setCategoriaSeleccionada(categoria)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all flex items-center gap-1 ${
-                  categoria === 'Promociones'
-                    ? categoriaSeleccionada === categoria
-                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
-                      : 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 hover:from-yellow-200 hover:to-orange-200'
-                    : categoriaSeleccionada === categoria
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                {categoria === 'Promociones' && <Tag size={16} />}
-                {categoria}
-              </button>
-            ))}
+        {/* Filtro de categorías - Sticky */}
+        <div className="sticky top-0 z-10 bg-gray-50 -mx-4 px-4 py-3 mb-6 shadow-sm">
+          <div className="overflow-x-auto">
+            <div className="flex gap-2 pb-2">
+              {categorias.map(categoria => (
+                <button
+                  key={categoria}
+                  onClick={() => setCategoriaSeleccionada(categoria)}
+                  className={`px-4 py-2 rounded-full whitespace-nowrap transition-all flex items-center gap-1 ${
+                    categoria === 'Promociones'
+                      ? categoriaSeleccionada === categoria
+                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 hover:from-yellow-200 hover:to-orange-200'
+                      : categoriaSeleccionada === categoria
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {categoria === 'Promociones' && <Tag size={16} />}
+                  {categoria}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
