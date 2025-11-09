@@ -22,9 +22,20 @@ export const CarritoProvider = ({ children }) => {
 
   // Cargar carrito del localStorage al iniciar
   useEffect(() => {
+    console.log('🛒 Cargando carrito desde localStorage...');
     const carritoGuardado = obtenerDeStorage('carrito');
-    if (carritoGuardado) {
+    const promocionGuardada = obtenerDeStorage('promocion');
+    
+    if (carritoGuardado && Array.isArray(carritoGuardado)) {
+      console.log('✅ Carrito restaurado:', carritoGuardado.length, 'items');
       setItems(carritoGuardado);
+    } else {
+      console.log('❌ No hay carrito guardado');
+    }
+    
+    if (promocionGuardada) {
+      console.log('✅ Promoción restaurada:', promocionGuardada);
+      setPromocionAplicada(promocionGuardada);
     }
   }, []);
 

@@ -13,12 +13,20 @@ export const useFavoritos = () => {
 export const FavoritosProvider = ({ children }) => {
   const [favoritos, setFavoritos] = useState(() => {
     // Cargar favoritos del localStorage
+    console.log('⭐ Cargando favoritos desde localStorage...');
     const favoritosGuardados = localStorage.getItem('favoritos');
-    return favoritosGuardados ? JSON.parse(favoritosGuardados) : [];
+    if (favoritosGuardados) {
+      const favs = JSON.parse(favoritosGuardados);
+      console.log('✅ Favoritos restaurados:', favs.length, 'productos');
+      return favs;
+    }
+    console.log('❌ No hay favoritos guardados');
+    return [];
   });
 
   // Guardar favoritos en localStorage cuando cambien
   useEffect(() => {
+    console.log('💾 Guardando favoritos:', favoritos.length, 'productos');
     localStorage.setItem('favoritos', JSON.stringify(favoritos));
   }, [favoritos]);
 
