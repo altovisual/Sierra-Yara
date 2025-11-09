@@ -249,7 +249,7 @@ const Menu = () => {
         </div>
 
         {/* Filtro de categorías - Sticky */}
-        <div className="sticky top-0 z-10 bg-gray-50 -mx-4 px-4 py-3 mb-6 shadow-sm">
+        <div className="sticky top-[72px] z-10 bg-gray-50 -mx-4 px-4 py-3 mb-6 shadow-sm">
           <div className="overflow-x-auto">
             <div className="flex gap-2 pb-2">
               {categorias.map(categoria => (
@@ -262,7 +262,7 @@ const Menu = () => {
                         ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
                         : 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 hover:from-yellow-200 hover:to-orange-200'
                       : categoriaSeleccionada === categoria
-                      ? 'bg-primary-600 text-white'
+                      ? 'bg-primary-600 text-white shadow-md'
                       : 'bg-white text-gray-700 hover:bg-gray-100'
                   }`}
                 >
