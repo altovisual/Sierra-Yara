@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { pedidosAPI, configAPI } from '../../services/api';
-import { formatearPrecio, calcularPropina } from '../../utils/helpers';
+import { calcularPropina } from '../../utils/helpers';
 import { CreditCard, Smartphone, DollarSign, ArrowLeft, Copy, Check, Fingerprint, Gift, CheckCircle, Users } from 'lucide-react';
 import { useTasaBCV } from '../../context/TasaBCVContext';
 
