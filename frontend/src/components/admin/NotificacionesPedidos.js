@@ -224,6 +224,15 @@ const NotificacionesPedidos = ({ onVerPedido }) => {
                   border: notif.leida ? '1px solid #f0f0f0' : '1px solid #91d5ff',
                   cursor: 'pointer'
                 }}
+                onClick={() => {
+                  marcarComoLeida(notif.id);
+                  // Emitir evento personalizado para que el Dashboard abra el modal
+                  const event = new CustomEvent('abrirPedidoDesdeNotificacion', {
+                    detail: { pedidoId: notif.pedidoId }
+                  });
+                  window.dispatchEvent(event);
+                  setVisible(false);
+                }}
                 actions={[
                   <Button
                     type="text"
@@ -246,13 +255,6 @@ const NotificacionesPedidos = ({ onVerPedido }) => {
                     }}
                   />
                 ]}
-                onClick={() => {
-                  if (notif.tipo === 'pedido' && notif.data.pedidoId && onVerPedido) {
-                    onVerPedido(notif.data.pedidoId);
-                    marcarComoLeida(notif.id);
-                    setVisible(false);
-                  }
-                }}
               >
                 <List.Item.Meta
                   title={
