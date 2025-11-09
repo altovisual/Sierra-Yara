@@ -5,10 +5,12 @@ import { agruparPorCategoria, formatearPrecio } from '../../utils/helpers';
 import { useCarrito } from '../../context/CarritoContext';
 import { useFavoritos } from '../../context/FavoritosContext';
 import { useTasaBCV } from '../../context/TasaBCVContext';
+import { useMesa } from '../../context/MesaContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
 import { MenuGridSkeleton } from '../common/SkeletonLoaders';
 import IndicadorTasa from './IndicadorTasa';
+import socketService from '../../services/socket';
 import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Bell, Heart } from 'lucide-react';
 import logo from '../../assets/logo.png';
 
@@ -28,7 +30,8 @@ const Menu = () => {
   const { agregarItem, obtenerCantidadTotal } = useCarrito();
   const { toggleFavorito, esFavorito } = useFavoritos();
   const { formatearPrecioDual } = useTasaBCV();
-  const { toasts, removeToast, success, info } = useToast();
+  const { mesaActual, nombreUsuario } = useMesa();
+  const { toasts, removeToast, success, info, error } = useToast();
   const [llamandoMesonero, setLlamandoMesonero] = useState(false);
 
   useEffect(() => {
@@ -138,18 +141,30 @@ const Menu = () => {
   };
 
   const handleLlamarMesonero = async () => {
+    if (!mesaActual) {
+      info('ℹ️ Conéctate a una mesa para llamar al mesonero');
+      return;
+    }
+
     try {
       setLlamandoMesonero(true);
-      // Aquí podrías hacer una llamada al backend para notificar
-      // Por ahora solo mostramos un mensaje
-      info('🔔 Mesonero notificado. Estará contigo en un momento.');
       
-      // Simular tiempo de respuesta
+      // Emitir evento de llamada al mesonero
+      socketService.llamarMesonero({
+        numeroMesa: mesaActual.numeroMesa,
+        nombreUsuario: nombreUsuario || 'Cliente',
+        timestamp: new Date().toISOString()
+      });
+      
+      success('🔔 Mesonero notificado. Estará contigo en un momento.');
+      
+      // Resetear estado después de 3 segundos
       setTimeout(() => {
         setLlamandoMesonero(false);
       }, 3000);
     } catch (error) {
       console.error('Error al llamar mesonero:', error);
+      error('❌ Error al llamar al mesonero');
       setLlamandoMesonero(false);
     }
   };
