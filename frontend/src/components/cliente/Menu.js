@@ -249,7 +249,7 @@ const Menu = () => {
         </div>
 
         {/* Filtro de categorías - Sticky */}
-        <div className="sticky top-[80px] z-10 bg-gray-50 -mx-4 px-4 py-3 mb-6 shadow-sm">
+        <div className="sticky top-[50px] z-10 bg-gray-50 -mx-4 px-4 py-3 mb-6 shadow-sm">
           <div className="overflow-x-auto">
             <div className="flex gap-2 pb-2">
               {categorias.map(categoria => (
