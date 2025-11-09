@@ -1352,7 +1352,11 @@ const Dashboard = () => {
               </div>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <Text strong style={{ display: 'block', marginBottom: '8px' }}>Estado de Pago:</Text>
-                {pedidoSeleccionado.pagado ? (
+                {pedidoSeleccionado.estado === 'cancelado' ? (
+                  <Tag color="red" style={{ fontSize: '14px', padding: '12px 16px', width: '100%', textAlign: 'center', display: 'block' }}>
+                    ❌ Pedido Cancelado
+                  </Tag>
+                ) : pedidoSeleccionado.pagado ? (
                   <Tag color="green" style={{ fontSize: '14px', padding: '12px 16px', width: '100%', textAlign: 'center', display: 'block' }}>
                     ✅ Pagado
                   </Tag>
