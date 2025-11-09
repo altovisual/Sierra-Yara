@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { productosAPI, promocionesAPI } from '../../services/api';
 import { agruparPorCategoria, formatearPrecio } from '../../utils/helpers';
 import { useCarrito } from '../../context/CarritoContext';
+import { useFavoritos } from '../../context/FavoritosContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
-import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Bell } from 'lucide-react';
+import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Bell, Heart } from 'lucide-react';
 
 /**
  * Componente del menú interactivo
@@ -21,6 +22,7 @@ const Menu = () => {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   
   const { agregarItem, obtenerCantidadTotal } = useCarrito();
+  const { toggleFavorito, esFavorito } = useFavoritos();
   const { toasts, removeToast, success, info } = useToast();
   const [llamandoMesonero, setLlamandoMesonero] = useState(false);
 
@@ -147,6 +149,16 @@ const Menu = () => {
     }
   };
 
+  const handleToggleFavorito = (e, producto) => {
+    e.stopPropagation();
+    const agregado = toggleFavorito(producto._id);
+    if (agregado) {
+      success(`❤️ ${producto.nombre} agregado a favoritos`);
+    } else {
+      info(`${producto.nombre} quitado de favoritos`);
+    }
+  };
+
   if (cargando) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -265,6 +277,21 @@ const Menu = () => {
                     }`}
                     onClick={() => setProductoSeleccionado(producto)}
                   >
+                    {/* Botón de Favorito */}
+                    <button
+                      onClick={(e) => handleToggleFavorito(e, producto)}
+                      className={`absolute top-3 left-3 z-10 p-2 rounded-full transition-all transform hover:scale-110 active:scale-95 shadow-lg ${
+                        esFavorito(producto._id)
+                          ? 'bg-red-500 text-white'
+                          : 'bg-white text-gray-400 hover:text-red-500'
+                      }`}
+                    >
+                      <Heart
+                        size={20}
+                        className={esFavorito(producto._id) ? 'fill-current' : ''}
+                      />
+                    </button>
+
                     {/* Badge de promoción */}
                     {producto.esPromocion && (
                       <div className="absolute top-3 right-3 z-10">

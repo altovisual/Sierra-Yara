@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { pedidosAPI, configAPI } from '../../services/api';
 import { formatearPrecio, calcularPropina } from '../../utils/helpers';
-import { CreditCard, Smartphone, DollarSign, ArrowLeft, Copy, Check, Fingerprint, Gift, CheckCircle } from 'lucide-react';
+import { CreditCard, Smartphone, DollarSign, ArrowLeft, Copy, Check, Fingerprint, Gift, CheckCircle, Users } from 'lucide-react';
 
 /**
  * Componente para procesar el pago de un pedido
@@ -22,6 +22,8 @@ const Pago = () => {
   const [comprobante, setComprobante] = useState(null);
   const [referencia, setReferencia] = useState('');
   const [previsualizacion, setPrevisualizacion] = useState(null);
+  const [dividirEntre, setDividirEntre] = useState(1);
+  const [incluirPropinaEnDivision, setIncluirPropinaEnDivision] = useState(true);
 
   useEffect(() => {
     cargarDatos();
@@ -55,6 +57,11 @@ const Pago = () => {
 
   const calcularTotalConPropina = () => {
     return pedido.total + calcularPropinaTotal();
+  };
+
+  const calcularPorPersona = () => {
+    const total = incluirPropinaEnDivision ? calcularTotalConPropina() : pedido.total;
+    return total / dividirEntre;
   };
 
   const copiarAlPortapapeles = (texto, campo) => {
@@ -293,6 +300,71 @@ const Pago = () => {
           <div className="mt-3 text-sm text-gray-600">
             Propina: <span className="font-semibold">{formatearPrecio(calcularPropinaTotal())}</span>
           </div>
+        </div>
+
+        {/* Dividir Cuenta */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 transform hover:shadow-xl transition-all">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Users className="text-blue-600" size={20} />
+            </div>
+            <h2 className="font-bold text-xl text-gray-800">Dividir Cuenta</h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">¿Cuántas personas pagarán?</p>
+          
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            {[1, 2, 3, 4].map(num => (
+              <button
+                key={num}
+                onClick={() => setDividirEntre(num)}
+                className={`py-3 rounded-xl font-bold transition-all transform hover:scale-105 ${
+                  dividirEntre === num
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {num}
+              </button>
+            ))}
+          </div>
+          
+          <div className="mb-4">
+            <label className="text-sm text-gray-700 mb-2 block">Número personalizado:</label>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              value={dividirEntre}
+              onChange={(e) => setDividirEntre(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all"
+              placeholder="Ej: 5"
+            />
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-4">
+            <input
+              type="checkbox"
+              id="incluirPropina"
+              checked={incluirPropinaEnDivision}
+              onChange={(e) => setIncluirPropinaEnDivision(e.target.checked)}
+              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+            />
+            <label htmlFor="incluirPropina" className="text-sm text-gray-700 cursor-pointer">
+              Incluir propina en la división
+            </label>
+          </div>
+
+          {dividirEntre > 1 && (
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border-2 border-blue-200">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">Cada persona paga:</p>
+                <p className="text-3xl font-bold text-blue-600">{formatearPrecio(calcularPorPersona())}</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  {incluirPropinaEnDivision ? 'Incluye propina' : 'Sin propina'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Métodos de pago */}

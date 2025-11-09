@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { MesaProvider } from './context/MesaContext';
 import { CarritoProvider } from './context/CarritoContext';
+import { FavoritosProvider } from './context/FavoritosContext';
 
 // Componentes del cliente
 import EscanearQR from './components/cliente/EscanearQR';
@@ -23,7 +24,8 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <MesaProvider>
         <CarritoProvider>
-          <Routes>
+          <FavoritosProvider>
+            <Routes>
             {/* Rutas del cliente */}
             <Route path="/" element={<EscanearQR />} />
             <Route path="/mesa/:numeroMesa" element={<EscanearQR />} />
@@ -39,7 +41,8 @@ function App() {
 
             {/* Ruta por defecto */}
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+            </Routes>
+          </FavoritosProvider>
         </CarritoProvider>
       </MesaProvider>
     </Router>
