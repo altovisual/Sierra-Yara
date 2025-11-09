@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { productosAPI } from '../../services/api';
-import { formatearPrecio } from '../../utils/helpers';
 import { Edit2, Trash2, Plus, X, Package } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
@@ -209,7 +208,7 @@ const GestionProductos = () => {
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700">{producto.categoria}</td>
                 <td className="px-6 py-4 text-sm font-semibold text-gray-900">
-                  {formatearPrecio(producto.precio)}
+                  ${Number(producto.precio).toFixed(2)}
                 </td>
                 <td className="px-6 py-4">
                   <button
@@ -293,7 +292,7 @@ const GestionProductos = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Precio (Bs.S) *
+                    Precio (USD) *
                   </label>
                   <input
                     type="number"

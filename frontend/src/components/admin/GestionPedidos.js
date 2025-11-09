@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
-import { formatearPrecio, obtenerTextoEstado } from '../../utils/helpers';
+import { obtenerTextoEstado } from '../../utils/helpers';
 import { TableSkeleton } from '../common/SkeletonLoaders';
 import AdminLayout from './AdminLayout';
 import { 
@@ -216,7 +216,7 @@ const GestionPedidos = () => {
       dataIndex: 'total',
       key: 'total',
       width: 100,
-      render: (total) => formatearPrecio(total)
+      render: (total) => `$${Number(total).toFixed(2)}`
     },
     {
       title: 'Estado',
@@ -425,10 +425,10 @@ const GestionPedidos = () => {
                   {pedidoSeleccionado.referenciaPago || 'N/A'}
                 </Descriptions.Item>
                 <Descriptions.Item label="Propina">
-                  {formatearPrecio(pedidoSeleccionado.propina || 0)}
+                  ${Number(pedidoSeleccionado.propina || 0).toFixed(2)}
                 </Descriptions.Item>
                 <Descriptions.Item label="Total">
-                  <strong>{formatearPrecio(pedidoSeleccionado.total)}</strong>
+                  <strong>${Number(pedidoSeleccionado.total).toFixed(2)}</strong>
                 </Descriptions.Item>
               </Descriptions>
 
@@ -444,7 +444,7 @@ const GestionPedidos = () => {
                     <span>
                       <strong>{item.cantidad}x</strong> {item.nombreProducto}
                     </span>
-                    <span>{formatearPrecio(item.subtotal)}</span>
+                    <span>${Number(item.subtotal).toFixed(2)}</span>
                   </div>
                 ))}
               </Card>
