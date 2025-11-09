@@ -456,6 +456,42 @@ exports.obtenerEstadisticasDia = async (req, res) => {
   }
 };
 
+// @desc    Limpiar todos los pedidos (SOLO PARA DESARROLLO)
+// @route   DELETE /api/pedidos/limpiar/todos
+// @access  Private (Admin)
+exports.limpiarTodosPedidos = async (req, res) => {
+  try {
+    // ADVERTENCIA: Esto eliminará TODOS los pedidos
+    const result = await Pedido.deleteMany({});
+    
+    // También limpiar las referencias en las mesas
+    await Mesa.updateMany(
+      {},
+      { 
+        $set: { 
+          pedidos: [],
+          totalMesa: 0,
+          estado: 'libre',
+          dispositivosActivos: []
+        },
+        $unset: { horaOcupacion: "" }
+      }
+    );
+
+    res.json({
+      success: true,
+      message: `${result.deletedCount} pedidos eliminados y mesas reiniciadas`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Error al limpiar pedidos',
+      message: error.message
+    });
+  }
+};
+
 // @desc    Cancelar un pedido
 // @route   DELETE /api/pedidos/:id
 // @access  Private (Admin)

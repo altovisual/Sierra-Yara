@@ -9,7 +9,8 @@ const {
   procesarPago,
   confirmarPago,
   cancelarPedido,
-  obtenerEstadisticasDia
+  obtenerEstadisticasDia,
+  limpiarTodosPedidos
 } = require('../controllers/pedidoController');
 
 // Rutas públicas
@@ -23,6 +24,7 @@ router.get('/estadisticas/dia', obtenerEstadisticasDia);
 router.get('/', obtenerPedidos);
 router.put('/:id/estado', actualizarEstadoPedido);
 router.post('/:id/confirmar-pago', confirmarPago);
+router.delete('/limpiar/todos', limpiarTodosPedidos); // IMPORTANTE: Esta ruta debe ir ANTES de /:id
 router.delete('/:id', cancelarPedido);
 
 module.exports = router;
