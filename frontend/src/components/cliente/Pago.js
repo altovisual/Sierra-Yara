@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { pedidosAPI, configAPI } from '../../services/api';
 import { formatearPrecio, calcularPropina } from '../../utils/helpers';
-import { CreditCard, Smartphone, DollarSign, ArrowLeft, Copy, Check, Fingerprint } from 'lucide-react';
+import { CreditCard, Smartphone, DollarSign, ArrowLeft, Copy, Check, Fingerprint, Gift, CheckCircle } from 'lucide-react';
 
 /**
  * Componente para procesar el pago de un pedido
@@ -199,48 +199,70 @@ const Pago = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-32">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-32">
       {/* Header */}
-      <div className="bg-white shadow-md sticky top-0 z-10">
+      <div className="bg-white shadow-lg sticky top-0 z-10 border-b border-gray-200">
         <div className="max-w-4xl mx-auto p-4 flex items-center gap-4">
           <button
             onClick={() => navigate('/mis-pedidos')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-primary-50 rounded-xl transition-all transform hover:scale-110 active:scale-95"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={24} className="text-primary-600" />
           </button>
-          <h1 className="text-2xl font-display font-bold text-gray-800">Pagar Pedido</h1>
+          <div className="flex-1">
+            <h1 className="text-2xl font-display font-bold text-gray-800 flex items-center gap-2">
+              <CreditCard className="text-primary-600" size={28} />
+              Pagar Pedido
+            </h1>
+            <p className="text-sm text-gray-500">Completa tu pago de forma segura</p>
+          </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto p-4">
         {/* Resumen del pedido */}
-        <div className="card p-4 mb-6">
-          <h2 className="font-semibold text-lg text-gray-800 mb-3">Resumen del Pedido</h2>
-          <div className="space-y-2">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 transform hover:shadow-xl transition-all">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-2 bg-primary-100 rounded-lg">
+              <CheckCircle className="text-primary-600" size={20} />
+            </div>
+            <h2 className="font-bold text-xl text-gray-800">Resumen del Pedido</h2>
+          </div>
+          <div className="space-y-3">
             {pedido.items.map((item, index) => (
-              <div key={index} className="flex justify-between text-sm">
-                <span className="text-gray-700">
-                  {item.cantidad}x {item.nombreProducto}
-                </span>
-                <span className="text-gray-800 font-medium">
+              <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-sm">
+                    {item.cantidad}
+                  </span>
+                  <span className="text-gray-700 font-medium">
+                    {item.nombreProducto}
+                  </span>
+                </div>
+                <span className="text-gray-900 font-bold">
                   {formatearPrecio(item.subtotal)}
                 </span>
               </div>
             ))}
           </div>
-          <div className="border-t mt-3 pt-3">
-            <div className="flex justify-between font-semibold">
-              <span>Subtotal:</span>
-              <span>{formatearPrecio(pedido.total)}</span>
+          <div className="border-t-2 border-gray-200 mt-4 pt-4">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-semibold text-gray-700">Subtotal:</span>
+              <span className="text-2xl font-bold text-primary-600">{formatearPrecio(pedido.total)}</span>
             </div>
           </div>
         </div>
 
         {/* Propina */}
-        <div className="card p-4 mb-6">
-          <h2 className="font-semibold text-lg text-gray-800 mb-3">Propina</h2>
-          <div className="grid grid-cols-4 gap-2 mb-4">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 transform hover:shadow-xl transition-all">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <Gift className="text-yellow-600" size={20} />
+            </div>
+            <h2 className="font-bold text-xl text-gray-800">Propina (Opcional)</h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">Tu propina ayuda a nuestro equipo 💛</p>
+          <div className="grid grid-cols-4 gap-3 mb-4">
             {[0, 10, 15, 20].map(porcentaje => (
               <button
                 key={porcentaje}

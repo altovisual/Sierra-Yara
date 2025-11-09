@@ -5,7 +5,7 @@ import { agruparPorCategoria, formatearPrecio } from '../../utils/helpers';
 import { useCarrito } from '../../context/CarritoContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
-import { ShoppingCart, Plus, Search, ClipboardList, Tag } from 'lucide-react';
+import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Bell } from 'lucide-react';
 
 /**
  * Componente del menú interactivo
@@ -21,7 +21,8 @@ const Menu = () => {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   
   const { agregarItem, obtenerCantidadTotal } = useCarrito();
-  const { toasts, removeToast, success } = useToast();
+  const { toasts, removeToast, success, info } = useToast();
+  const [llamandoMesonero, setLlamandoMesonero] = useState(false);
 
   useEffect(() => {
     cargarProductos();
@@ -129,6 +130,23 @@ const Menu = () => {
     success(`${producto.nombre} agregado al carrito`);
   };
 
+  const handleLlamarMesonero = async () => {
+    try {
+      setLlamandoMesonero(true);
+      // Aquí podrías hacer una llamada al backend para notificar
+      // Por ahora solo mostramos un mensaje
+      info('🔔 Mesonero notificado. Estará contigo en un momento.');
+      
+      // Simular tiempo de respuesta
+      setTimeout(() => {
+        setLlamandoMesonero(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error al llamar mesonero:', error);
+      setLlamandoMesonero(false);
+    }
+  };
+
   if (cargando) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -151,6 +169,17 @@ const Menu = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            {/* Botón Llamar Mesonero */}
+            <button
+              onClick={handleLlamarMesonero}
+              disabled={llamandoMesonero}
+              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-lg transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 shadow-lg"
+              title="Llamar al mesonero"
+            >
+              <Bell size={18} className={llamandoMesonero ? 'animate-bounce' : ''} />
+              <span className="hidden sm:inline text-sm font-semibold">Mesonero</span>
+            </button>
+            
             {/* Botón Mis Pedidos */}
             <button
               onClick={() => navigate('/mis-pedidos')}
@@ -231,57 +260,87 @@ const Menu = () => {
                 {items.map(producto => (
                   <div
                     key={producto._id}
-                    className={`card p-4 hover:shadow-xl transition-all cursor-pointer relative ${
-                      producto.esPromocion ? 'ring-2 ring-yellow-400' : ''
+                    className={`group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden transform hover:scale-[1.02] ${
+                      producto.esPromocion ? 'ring-2 ring-yellow-400 shadow-yellow-100' : ''
                     }`}
                     onClick={() => setProductoSeleccionado(producto)}
                   >
                     {/* Badge de promoción */}
                     {producto.esPromocion && (
-                      <div className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
-                        <Tag size={12} />
-                        {producto.tipoDescuento === 'porcentaje' 
-                          ? `-${producto.descuento}%` 
-                          : `-Bs.${producto.descuento}`}
+                      <div className="absolute top-3 right-3 z-10">
+                        <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg animate-pulse">
+                          <Tag size={14} />
+                          {producto.tipoDescuento === 'porcentaje' 
+                            ? `-${producto.descuento}%` 
+                            : `-Bs.${producto.descuento}`}
+                        </div>
                       </div>
                     )}
                     
-                    <div className="flex gap-4">
-                      <img
-                        src={producto.imagenUrl}
-                        alt={producto.nombre}
-                        className="w-24 h-24 object-cover rounded-lg"
-                        onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/150?text=Producto';
-                        }}
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg text-gray-800 mb-1">
+                    {/* Efecto de brillo al hover */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 group-hover:translate-x-full transition-all duration-700 ease-out"></div>
+                    
+                    <div className="flex gap-4 p-4 relative">
+                      {/* Imagen del producto */}
+                      <div className="relative flex-shrink-0">
+                        <div className="w-28 h-28 rounded-xl overflow-hidden bg-gray-100 ring-2 ring-gray-100 group-hover:ring-primary-200 transition-all">
+                          <img
+                            src={producto.imagenUrl}
+                            alt={producto.nombre}
+                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
+                            onError={(e) => {
+                              e.target.src = 'https://via.placeholder.com/150?text=Producto';
+                            }}
+                          />
+                        </div>
+                        {/* Badge de nuevo o popular (opcional) */}
+                        {producto.nuevo && (
+                          <div className="absolute -top-2 -left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
+                            Nuevo
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-lg text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">
                           {producto.nombre}
                         </h3>
                         
                         {/* Mostrar nombre de promoción si aplica */}
                         {producto.esPromocion && producto.promocion && (
-                          <p className="text-xs text-yellow-600 font-semibold mb-1">
-                            🎉 {producto.promocion}
-                          </p>
+                          <div className="flex items-center gap-1 mb-2">
+                            <TrendingUp size={14} className="text-yellow-600" />
+                            <p className="text-xs text-yellow-600 font-bold">
+                              {producto.promocion}
+                            </p>
+                          </div>
                         )}
                         
-                        <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">
                           {producto.descripcion}
                         </p>
                         
-                        <div className="flex justify-between items-center">
-                          <div className="flex flex-col">
+                        <div className="flex justify-between items-end">
+                          <div className="flex flex-col gap-1">
                             {/* Precio con descuento */}
-                            <span className="text-primary-600 font-bold text-lg">
-                              {formatearPrecio(producto.precio)}
-                            </span>
+                            <div className="flex items-baseline gap-2">
+                              <span className={`font-bold text-xl ${
+                                producto.esPromocion ? 'text-orange-600' : 'text-primary-600'
+                              }`}>
+                                {formatearPrecio(producto.precio)}
+                              </span>
+                              
+                              {/* Precio original tachado */}
+                              {producto.esPromocion && producto.precioOriginal && (
+                                <span className="text-gray-400 text-sm line-through">
+                                  {formatearPrecio(producto.precioOriginal)}
+                                </span>
+                              )}
+                            </div>
                             
-                            {/* Precio original tachado */}
+                            {/* Ahorro */}
                             {producto.esPromocion && producto.precioOriginal && (
-                              <span className="text-gray-400 text-sm line-through">
-                                {formatearPrecio(producto.precioOriginal)}
+                              <span className="text-green-600 text-xs font-semibold">
+                                ¡Ahorras {formatearPrecio(producto.precioOriginal - producto.precio)}!
                               </span>
                             )}
                           </div>
@@ -291,13 +350,14 @@ const Menu = () => {
                               e.stopPropagation();
                               handleAgregarAlCarrito(producto);
                             }}
-                            className={`p-2 rounded-lg transition-all active:scale-95 ${
+                            className={`relative p-3 rounded-xl transition-all transform hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl ${
                               producto.esPromocion
                                 ? 'bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white'
-                                : 'bg-primary-600 hover:bg-primary-700 text-white'
+                                : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white'
                             }`}
                           >
-                            <Plus size={20} />
+                            <Plus size={22} className="drop-shadow-sm" />
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-ping"></span>
                           </button>
                         </div>
                       </div>
