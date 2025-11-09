@@ -5,13 +5,11 @@ import { agruparPorCategoria, formatearPrecio } from '../../utils/helpers';
 import { useCarrito } from '../../context/CarritoContext';
 import { useFavoritos } from '../../context/FavoritosContext';
 import { useTasaBCV } from '../../context/TasaBCVContext';
-import { useMesa } from '../../context/MesaContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
 import { MenuGridSkeleton } from '../common/SkeletonLoaders';
 import IndicadorTasa from './IndicadorTasa';
-import socketService from '../../services/socket';
-import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Bell, Heart } from 'lucide-react';
+import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Heart } from 'lucide-react';
 import logo from '../../assets/logo.png';
 
 /**
@@ -30,9 +28,7 @@ const Menu = () => {
   const { agregarItem, obtenerCantidadTotal } = useCarrito();
   const { toggleFavorito, esFavorito } = useFavoritos();
   const { formatearPrecioDual } = useTasaBCV();
-  const { mesaActual, nombreUsuario } = useMesa();
-  const { toasts, removeToast, success, info, error } = useToast();
-  const [llamandoMesonero, setLlamandoMesonero] = useState(false);
+  const { toasts, removeToast, success, info } = useToast();
 
   useEffect(() => {
     cargarProductos();
@@ -140,35 +136,6 @@ const Menu = () => {
     success(`${producto.nombre} agregado al carrito`);
   };
 
-  const handleLlamarMesonero = async () => {
-    if (!mesaActual) {
-      info('ℹ️ Conéctate a una mesa para llamar al mesonero');
-      return;
-    }
-
-    try {
-      setLlamandoMesonero(true);
-      
-      // Emitir evento de llamada al mesonero
-      socketService.llamarMesonero({
-        numeroMesa: mesaActual.numeroMesa,
-        nombreUsuario: nombreUsuario || 'Cliente',
-        timestamp: new Date().toISOString()
-      });
-      
-      success('🔔 Mesonero notificado. Estará contigo en un momento.');
-      
-      // Resetear estado después de 3 segundos
-      setTimeout(() => {
-        setLlamandoMesonero(false);
-      }, 3000);
-    } catch (error) {
-      console.error('Error al llamar mesonero:', error);
-      error('❌ Error al llamar al mesonero');
-      setLlamandoMesonero(false);
-    }
-  };
-
   const handleToggleFavorito = (e, producto) => {
     e.stopPropagation();
     const agregado = toggleFavorito(producto._id);
@@ -208,17 +175,6 @@ const Menu = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            {/* Botón Llamar Mesonero */}
-            <button
-              onClick={handleLlamarMesonero}
-              disabled={llamandoMesonero}
-              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-lg transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 shadow-lg"
-              title="Llamar al mesonero"
-            >
-              <Bell size={18} className={llamandoMesonero ? 'animate-bounce' : ''} />
-              <span className="hidden sm:inline text-sm font-semibold">Mesonero</span>
-            </button>
-            
             {/* Botón Mis Pedidos */}
             <button
               onClick={() => navigate('/mis-pedidos')}
@@ -264,7 +220,7 @@ const Menu = () => {
         </div>
 
         {/* Filtro de categorías - Sticky */}
-        <div className="sticky top-[125px] z-10 bg-gray-50 -mx-4 px-4 py-3 mb-6 shadow-sm">
+        <div className="sticky top-[112px] z-10 bg-gray-50 -mx-4 px-4 py-3 mb-6 shadow-sm">
           <div className="overflow-x-auto">
             <div className="flex gap-2 pb-2">
               {categorias.map(categoria => (
