@@ -70,12 +70,14 @@ const Dashboard = () => {
 
   const cargarDatos = useCallback(async () => {
     try {
+      console.log('🔄 Iniciando carga de datos...');
       setCargandoInicial(true);
       const [mesasRes, pedidosRes, ventasRes] = await Promise.all([
         mesasAPI.obtenerTodas(),
         pedidosAPI.obtenerTodos(),
         pedidosAPI.obtenerEstadisticasDia()
       ]);
+      console.log('✅ Datos cargados:', { mesas: mesasRes.data.data?.length, pedidos: pedidosRes.data.data?.length });
 
       const mesasData = mesasRes.data.data || [];
       const pedidosData = pedidosRes.data.data || [];
@@ -116,9 +118,10 @@ const Dashboard = () => {
         pedidosHoy
       });
     } catch (error) {
-      console.error('Error al cargar datos:', error);
+      console.error('❌ Error al cargar datos:', error);
       message.error('Error al cargar los datos');
     } finally {
+      console.log('✅ Finalizando carga, setCargandoInicial(false)');
       setCargandoInicial(false);
     }
   }, []);
@@ -1172,16 +1175,25 @@ const Dashboard = () => {
                 Pedidos de esta mesa:
               </Text>
               {pedidos.filter(p => {
-                // Filtrar solo pedidos activos de esta mesa
-                const esDeLaMesa = p.mesa?.numero === mesaSeleccionada.numero || p.mesa?._id === mesaSeleccionada._id;
+                // Filtrar solo pedidos activos de esta mesa específica
+                const mesaPedidoNumero = p.mesa?.numero;
+                const mesaSeleccionadaNumero = mesaSeleccionada.numero;
+                const esDeLaMesa = mesaPedidoNumero === mesaSeleccionadaNumero;
                 const esActivo = !['entregado', 'cancelado'].includes(p.estado);
-                console.log('Pedido:', p._id, 'Mesa pedido:', p.mesa?.numero, 'Mesa seleccionada:', mesaSeleccionada.numero, 'Coincide:', esDeLaMesa, 'Activo:', esActivo);
+                console.log('🔍 Filtro:', {
+                  pedidoId: p._id.slice(-4),
+                  mesaPedido: mesaPedidoNumero,
+                  mesaSeleccionada: mesaSeleccionadaNumero,
+                  coincide: esDeLaMesa,
+                  estado: p.estado,
+                  activo: esActivo
+                });
                 return esDeLaMesa && esActivo;
               }).length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {pedidos
                     .filter(p => {
-                      const esDeLaMesa = p.mesa?.numero === mesaSeleccionada.numero || p.mesa?._id === mesaSeleccionada._id;
+                      const esDeLaMesa = p.mesa?.numero === mesaSeleccionada.numero;
                       const esActivo = !['entregado', 'cancelado'].includes(p.estado);
                       return esDeLaMesa && esActivo;
                     })
