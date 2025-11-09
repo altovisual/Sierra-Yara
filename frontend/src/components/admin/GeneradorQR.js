@@ -67,7 +67,7 @@ const GeneradorQR = () => {
                 <strong>URL Base:</strong> <code className="bg-blue-100 px-2 py-1 rounded">{baseUrl}</code>
               </p>
               <p className="text-xs text-blue-600 mt-1">
-                Los clientes escanearán el QR y serán dirigidos a /mesa/[número]
+                Los clientes escanearán el QR y solo necesitarán ingresar su nombre
               </p>
             </div>
             <button
@@ -121,7 +121,7 @@ const GeneradorQR = () => {
       {/* Grid de QR Codes */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 print:grid-cols-2">
         {mesasSeleccionadas.map(numeroMesa => {
-          const url = `${baseUrl}/mesa/${numeroMesa}`;
+          const url = `${baseUrl}/?mesa=${numeroMesa}`;
           
           return (
             <div key={numeroMesa} className="card p-6 text-center break-inside-avoid">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMesa } from '../../context/MesaContext';
 import { Hash, Sparkles, ChevronRight } from 'lucide-react';
 import logo from '../../assets/logo.png';
@@ -9,16 +9,25 @@ import logo from '../../assets/logo.png';
  */
 const EscanearQR = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { conectarMesa, cargando } = useMesa();
   const [numeroMesa, setNumeroMesa] = useState('');
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [error, setError] = useState('');
   const [animado, setAnimado] = useState(false);
+  const [mesaDesdeQR, setMesaDesdeQR] = useState(null);
 
   useEffect(() => {
     // Activar animación al montar el componente
     setTimeout(() => setAnimado(true), 100);
-  }, []);
+    
+    // Obtener número de mesa desde URL (QR)
+    const mesaParam = searchParams.get('mesa');
+    if (mesaParam) {
+      setMesaDesdeQR(mesaParam);
+      setNumeroMesa(mesaParam);
+    }
+  }, [searchParams]);
 
   const handleConectar = async (e) => {
     e.preventDefault();
@@ -90,37 +99,49 @@ const EscanearQR = () => {
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
               ¡Bienvenido! 👋
             </h2>
-            <p className="text-gray-600 text-sm">
-              Ingresa tu mesa para comenzar
-            </p>
+            {mesaDesdeQR ? (
+              <div className="mt-3">
+                <p className="text-gray-600 text-sm mb-2">Estás en la</p>
+                <div className="inline-flex items-center gap-2 bg-primary-100 text-primary-700 px-4 py-2 rounded-lg font-bold text-lg">
+                  <Hash size={20} />
+                  Mesa {mesaDesdeQR}
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-600 text-sm">
+                Ingresa tu mesa para comenzar
+              </p>
+            )}
           </div>
 
           <form onSubmit={handleConectar} className="space-y-4">
-            {/* Número de mesa */}
-            <div className="transform transition-all duration-300 hover:scale-[1.02]">
-              <label className="flex items-center gap-2 text-gray-700 font-semibold mb-2">
-                <Hash size={18} className="text-primary-600" />
-                Número de Mesa *
-              </label>
-              <div className="relative group">
-                <Hash className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-primary-600 transition-colors" size={22} />
-                <input
-                  type="number"
-                  min="1"
-                  value={numeroMesa}
-                  onChange={(e) => setNumeroMesa(e.target.value)}
-                  placeholder="Ej: 5"
-                  className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-200 focus:border-primary-500 transition-all text-lg font-semibold text-gray-800 hover:border-gray-300"
-                  required
-                />
+            {/* Número de mesa - Solo si NO viene desde QR */}
+            {!mesaDesdeQR && (
+              <div className="transform transition-all duration-300 hover:scale-[1.02]">
+                <label className="flex items-center gap-2 text-gray-700 font-semibold mb-2">
+                  <Hash size={18} className="text-primary-600" />
+                  Número de Mesa *
+                </label>
+                <div className="relative group">
+                  <Hash className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-primary-600 transition-colors" size={22} />
+                  <input
+                    type="number"
+                    min="1"
+                    value={numeroMesa}
+                    onChange={(e) => setNumeroMesa(e.target.value)}
+                    placeholder="Ej: 5"
+                    className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-200 focus:border-primary-500 transition-all text-lg font-semibold text-gray-800 hover:border-gray-300"
+                    required
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Nombre (opcional) */}
+            {/* Nombre */}
             <div className="transform transition-all duration-300 hover:scale-[1.02]">
               <label className="flex items-center gap-2 text-gray-700 font-semibold mb-2">
                 <Sparkles size={18} className="text-primary-600" />
-                Tu Nombre (opcional)
+                Tu Nombre {mesaDesdeQR ? '*' : '(opcional)'}
               </label>
               <input
                 type="text"
@@ -128,10 +149,11 @@ const EscanearQR = () => {
                 onChange={(e) => setNombreUsuario(e.target.value)}
                 placeholder="Ej: Juan"
                 className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-200 focus:border-primary-500 transition-all text-lg hover:border-gray-300"
+                required={mesaDesdeQR}
               />
               <p className="text-sm text-gray-500 mt-2 flex items-center gap-1">
                 <span>💡</span>
-                Ayuda a identificar tu pedido en la mesa
+                {mesaDesdeQR ? 'Ayúdanos a identificar tu pedido' : 'Ayuda a identificar tu pedido en la mesa'}
               </p>
             </div>
 
@@ -175,26 +197,53 @@ const EscanearQR = () => {
               ¿Cómo funciona?
             </h3>
             <div className="space-y-2">
-              <div className="flex items-start gap-3 text-sm text-gray-700">
-                <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">1</span>
-                <span>Ingresa el número de tu mesa</span>
-              </div>
-              <div className="flex items-start gap-3 text-sm text-gray-700">
-                <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">2</span>
-                <span>Explora nuestro menú digital</span>
-              </div>
-              <div className="flex items-start gap-3 text-sm text-gray-700">
-                <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">3</span>
-                <span>Agrega productos a tu carrito</span>
-              </div>
-              <div className="flex items-start gap-3 text-sm text-gray-700">
-                <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">4</span>
-                <span>Confirma tu pedido</span>
-              </div>
-              <div className="flex items-start gap-3 text-sm text-gray-700">
-                <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">5</span>
-                <span>Paga cuando estés listo 💳</span>
-              </div>
+              {mesaDesdeQR ? (
+                <>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                    <span>Ingresa tu nombre</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                    <span>Explora nuestro menú digital</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">3</span>
+                    <span>Agrega productos a tu carrito</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">4</span>
+                    <span>Confirma tu pedido</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">5</span>
+                    <span>Paga cuando estés listo 💳</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">1</span>
+                    <span>Ingresa el número de tu mesa</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">2</span>
+                    <span>Explora nuestro menú digital</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">3</span>
+                    <span>Agrega productos a tu carrito</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">4</span>
+                    <span>Confirma tu pedido</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm text-gray-700">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-xs">5</span>
+                    <span>Paga cuando estés listo 💳</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
