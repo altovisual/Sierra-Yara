@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useMesa } from '../../context/MesaContext';
 import { Hash, Sparkles, ChevronRight } from 'lucide-react';
@@ -18,6 +18,20 @@ const EscanearQR = () => {
   const [animado, setAnimado] = useState(false);
   const [mesaDesdeQR, setMesaDesdeQR] = useState(null);
 
+  const conectarMesaAutomaticamente = useCallback(async (numeroMesa) => {
+    try {
+      await conectarMesa(parseInt(numeroMesa), 'Cliente');
+      console.log('✅ Conectado automáticamente a mesa:', numeroMesa);
+      navigate('/menu');
+    } catch (err) {
+      console.error('Error al conectar automáticamente:', err);
+      // Si falla, mostrar el formulario
+      setMesaDesdeQR(numeroMesa);
+      setNumeroMesa(numeroMesa);
+      setError('No se pudo conectar automáticamente. Por favor intenta manualmente.');
+    }
+  }, [conectarMesa, navigate]);
+
   useEffect(() => {
     // Activar animación al montar el componente
     setTimeout(() => setAnimado(true), 100);
@@ -32,12 +46,12 @@ const EscanearQR = () => {
       return;
     }
     
-    // Si hay número de mesa en la URL, pre-llenar el formulario
-    if (mesaDesdeRuta) {
-      setMesaDesdeQR(mesaDesdeRuta);
-      setNumeroMesa(mesaDesdeRuta);
+    // Si hay número de mesa en la URL, conectar automáticamente
+    if (mesaDesdeRuta && !estaConectado()) {
+      console.log('🔗 Conectando automáticamente a mesa:', mesaDesdeRuta);
+      conectarMesaAutomaticamente(mesaDesdeRuta);
     }
-  }, [mesaParam, searchParams, estaConectado, navigate]);
+  }, [mesaParam, searchParams, estaConectado, navigate, conectarMesaAutomaticamente]);
 
   const handleConectar = async (e) => {
     e.preventDefault();
