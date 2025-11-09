@@ -31,7 +31,8 @@ function App() {
               <FavoritosProvider>
                 <Routes>
             {/* Rutas del cliente */}
-            <Route path="/" element={<EscanearQR />} />
+            <Route path="/" element={<Menu />} />
+            <Route path="/escanear" element={<EscanearQR />} />
             <Route path="/mesa/:numeroMesa" element={<EscanearQR />} />
             <Route path="/menu" element={<Menu />} />
             <Route path="/promociones" element={<Promociones />} />
