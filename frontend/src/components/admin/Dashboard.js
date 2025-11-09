@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { mesasAPI, pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
 import { obtenerTextoEstado } from '../../utils/helpers';
-import { useTasaBCV } from '../../context/TasaBCVContext';
 import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
 import { StatCardSkeleton } from '../common/SkeletonLoaders';
 import {
@@ -41,9 +40,7 @@ dayjs.locale('es');
  * Panel de administración para gestionar mesas y pedidos
  */
 const Dashboard = () => {
-  const { formatearPrecioDual } = useTasaBCV();
-  
-  // Función helper para mantener compatibilidad
+  // Función helper para formatear precios en USD
   const formatearPrecio = (precio) => {
     return `$${Number(precio).toFixed(2)}`;
   };
