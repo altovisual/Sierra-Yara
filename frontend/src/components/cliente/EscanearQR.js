@@ -11,7 +11,7 @@ const EscanearQR = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { numeroMesa: mesaParam } = useParams();
-  const { conectarMesa, cargando, estaConectado } = useMesa();
+  const { conectarMesa, desconectarMesa, cargando, estaConectado } = useMesa();
   const [numeroMesa, setNumeroMesa] = useState('');
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [error, setError] = useState('');
@@ -28,6 +28,13 @@ const EscanearQR = () => {
     // Si hay número de mesa en la URL, SIEMPRE mostrar el formulario
     if (mesaDesdeRuta) {
       console.log('📱 QR escaneado - Mesa:', mesaDesdeRuta);
+      
+      // Limpiar sesión anterior automáticamente (importante para móviles)
+      if (estaConectado()) {
+        console.log('🧹 Limpiando sesión anterior para nuevo QR...');
+        desconectarMesa();
+      }
+      
       setMesaDesdeQR(mesaDesdeRuta);
       setNumeroMesa(mesaDesdeRuta);
       return; // No redirigir, mostrar formulario
@@ -38,7 +45,7 @@ const EscanearQR = () => {
       console.log('✅ Usuario ya conectado, redirigiendo al menú...');
       navigate('/menu', { replace: true });
     }
-  }, [mesaParam, searchParams, estaConectado, navigate]);
+  }, [mesaParam, searchParams, estaConectado, desconectarMesa, navigate]);
 
   const handleConectar = async (e) => {
     e.preventDefault();
