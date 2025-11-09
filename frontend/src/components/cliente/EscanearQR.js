@@ -22,15 +22,17 @@ const EscanearQR = () => {
     // Activar animación al montar el componente
     setTimeout(() => setAnimado(true), 100);
     
-    // Si ya está conectado a una mesa, redirigir al menú
-    if (estaConectado()) {
+    // Obtener número de mesa desde URL (parámetro de ruta o query param)
+    const mesaDesdeRuta = mesaParam || searchParams.get('mesa');
+    
+    // Si ya está conectado Y no hay nueva mesa en la URL, redirigir al menú
+    if (estaConectado() && !mesaDesdeRuta) {
       console.log('✅ Usuario ya conectado, redirigiendo al menú...');
       navigate('/menu', { replace: true });
       return;
     }
     
-    // Obtener número de mesa desde URL (parámetro de ruta o query param)
-    const mesaDesdeRuta = mesaParam || searchParams.get('mesa');
+    // Si hay número de mesa en la URL, pre-llenar el formulario
     if (mesaDesdeRuta) {
       setMesaDesdeQR(mesaDesdeRuta);
       setNumeroMesa(mesaDesdeRuta);
