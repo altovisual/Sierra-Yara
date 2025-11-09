@@ -17,6 +17,8 @@ export const useCarrito = () => {
 export const CarritoProvider = ({ children }) => {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
+  const [promocionAplicada, setPromocionAplicada] = useState(null);
+  const [descuentoTotal, setDescuentoTotal] = useState(0);
 
   // Cargar carrito del localStorage al iniciar
   useEffect(() => {
@@ -26,12 +28,26 @@ export const CarritoProvider = ({ children }) => {
     }
   }, []);
 
-  // Actualizar total cuando cambien los items
+  // Actualizar total cuando cambien los items o la promoción
   useEffect(() => {
-    const nuevoTotal = calcularTotalCarrito(items);
-    setTotal(nuevoTotal);
+    const subtotal = calcularTotalCarrito(items);
+    let descuento = 0;
+
+    if (promocionAplicada) {
+      if (promocionAplicada.tipoDescuento === 'porcentaje') {
+        descuento = (subtotal * promocionAplicada.descuento) / 100;
+      } else {
+        descuento = promocionAplicada.descuento;
+      }
+    }
+
+    setDescuentoTotal(descuento);
+    setTotal(Math.max(0, subtotal - descuento));
     guardarEnStorage('carrito', items);
-  }, [items]);
+    if (promocionAplicada) {
+      guardarEnStorage('promocion', promocionAplicada);
+    }
+  }, [items, promocionAplicada]);
 
   // Agregar producto al carrito
   const agregarItem = (producto, cantidad = 1, personalizaciones = {}) => {
@@ -102,11 +118,26 @@ export const CarritoProvider = ({ children }) => {
     );
   };
 
+  // Aplicar promoción
+  const aplicarPromocion = (promocion) => {
+    setPromocionAplicada(promocion);
+  };
+
+  // Quitar promoción
+  const quitarPromocion = () => {
+    setPromocionAplicada(null);
+    setDescuentoTotal(0);
+    guardarEnStorage('promocion', null);
+  };
+
   // Limpiar carrito
   const limpiarCarrito = () => {
     setItems([]);
     setTotal(0);
+    setPromocionAplicada(null);
+    setDescuentoTotal(0);
     guardarEnStorage('carrito', []);
+    guardarEnStorage('promocion', null);
   };
 
   // Obtener cantidad total de items
@@ -122,12 +153,16 @@ export const CarritoProvider = ({ children }) => {
   const value = {
     items,
     total,
+    promocionAplicada,
+    descuentoTotal,
     agregarItem,
     eliminarItem,
     actualizarCantidad,
     limpiarCarrito,
     obtenerCantidadTotal,
     estaVacio,
+    aplicarPromocion,
+    quitarPromocion,
   };
 
   return <CarritoContext.Provider value={value}>{children}</CarritoContext.Provider>;

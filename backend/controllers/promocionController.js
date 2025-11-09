@@ -29,6 +29,8 @@ exports.obtenerTodas = async (req, res) => {
 exports.obtenerActivas = async (req, res) => {
   try {
     const ahora = new Date();
+    console.log('🔍 Buscando promociones activas...');
+    console.log('📅 Fecha actual:', ahora);
     
     // Buscar promociones que estén en el rango de fechas
     const promociones = await Promocion.find({
@@ -39,15 +41,23 @@ exports.obtenerActivas = async (req, res) => {
       .populate('productos', 'nombre precio categoria imagenUrl')
       .sort({ destacada: -1, createdAt: -1 });
     
+    console.log(`📋 Promociones encontradas en DB: ${promociones.length}`);
+    
     // Filtrar por día y hora
-    const promocionesVigentes = promociones.filter(promo => promo.estaVigente());
+    const promocionesVigentes = promociones.filter(promo => {
+      const vigente = promo.estaVigente();
+      console.log(`  - ${promo.titulo}: ${vigente ? '✅ Vigente' : '❌ No vigente'}`);
+      return vigente;
+    });
+    
+    console.log(`✅ Promociones vigentes: ${promocionesVigentes.length}`);
     
     res.json({
       success: true,
       data: promocionesVigentes
     });
   } catch (error) {
-    console.error('Error al obtener promociones activas:', error);
+    console.error('❌ Error al obtener promociones activas:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener las promociones activas',

@@ -35,13 +35,17 @@ exports.crearPedido = async (req, res) => {
           throw new Error(`El producto ${producto.nombre} no está disponible`);
         }
 
+        // Si el item tiene un precio específico (ej: promoción), usarlo
+        // De lo contrario, usar el precio del producto en la BD
+        const precioFinal = item.precio !== undefined ? item.precio : producto.precio;
+
         return {
           productoId: producto._id,
           nombreProducto: producto.nombre,
           cantidad: item.cantidad,
-          precioUnitario: producto.precio,
+          precioUnitario: precioFinal,
           personalizaciones: item.personalizaciones || {},
-          subtotal: item.cantidad * producto.precio
+          subtotal: item.cantidad * precioFinal
         };
       })
     );

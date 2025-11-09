@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { productosAPI } from '../../services/api';
+import { productosAPI, promocionesAPI } from '../../services/api';
 import { agruparPorCategoria, formatearPrecio } from '../../utils/helpers';
 import { useCarrito } from '../../context/CarritoContext';
 import { useToast } from '../../hooks/useToast';
@@ -13,6 +13,7 @@ import { ShoppingCart, Plus, Search, ClipboardList, Tag } from 'lucide-react';
 const Menu = () => {
   const navigate = useNavigate();
   const [productos, setProductos] = useState([]);
+  const [productosConPromo, setProductosConPromo] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
@@ -25,6 +26,7 @@ const Menu = () => {
   useEffect(() => {
     cargarProductos();
     cargarCategorias();
+    cargarPromociones();
   }, []);
 
   const cargarProductos = async () => {
@@ -42,13 +44,68 @@ const Menu = () => {
   const cargarCategorias = async () => {
     try {
       const response = await productosAPI.obtenerCategorias();
-      setCategorias(['Todas', ...response.data.data]);
+      setCategorias(['Todas', 'Promociones', ...response.data.data]);
     } catch (error) {
       console.error('Error al cargar categorías:', error);
     }
   };
 
-  const productosFiltrados = productos.filter(producto => {
+  const cargarPromociones = async () => {
+    try {
+      const response = await promocionesAPI.obtenerActivas();
+      const promosActivas = response.data.data || [];
+      
+      // Crear productos con descuento de las promociones
+      const productosPromo = [];
+      promosActivas.forEach(promo => {
+        if (promo.productos && promo.productos.length > 0) {
+          promo.productos.forEach(producto => {
+            console.log(`Procesando producto: ${producto.nombre}, Precio: ${producto.precio}, Descuento: ${promo.descuento}, Tipo: ${promo.tipoDescuento}`);
+            
+            let precioConDescuento;
+            if (promo.tipoDescuento === 'porcentaje') {
+              precioConDescuento = producto.precio * (1 - promo.descuento / 100);
+            } else {
+              // Para descuento fijo, asegurar que el precio no sea negativo
+              // y que al menos quede un precio mínimo
+              precioConDescuento = Math.max(0.50, producto.precio - promo.descuento);
+            }
+            
+            console.log(`Precio con descuento: ${precioConDescuento}`);
+            
+            // Solo agregar si el precio es válido
+            if (precioConDescuento > 0) {
+              productosPromo.push({
+                ...producto,
+                precioOriginal: producto.precio,
+                precio: precioConDescuento,
+                descuento: promo.descuento,
+                tipoDescuento: promo.tipoDescuento,
+                promocion: promo.titulo,
+                esPromocion: true,
+                categoria: 'Promociones'
+              });
+            } else {
+              console.warn(`Producto ${producto.nombre} tiene precio 0 después del descuento, no se agregará`);
+            }
+          });
+        }
+      });
+      
+      setProductosConPromo(productosPromo);
+    } catch (error) {
+      console.error('Error al cargar promociones:', error);
+    }
+  };
+
+  // Combinar productos normales con productos de promociones
+  const todosLosProductos = categoriaSeleccionada === 'Promociones' 
+    ? productosConPromo 
+    : categoriaSeleccionada === 'Todas'
+    ? [...productosConPromo, ...productos]
+    : productos;
+
+  const productosFiltrados = todosLosProductos.filter(producto => {
     const coincideBusqueda = producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
                             producto.descripcion.toLowerCase().includes(busqueda.toLowerCase());
     const coincideCategoria = categoriaSeleccionada === 'Todas' || producto.categoria === categoriaSeleccionada;
@@ -59,6 +116,15 @@ const Menu = () => {
 
   const handleAgregarAlCarrito = (producto) => {
     console.log('Agregando producto al carrito:', producto);
+    console.log('Precio del producto:', producto.precio);
+    console.log('Precio original:', producto.precioOriginal);
+    
+    // Verificar que el producto tenga un precio válido
+    if (!producto.precio || producto.precio === 0) {
+      console.error('Error: Producto con precio 0 o inválido', producto);
+      return;
+    }
+    
     agregarItem(producto, 1);
     success(`${producto.nombre} agregado al carrito`);
   };
@@ -85,15 +151,6 @@ const Menu = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            {/* Botón Promociones */}
-            <button
-              onClick={() => navigate('/promociones')}
-              className="flex items-center gap-2 bg-yellow-500/90 hover:bg-yellow-500 px-3 py-2 rounded-lg transition-colors shadow-md"
-            >
-              <Tag size={18} />
-              <span className="hidden sm:inline text-sm font-medium">Promos</span>
-            </button>
-
             {/* Botón Mis Pedidos */}
             <button
               onClick={() => navigate('/mis-pedidos')}
@@ -142,12 +199,17 @@ const Menu = () => {
               <button
                 key={categoria}
                 onClick={() => setCategoriaSeleccionada(categoria)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
-                  categoriaSeleccionada === categoria
+                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all flex items-center gap-1 ${
+                  categoria === 'Promociones'
+                    ? categoriaSeleccionada === categoria
+                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
+                      : 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 hover:from-yellow-200 hover:to-orange-200'
+                    : categoriaSeleccionada === categoria
                     ? 'bg-primary-600 text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-100'
                 }`}
               >
+                {categoria === 'Promociones' && <Tag size={16} />}
                 {categoria}
               </button>
             ))}
@@ -169,9 +231,21 @@ const Menu = () => {
                 {items.map(producto => (
                   <div
                     key={producto._id}
-                    className="card p-4 hover:shadow-xl transition-all cursor-pointer"
+                    className={`card p-4 hover:shadow-xl transition-all cursor-pointer relative ${
+                      producto.esPromocion ? 'ring-2 ring-yellow-400' : ''
+                    }`}
                     onClick={() => setProductoSeleccionado(producto)}
                   >
+                    {/* Badge de promoción */}
+                    {producto.esPromocion && (
+                      <div className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                        <Tag size={12} />
+                        {producto.tipoDescuento === 'porcentaje' 
+                          ? `-${producto.descuento}%` 
+                          : `-Bs.${producto.descuento}`}
+                      </div>
+                    )}
+                    
                     <div className="flex gap-4">
                       <img
                         src={producto.imagenUrl}
@@ -185,19 +259,43 @@ const Menu = () => {
                         <h3 className="font-semibold text-lg text-gray-800 mb-1">
                           {producto.nombre}
                         </h3>
+                        
+                        {/* Mostrar nombre de promoción si aplica */}
+                        {producto.esPromocion && producto.promocion && (
+                          <p className="text-xs text-yellow-600 font-semibold mb-1">
+                            🎉 {producto.promocion}
+                          </p>
+                        )}
+                        
                         <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                           {producto.descripcion}
                         </p>
+                        
                         <div className="flex justify-between items-center">
-                          <span className="text-primary-600 font-bold text-lg">
-                            {formatearPrecio(producto.precio)}
-                          </span>
+                          <div className="flex flex-col">
+                            {/* Precio con descuento */}
+                            <span className="text-primary-600 font-bold text-lg">
+                              {formatearPrecio(producto.precio)}
+                            </span>
+                            
+                            {/* Precio original tachado */}
+                            {producto.esPromocion && producto.precioOriginal && (
+                              <span className="text-gray-400 text-sm line-through">
+                                {formatearPrecio(producto.precioOriginal)}
+                              </span>
+                            )}
+                          </div>
+                          
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleAgregarAlCarrito(producto);
                             }}
-                            className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-lg transition-all active:scale-95"
+                            className={`p-2 rounded-lg transition-all active:scale-95 ${
+                              producto.esPromocion
+                                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white'
+                                : 'bg-primary-600 hover:bg-primary-700 text-white'
+                            }`}
                           >
                             <Plus size={20} />
                           </button>

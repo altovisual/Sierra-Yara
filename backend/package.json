@@ -8,7 +8,9 @@
     "dev": "nodemon server.js",
     "seed": "node scripts/seedData.js",
     "seed:promos": "node scripts/seedPromociones.js",
+    "seed:promos-productos": "node scripts/seedPromocionesConProductos.js",
     "qr": "node scripts/generarQRMesas.js",
+    "qr:local": "node scripts/generarQRLocal.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["restaurant", "menu", "orders", "qr"],

@@ -14,7 +14,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
  */
 const Carrito = () => {
   const navigate = useNavigate();
-  const { items, total, actualizarCantidad, eliminarItem, limpiarCarrito, estaVacio } = useCarrito();
+  const { items, total, actualizarCantidad, eliminarItem, limpiarCarrito, estaVacio, promocionAplicada, descuentoTotal, quitarPromocion } = useCarrito();
   const { mesaActual, dispositivoId, nombreUsuario } = useMesa();
   const [enviando, setEnviando] = useState(false);
   const [notas, setNotas] = useState('');
@@ -39,6 +39,7 @@ const Carrito = () => {
       const itemsPedido = items.map(item => ({
         productoId: item.productoId,
         cantidad: item.cantidad,
+        precio: item.precio, // Incluir precio para soportar promociones
         personalizaciones: item.personalizaciones || {}
       }));
 
@@ -181,12 +182,48 @@ const Carrito = () => {
       {/* Footer fijo con total y botón */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
         <div className="max-w-4xl mx-auto p-4">
+          {/* Promoción aplicada */}
+          {promocionAplicada && (
+            <div className="mb-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-yellow-600 font-semibold">🎉 {promocionAplicada.titulo}</span>
+                </div>
+                <button
+                  onClick={quitarPromocion}
+                  className="text-xs text-gray-500 hover:text-red-500 underline"
+                >
+                  Quitar
+                </button>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">
+                  {promocionAplicada.tipoDescuento === 'porcentaje' 
+                    ? `Descuento ${promocionAplicada.descuento}%`
+                    : 'Descuento fijo'}
+                </span>
+                <span className="text-green-600 font-bold">
+                  -{formatearPrecio(descuentoTotal)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Subtotal y Total */}
+          {promocionAplicada && (
+            <div className="flex justify-between items-center mb-2 text-sm text-gray-600">
+              <span>Subtotal:</span>
+              <span>{formatearPrecio(total + descuentoTotal)}</span>
+            </div>
+          )}
+          
           <div className="flex justify-between items-center mb-4">
             <span className="text-lg font-semibold text-gray-700">Total:</span>
             <span className="text-2xl font-bold text-primary-600">
               {formatearPrecio(total)}
             </span>
           </div>
+          
           <button
             onClick={handleConfirmarPedido}
             disabled={enviando}

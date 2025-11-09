@@ -14,9 +14,9 @@ const promocionesEjemplo = [
     fechaFin: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
     activa: true,
     destacada: true,
-    horaInicio: '07:00',
-    horaFin: '11:00',
-    diasSemana: ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'],
+    horaInicio: '00:00',
+    horaFin: '23:59',
+    diasSemana: [], // Todos los días
     condiciones: 'Válido solo para consumo en local. No acumulable con otras promociones.'
   },
   {
@@ -28,8 +28,9 @@ const promocionesEjemplo = [
     fechaFin: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 días
     activa: true,
     destacada: false,
-    horaInicio: '15:00',
-    horaFin: '18:00',
+    horaInicio: '00:00',
+    horaFin: '23:59',
+    diasSemana: [], // Todos los días
     condiciones: 'Aplica para batidos clásicos y de la sierra'
   },
   {
@@ -41,10 +42,24 @@ const promocionesEjemplo = [
     fechaFin: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 días
     activa: true,
     destacada: true,
-    horaInicio: '07:00',
-    horaFin: '10:00',
-    diasSemana: ['sabado', 'domingo'],
+    horaInicio: '00:00',
+    horaFin: '23:59',
+    diasSemana: [], // Todos los días
     condiciones: 'Combo especial de fin de semana'
+  },
+  {
+    titulo: 'Promo Especial del Día',
+    descripcion: '¡Oferta increíble! 40% de descuento en productos seleccionados',
+    descuento: 40,
+    tipoDescuento: 'porcentaje',
+    fechaInicio: new Date(),
+    fechaFin: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 días
+    activa: true,
+    destacada: true,
+    horaInicio: '00:00',
+    horaFin: '23:59',
+    diasSemana: [], // Todos los días
+    condiciones: 'Promoción por tiempo limitado'
   }
 ];
 
@@ -61,6 +76,12 @@ async function seedPromociones() {
     console.log('📝 Creando promociones de ejemplo...');
     const promocionesCreadas = await Promocion.insertMany(promocionesEjemplo);
     console.log(`✅ ${promocionesCreadas.length} promociones creadas exitosamente`);
+    
+    // Verificar cuáles están vigentes ahora
+    console.log('\n🔍 Verificando promociones vigentes...');
+    const ahora = new Date();
+    const vigentes = promocionesCreadas.filter(p => p.estaVigente());
+    console.log(`✅ ${vigentes.length} promociones vigentes en este momento`);
 
     console.log('\n📋 Promociones creadas:');
     promocionesCreadas.forEach((promo, index) => {
