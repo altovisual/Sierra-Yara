@@ -182,6 +182,19 @@ const Dashboard = () => {
     }
   }, [cargarDatos]);
 
+  // Liberar/Cerrar mesa
+  const liberarMesa = useCallback(async (mesaId) => {
+    try {
+      await mesasAPI.cerrar(mesaId);
+      message.success('Mesa liberada exitosamente');
+      cargarDatos();
+      setModalMesaVisible(false);
+    } catch (err) {
+      message.error('Error al liberar mesa');
+      console.error(err);
+    }
+  }, [cargarDatos]);
+
   const reproducirSonido = useCallback(() => {
     // Crear un beep simple
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -1124,6 +1137,20 @@ const Dashboard = () => {
         onCancel={() => setModalMesaVisible(false)}
         width={700}
         footer={[
+          mesaSeleccionada && mesaSeleccionada.estado === 'ocupada' && (
+            <Popconfirm
+              key="liberar"
+              title="¿Liberar mesa?"
+              description="¿Estás seguro de liberar esta mesa? Se cerrará y estará disponible para nuevos clientes."
+              onConfirm={() => liberarMesa(mesaSeleccionada._id)}
+              okText="Sí, liberar"
+              cancelText="No"
+            >
+              <Button type="primary">
+                Liberar Mesa
+              </Button>
+            </Popconfirm>
+          ),
           <Button key="close" onClick={() => setModalMesaVisible(false)}>
             Cerrar
           </Button>
@@ -1144,10 +1171,20 @@ const Dashboard = () => {
               <Text strong style={{ fontSize: '16px', display: 'block', marginBottom: '12px' }}>
                 Pedidos de esta mesa:
               </Text>
-              {pedidos.filter(p => p.mesa?.numero === mesaSeleccionada.numero).length > 0 ? (
+              {pedidos.filter(p => {
+                // Filtrar solo pedidos activos de esta mesa
+                const esDeLaMesa = p.mesa?.numero === mesaSeleccionada.numero || p.mesa?._id === mesaSeleccionada._id;
+                const esActivo = !['entregado', 'cancelado'].includes(p.estado);
+                console.log('Pedido:', p._id, 'Mesa pedido:', p.mesa?.numero, 'Mesa seleccionada:', mesaSeleccionada.numero, 'Coincide:', esDeLaMesa, 'Activo:', esActivo);
+                return esDeLaMesa && esActivo;
+              }).length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {pedidos
-                    .filter(p => p.mesa?.numero === mesaSeleccionada.numero)
+                    .filter(p => {
+                      const esDeLaMesa = p.mesa?.numero === mesaSeleccionada.numero || p.mesa?._id === mesaSeleccionada._id;
+                      const esActivo = !['entregado', 'cancelado'].includes(p.estado);
+                      return esDeLaMesa && esActivo;
+                    })
                     .map(pedido => (
                       <div
                         key={pedido._id}
