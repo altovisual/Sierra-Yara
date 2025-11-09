@@ -20,6 +20,22 @@ export const formatearPrecioDolares = (precio) => {
   }).format(precio);
 };
 
+// Convertir USD a Bs usando tasa BCV
+export const convertirUSDaBs = (precioUSD, tasaBCV) => {
+  return precioUSD * tasaBCV;
+};
+
+// Formatear precio dual (USD y Bs)
+export const formatearPrecioDual = (precioUSD, tasaBCV) => {
+  const precioBs = convertirUSDaBs(precioUSD, tasaBCV);
+  return {
+    usd: formatearPrecioDolares(precioUSD),
+    bs: formatearPrecio(precioBs),
+    valorUSD: precioUSD,
+    valorBs: precioBs
+  };
+};
+
 // Formatear fecha y hora
 export const formatearFechaHora = (fecha) => {
   return new Intl.DateTimeFormat('es-VE', {

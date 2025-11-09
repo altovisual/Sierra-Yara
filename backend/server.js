@@ -4,13 +4,17 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cron = require('node-cron');
 const connectDB = require('./config/database');
+const TasaBCV = require('./models/TasaBCV');
+const axios = require('axios');
 
 // Importar rutas
 const productosRoutes = require('./routes/productos');
 const mesasRoutes = require('./routes/mesas');
 const pedidosRoutes = require('./routes/pedidos');
 const promocionesRoutes = require('./routes/promociones');
+const tasaBCVRoutes = require('./routes/tasaBCV');
 
 // Inicializar Express
 const app = express();
@@ -48,6 +52,7 @@ app.use('/api/productos', productosRoutes);
 app.use('/api/mesas', mesasRoutes);
 app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/promociones', promocionesRoutes);
+app.use('/api/tasa-bcv', tasaBCVRoutes);
 
 // Ruta para obtener información de pago
 app.get('/api/config/pago', (req, res) => {
@@ -147,6 +152,32 @@ app.use((req, res) => {
   });
 });
 
+// Función para actualizar tasa BCV automáticamente
+const actualizarTasaBCVAuto = async () => {
+  try {
+    console.log('🔄 Actualizando tasa BCV automáticamente...');
+    
+    const response = await axios.get('https://pydolarve.org/api/v1/dollar?page=bcv', {
+      timeout: 10000
+    });
+    
+    if (response.data && response.data.monitors && response.data.monitors.usd) {
+      const tasaObtenida = parseFloat(response.data.monitors.usd.price);
+      
+      if (tasaObtenida > 0) {
+        await TasaBCV.actualizarTasa(tasaObtenida, 'api', 'sistema', 'Actualización automática');
+        console.log('✅ Tasa BCV actualizada:', tasaObtenida);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error al actualizar tasa BCV:', error.message);
+  }
+};
+
+// Programar actualización de tasa BCV cada 6 horas (a las 6am, 12pm, 6pm, 12am)
+cron.schedule('0 6,12,18,0 * * *', actualizarTasaBCVAuto);
+console.log('⏰ Cron job configurado: Actualización de tasa BCV cada 6 horas');
+
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, '0.0.0.0', () => {
@@ -156,8 +187,12 @@ server.listen(PORT, '0.0.0.0', () => {
 ║   🚀 Servidor corriendo en puerto ${PORT}      ║
 ║   📡 WebSocket habilitado                     ║
 ║   🌐 Acceso local: http://192.168.1.105:${PORT}  ║
+║   💱 Actualización automática de tasa BCV     ║
 ╚═══════════════════════════════════════════════╝
   `);
+  
+  // Actualizar tasa al iniciar el servidor
+  actualizarTasaBCVAuto();
 });
 
 module.exports = { app, server, io };
