@@ -154,28 +154,165 @@ const Dashboard = () => {
     const pedido = pedidos.find(p => p._id === pedidoId);
     if (pedido) {
       Modal.info({
-        title: `Pedido #${pedido._id.slice(-6).toUpperCase()}`,
-        width: 600,
+        title: (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <ShoppingOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
+            <span>Pedido #{pedido._id.slice(-6).toUpperCase()}</span>
+          </div>
+        ),
+        width: 700,
         content: (
-          <div>
-            <p><strong>Mesa:</strong> {pedido.mesa?.numero || 'N/A'}</p>
-            <p><strong>Estado:</strong> {obtenerTextoEstado(pedido.estado)}</p>
-            <p><strong>Total:</strong> {formatearPrecio(pedido.total)}</p>
-            <p><strong>Fecha:</strong> {dayjs(pedido.fecha).format('DD/MM/YYYY HH:mm')}</p>
-            <div className="mt-4">
-              <h4 className="font-medium mb-2">Productos:</h4>
-              <ul className="list-disc pl-5">
+          <div style={{ padding: '16px 0' }}>
+            {/* Información Principal */}
+            <div style={{
+              background: '#f0f9ff',
+              padding: '16px',
+              borderRadius: '8px',
+              marginBottom: '16px',
+              border: '1px solid #bae6fd'
+            }}>
+              <Row gutter={[16, 16]}>
+                <Col span={12}>
+                  <div style={{ marginBottom: '8px' }}>
+                    <Text strong style={{ color: '#6b7280' }}>Mesa:</Text>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1890ff' }}>
+                      Mesa {pedido.mesa?.numero || 'N/A'}
+                    </div>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <div style={{ marginBottom: '8px' }}>
+                    <Text strong style={{ color: '#6b7280' }}>Estado:</Text>
+                    <div style={{ marginTop: '4px' }}>
+                      <Tag color={
+                        pedido.estado === 'pendiente' ? 'red' :
+                        pedido.estado === 'preparando' ? 'orange' :
+                        pedido.estado === 'listo' ? 'blue' :
+                        pedido.estado === 'entregado' ? 'green' : 'default'
+                      } style={{ fontSize: '14px', padding: '4px 12px' }}>
+                        {obtenerTextoEstado(pedido.estado)}
+                      </Tag>
+                    </div>
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <Text strong style={{ color: '#6b7280' }}>Fecha:</Text>
+                  <div style={{ fontSize: '14px', color: '#1f2937' }}>
+                    {dayjs(pedido.fecha).format('DD/MM/YYYY HH:mm')}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                    ({dayjs(pedido.fecha).fromNow()})
+                  </div>
+                </Col>
+                <Col span={12}>
+                  <Text strong style={{ color: '#6b7280' }}>Cliente:</Text>
+                  <div style={{ fontSize: '14px', color: '#1f2937' }}>
+                    {pedido.nombreCliente || 'Cliente'}
+                  </div>
+                </Col>
+              </Row>
+            </div>
+
+            {/* Productos */}
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#1f2937' }}>
+                📦 Productos ({pedido.productos?.length || 0})
+              </h4>
+              <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '12px' }}>
                 {pedido.productos?.map((item, idx) => (
-                  <li key={idx}>
-                    {item.cantidad}x {item.producto?.nombre || 'Producto'} - {formatearPrecio(item.precio)}
-                    {item.notas && <p className="text-sm text-gray-500 ml-4">Notas: {item.notas}</p>}
-                  </li>
+                  <div
+                    key={idx}
+                    style={{
+                      padding: '12px',
+                      background: '#fff',
+                      borderRadius: '6px',
+                      marginBottom: idx < pedido.productos.length - 1 ? '8px' : 0,
+                      border: '1px solid #e5e7eb'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
+                          <span style={{
+                            display: 'inline-block',
+                            width: '24px',
+                            height: '24px',
+                            background: '#3b82f6',
+                            color: '#fff',
+                            borderRadius: '50%',
+                            textAlign: 'center',
+                            lineHeight: '24px',
+                            marginRight: '8px',
+                            fontSize: '12px'
+                          }}>
+                            {item.cantidad}
+                          </span>
+                          {item.producto?.nombre || 'Producto'}
+                        </div>
+                        {item.notas && (
+                          <div style={{
+                            fontSize: '12px',
+                            color: '#6b7280',
+                            marginTop: '4px',
+                            padding: '6px 8px',
+                            background: '#fef3c7',
+                            borderRadius: '4px',
+                            marginLeft: '32px'
+                          }}>
+                            💬 <strong>Notas:</strong> {item.notas}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ fontWeight: 'bold', color: '#10b981', fontSize: '16px' }}>
+                        {formatearPrecio(item.precio * item.cantidad)}
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
+            </div>
+
+            {/* Totales */}
+            <div style={{
+              background: '#f0fdf4',
+              padding: '16px',
+              borderRadius: '8px',
+              border: '1px solid #bbf7d0'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <Text strong>Subtotal:</Text>
+                <Text>{formatearPrecio(pedido.total)}</Text>
+              </div>
+              {pedido.propina > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <Text strong>Propina:</Text>
+                  <Text style={{ color: '#10b981' }}>{formatearPrecio(pedido.propina)}</Text>
+                </div>
+              )}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                paddingTop: '8px',
+                borderTop: '2px solid #86efac'
+              }}>
+                <Text strong style={{ fontSize: '18px' }}>Total:</Text>
+                <Text strong style={{ fontSize: '24px', color: '#10b981' }}>
+                  {formatearPrecio(pedido.total + (pedido.propina || 0))}
+                </Text>
+              </div>
+              {pedido.pagado && (
+                <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                  <Tag color="success" style={{ fontSize: '14px', padding: '6px 16px' }}>
+                    ✅ PAGADO
+                  </Tag>
+                </div>
+              )}
             </div>
           </div>
         ),
         onOk() {},
+        okText: 'Cerrar',
+        okButtonProps: { size: 'large' }
       });
     }
   }, [pedidos]);
@@ -436,6 +573,94 @@ const Dashboard = () => {
             </Card>
           </Col>
         </Row>
+
+        {/* SECCIÓN DE PEDIDOS PENDIENTES URGENTES */}
+        {estadisticas.pedidosPendientes > 0 && (
+          <Card
+            style={{
+              marginBottom: '24px',
+              borderRadius: '12px',
+              border: '2px solid #ef4444',
+              background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+              boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.3)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: '#ef4444',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                }}>
+                  <ClockCircleOutlined style={{ fontSize: '24px', color: '#fff' }} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: '#991b1b' }}>
+                    ⚠️ Pedidos Pendientes
+                  </h3>
+                  <p style={{ margin: 0, color: '#7f1d1d', fontSize: '14px' }}>
+                    {estadisticas.pedidosPendientes} pedido{estadisticas.pedidosPendientes > 1 ? 's' : ''} esperando atención
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="primary"
+                danger
+                size="large"
+                onClick={cargarDatos}
+                icon={<ReloadOutlined />}
+              >
+                Actualizar
+              </Button>
+            </div>
+            
+            <Row gutter={[12, 12]}>
+              {pedidos
+                .filter(p => p.estado === 'pendiente')
+                .slice(0, 6)
+                .map(pedido => (
+                  <Col xs={24} sm={12} md={8} lg={6} key={pedido._id}>
+                    <Card
+                      hoverable
+                      onClick={() => verDetallesPedido(pedido._id)}
+                      style={{
+                        borderRadius: '8px',
+                        border: '1px solid #fca5a5',
+                        background: '#fff',
+                        cursor: 'pointer'
+                      }}
+                      styles={{ body: { padding: '12px' } }}
+                    >
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{
+                          fontSize: '24px',
+                          fontWeight: 'bold',
+                          color: '#ef4444',
+                          marginBottom: '4px'
+                        }}>
+                          Mesa {pedido.mesa?.numero || 'N/A'}
+                        </div>
+                        <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
+                          {formatearPrecio(pedido.total)}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                          {dayjs(pedido.fecha).fromNow()}
+                        </div>
+                        <Tag color="red" style={{ marginTop: '8px' }}>
+                          {pedido.productos?.length || 0} producto{pedido.productos?.length > 1 ? 's' : ''}
+                        </Tag>
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
+            </Row>
+          </Card>
+        )}
 
         {/* Resumen de Ventas del Día */}
         {ventasDia && (
