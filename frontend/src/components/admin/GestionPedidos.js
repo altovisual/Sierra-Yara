@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
 import { formatearPrecio, obtenerTextoEstado } from '../../utils/helpers';
-import { TableSkeleton } from '../common/SkeletonLoaders';
 import AdminLayout from './AdminLayout';
 import { 
   Table, 
@@ -350,22 +349,19 @@ const GestionPedidos = () => {
         </Card>
 
         {/* Tabla de pedidos */}
-        {cargando ? (
-          <TableSkeleton rows={8} />
-        ) : (
-          <Table 
-            columns={columns}
-            dataSource={pedidosFiltrados}
-            rowKey="_id"
-            scroll={{ x: 1200 }}
-            pagination={{
-              pageSize: 20,
-              showSizeChanger: true,
-              showTotal: (total) => `Total: ${total} pedidos`
-            }}
-            className="fade-in"
-          />
-        )}
+        <Table 
+          columns={columns}
+          dataSource={pedidosFiltrados}
+          rowKey="_id"
+          loading={cargando}
+          scroll={{ x: 1200 }}
+          pagination={{
+            pageSize: 20,
+            showSizeChanger: true,
+            showTotal: (total) => `Total: ${total} pedidos`
+          }}
+          className="fade-in"
+        />
 
         {/* Modal de detalle */}
         <Modal

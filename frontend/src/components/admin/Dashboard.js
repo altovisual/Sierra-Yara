@@ -3,7 +3,6 @@ import { mesasAPI, pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
 import { formatearPrecio, obtenerTextoEstado } from '../../utils/helpers';
 import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
-import { StatCardSkeleton } from '../common/SkeletonLoaders';
 import {
   ShoppingOutlined,
   TableOutlined,
@@ -22,7 +21,8 @@ import {
   Tag,
   Empty,
   Modal,
-  Tooltip
+  Tooltip,
+  Spin
 } from 'antd';
 import AdminLayout from './AdminLayout';
 import dayjs from 'dayjs';
@@ -430,16 +430,8 @@ const Dashboard = () => {
         </div>
 
         {/* Sección de Estadísticas */}
+        <Spin spinning={cargandoInicial} size="large" tip="Cargando datos...">
         <Row gutter={[16, 16]} style={{ marginBottom: '32px' }} className="fade-in">
-          {cargandoInicial ? (
-            <>
-              <Col xs={24} sm={12} md={6}><StatCardSkeleton /></Col>
-              <Col xs={24} sm={12} md={6}><StatCardSkeleton /></Col>
-              <Col xs={24} sm={12} md={6}><StatCardSkeleton /></Col>
-              <Col xs={24} sm={12} md={6}><StatCardSkeleton /></Col>
-            </>
-          ) : (
-            <>
           <Col xs={24} sm={12} md={6}>
             <Card 
               hoverable
@@ -625,9 +617,8 @@ const Dashboard = () => {
               </div>
             </Card>
           </Col>
-            </>
-          )}
         </Row>
+        </Spin>
 
         {/* SECCIÓN DE PEDIDOS PENDIENTES URGENTES */}
         {estadisticas.pedidosPendientes > 0 && (
