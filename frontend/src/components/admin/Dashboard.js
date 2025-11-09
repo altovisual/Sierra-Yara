@@ -417,6 +417,12 @@ const Dashboard = () => {
   }, [cargarDatos]);
 
 
+  // Cargar datos iniciales solo una vez
+  useEffect(() => {
+    cargarDatos();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Configurar socket y listeners
   useEffect(() => {
     // Función para manejar nuevos pedidos
     const handleNuevoPedido = (data) => {
@@ -436,9 +442,6 @@ const Dashboard = () => {
     
     // Función para manejar actualizaciones de pedidos
     const handlePedidoActualizado = () => cargarDatos();
-
-    // Cargar datos iniciales
-    cargarDatos();
     
     // Conectar al socket
     socketService.connect();
@@ -449,7 +452,17 @@ const Dashboard = () => {
     socketService.onMesaActualizada(handleMesaActualizada);
     socketService.onPedidoActualizado(handlePedidoActualizado);
 
-    // Listener para abrir pedido desde notificación
+    // Limpieza al desmontar
+    return () => {
+      socketService.off('pedido_nuevo_admin', handleNuevoPedido);
+      socketService.off('mesonero_solicitado', handleMesoneroSolicitado);
+      socketService.off('mesa_actualizada', handleMesaActualizada);
+      socketService.off('pedido_actualizado', handlePedidoActualizado);
+    };
+  }, [agregarNotificacion, cargarDatos, reproducirSonido]);
+
+  // Listener para abrir pedido desde notificación
+  useEffect(() => {
     const handleAbrirPedido = (event) => {
       const { pedidoId } = event.detail;
       const pedido = pedidos.find(p => p._id === pedidoId);
@@ -460,15 +473,10 @@ const Dashboard = () => {
 
     window.addEventListener('abrirPedidoDesdeNotificacion', handleAbrirPedido);
 
-    // Limpieza al desmontar
     return () => {
-      socketService.off('pedido_nuevo_admin', handleNuevoPedido);
-      socketService.off('mesonero_solicitado', handleMesoneroSolicitado);
-      socketService.off('mesa_actualizada', handleMesaActualizada);
-      socketService.off('pedido_actualizado', handlePedidoActualizado);
       window.removeEventListener('abrirPedidoDesdeNotificacion', handleAbrirPedido);
     };
-  }, [agregarNotificacion, cargarDatos, reproducirSonido, pedidos, verDetallePedido]);
+  }, [pedidos, verDetallePedido]);
 
   // Configurar atajos de teclado
   useKeyboardShortcuts({
