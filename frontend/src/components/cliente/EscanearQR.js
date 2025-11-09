@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useMesa } from '../../context/MesaContext';
 import { Hash, Sparkles, ChevronRight } from 'lucide-react';
 import logo from '../../assets/logo.png';
@@ -10,6 +10,7 @@ import logo from '../../assets/logo.png';
 const EscanearQR = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { numeroMesa: mesaParam } = useParams();
   const { conectarMesa, cargando, estaConectado } = useMesa();
   const [numeroMesa, setNumeroMesa] = useState('');
   const [nombreUsuario, setNombreUsuario] = useState('');
@@ -28,13 +29,13 @@ const EscanearQR = () => {
       return;
     }
     
-    // Obtener número de mesa desde URL (QR)
-    const mesaParam = searchParams.get('mesa');
-    if (mesaParam) {
-      setMesaDesdeQR(mesaParam);
-      setNumeroMesa(mesaParam);
+    // Obtener número de mesa desde URL (parámetro de ruta o query param)
+    const mesaDesdeRuta = mesaParam || searchParams.get('mesa');
+    if (mesaDesdeRuta) {
+      setMesaDesdeQR(mesaDesdeRuta);
+      setNumeroMesa(mesaDesdeRuta);
     }
-  }, [searchParams, estaConectado, navigate]);
+  }, [mesaParam, searchParams, estaConectado, navigate]);
 
   const handleConectar = async (e) => {
     e.preventDefault();
