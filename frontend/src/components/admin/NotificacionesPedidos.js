@@ -84,7 +84,12 @@ const NotificacionesPedidos = ({ onVerPedido }) => {
     const nuevaNotificacion = {
       id: Date.now(),
       tipo,
-      data,
+      data: {
+        ...data,
+        numeroMesa: data.numeroMesa,
+        total: data.pedido?.total || data.total
+      },
+      pedidoId: data.pedido?._id || data._id, // Guardar ID del pedido
       fecha: new Date().toISOString(),
       leida: false
     };
@@ -94,12 +99,13 @@ const NotificacionesPedidos = ({ onVerPedido }) => {
 
     // Mostrar notificación del navegador
     if ('Notification' in window && Notification.permission === 'granted') {
+      const total = data.pedido?.total || data.total;
       new Notification('Sierra Yara Café', {
         body: tipo === 'pedido' 
-          ? `Nuevo pedido en Mesa ${data.numeroMesa}` 
+          ? `Nuevo pedido en Mesa ${data.numeroMesa}${total ? ` - ${formatearPrecio(total)}` : ''}` 
           : `Mesa ${data.numeroMesa} solicita atención`,
-        icon: '/logo192.png',
-        badge: '/logo192.png',
+        icon: '/logo.png',
+        badge: '/logo.png',
         tag: `notificacion-${nuevaNotificacion.id}`
       });
     }
