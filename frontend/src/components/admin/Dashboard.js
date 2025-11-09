@@ -22,7 +22,9 @@ import {
   Tag,
   Empty,
   Modal,
-  Tooltip
+  Tooltip,
+  Select,
+  Popconfirm
 } from 'antd';
 import AdminLayout from './AdminLayout';
 import dayjs from 'dayjs';
@@ -136,6 +138,49 @@ const Dashboard = () => {
     setPedidoSeleccionado(pedido);
     setModalPedidoVisible(true);
   }, []);
+
+  // Cambiar estado del pedido
+  const cambiarEstado = useCallback(async (pedidoId, nuevoEstado) => {
+    try {
+      await pedidosAPI.actualizarEstado(pedidoId, nuevoEstado);
+      message.success(`Pedido actualizado a: ${obtenerTextoEstado(nuevoEstado)}`);
+      cargarDatos();
+      if (pedidoSeleccionado && pedidoSeleccionado._id === pedidoId) {
+        setPedidoSeleccionado({ ...pedidoSeleccionado, estado: nuevoEstado });
+      }
+    } catch (err) {
+      message.error('Error al actualizar estado del pedido');
+      console.error(err);
+    }
+  }, [pedidoSeleccionado, cargarDatos]);
+
+  // Confirmar pago del pedido
+  const confirmarPago = useCallback(async (pedidoId) => {
+    try {
+      await pedidosAPI.confirmarPago(pedidoId);
+      message.success('Pago confirmado exitosamente');
+      cargarDatos();
+      if (pedidoSeleccionado && pedidoSeleccionado._id === pedidoId) {
+        setPedidoSeleccionado({ ...pedidoSeleccionado, pagado: true });
+      }
+    } catch (err) {
+      message.error('Error al confirmar pago');
+      console.error(err);
+    }
+  }, [pedidoSeleccionado, cargarDatos]);
+
+  // Cancelar pedido
+  const cancelarPedido = useCallback(async (pedidoId) => {
+    try {
+      await pedidosAPI.cancelar(pedidoId);
+      message.success('Pedido cancelado exitosamente');
+      cargarDatos();
+      setModalPedidoVisible(false);
+    } catch (err) {
+      message.error('Error al cancelar pedido');
+      console.error(err);
+    }
+  }, [cargarDatos]);
 
   const reproducirSonido = useCallback(() => {
     // Crear un beep simple
@@ -388,14 +433,26 @@ const Dashboard = () => {
     socketService.onMesaActualizada(handleMesaActualizada);
     socketService.onPedidoActualizado(handlePedidoActualizado);
 
+    // Listener para abrir pedido desde notificación
+    const handleAbrirPedido = (event) => {
+      const { pedidoId } = event.detail;
+      const pedido = pedidos.find(p => p._id === pedidoId);
+      if (pedido) {
+        verDetallePedido(pedido);
+      }
+    };
+
+    window.addEventListener('abrirPedidoDesdeNotificacion', handleAbrirPedido);
+
     // Limpieza al desmontar
     return () => {
       socketService.off('pedido_nuevo_admin', handleNuevoPedido);
       socketService.off('mesonero_solicitado', handleMesoneroSolicitado);
       socketService.off('mesa_actualizada', handleMesaActualizada);
       socketService.off('pedido_actualizado', handlePedidoActualizado);
+      window.removeEventListener('abrirPedidoDesdeNotificacion', handleAbrirPedido);
     };
-  }, [agregarNotificacion, cargarDatos, reproducirSonido]);
+  }, [agregarNotificacion, cargarDatos, reproducirSonido, pedidos, verDetallePedido]);
 
   // Configurar atajos de teclado
   useKeyboardShortcuts({
@@ -1138,8 +1195,23 @@ const Dashboard = () => {
         title={`Detalle del Pedido #${pedidoSeleccionado?._id.slice(-6).toUpperCase() || ''}`}
         open={modalPedidoVisible}
         onCancel={() => setModalPedidoVisible(false)}
-        width={700}
+        width={800}
         footer={[
+          pedidoSeleccionado && pedidoSeleccionado.estado !== 'cancelado' && pedidoSeleccionado.estado !== 'entregado' && (
+            <Popconfirm
+              key="cancel"
+              title="¿Cancelar pedido?"
+              description="¿Estás seguro de cancelar este pedido? Esta acción no se puede deshacer."
+              onConfirm={() => cancelarPedido(pedidoSeleccionado._id)}
+              okText="Sí, cancelar"
+              cancelText="No"
+              okButtonProps={{ danger: true }}
+            >
+              <Button danger>
+                Cancelar Pedido
+              </Button>
+            </Popconfirm>
+          ),
           <Button key="close" onClick={() => setModalPedidoVisible(false)}>
             Cerrar
           </Button>
@@ -1147,17 +1219,51 @@ const Dashboard = () => {
       >
         {pedidoSeleccionado && (
           <div>
-            <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <Tag color={
-                pedidoSeleccionado.estado === 'pendiente' ? 'orange' :
-                pedidoSeleccionado.estado === 'en_preparacion' ? 'blue' :
-                pedidoSeleccionado.estado === 'listo' ? 'green' : 'cyan'
-              } style={{ fontSize: '14px', padding: '4px 12px' }}>
-                {obtenerTextoEstado(pedidoSeleccionado.estado)}
-              </Tag>
-              <Tag color={pedidoSeleccionado.pagado ? 'green' : 'orange'} style={{ fontSize: '14px', padding: '4px 12px' }}>
-                {pedidoSeleccionado.pagado ? '✅ Pagado' : '⏳ Pendiente de Pago'}
-              </Tag>
+            {/* Controles de Estado y Pago */}
+            <div style={{ marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <Text strong style={{ display: 'block', marginBottom: '8px' }}>Estado del Pedido:</Text>
+                <Select
+                  value={pedidoSeleccionado.estado}
+                  onChange={(value) => cambiarEstado(pedidoSeleccionado._id, value)}
+                  style={{ width: '100%' }}
+                  size="large"
+                  disabled={pedidoSeleccionado.estado === 'cancelado' || pedidoSeleccionado.estado === 'entregado'}
+                >
+                  <Select.Option value="pendiente">
+                    <Tag color="orange">Pendiente</Tag>
+                  </Select.Option>
+                  <Select.Option value="en_preparacion">
+                    <Tag color="blue">En Preparación</Tag>
+                  </Select.Option>
+                  <Select.Option value="listo">
+                    <Tag color="green">Listo</Tag>
+                  </Select.Option>
+                  <Select.Option value="entregado">
+                    <Tag color="cyan">Entregado</Tag>
+                  </Select.Option>
+                </Select>
+              </div>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <Text strong style={{ display: 'block', marginBottom: '8px' }}>Estado de Pago:</Text>
+                {pedidoSeleccionado.pagado ? (
+                  <Tag color="green" style={{ fontSize: '14px', padding: '12px 16px', width: '100%', textAlign: 'center', display: 'block' }}>
+                    ✅ Pagado
+                  </Tag>
+                ) : (
+                  <Popconfirm
+                    title="¿Confirmar pago?"
+                    description="¿Confirmas que el pago fue recibido y verificado?"
+                    onConfirm={() => confirmarPago(pedidoSeleccionado._id)}
+                    okText="Sí, confirmar"
+                    cancelText="Cancelar"
+                  >
+                    <Button type="primary" size="large" style={{ width: '100%' }}>
+                      Confirmar Pago
+                    </Button>
+                  </Popconfirm>
+                )}
+              </div>
             </div>
 
             <div style={{ marginBottom: '16px' }}>
