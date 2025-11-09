@@ -26,14 +26,19 @@ export const MesaProvider = ({ children }) => {
   // Cargar datos guardados al iniciar
   useEffect(() => {
     const datosGuardados = obtenerDeStorage('sesionMesa');
-    if (datosGuardados) {
+    console.log('📦 Datos guardados en localStorage:', datosGuardados);
+    
+    if (datosGuardados && datosGuardados.mesa && datosGuardados.dispositivoId) {
+      console.log('✅ Restaurando sesión de mesa:', datosGuardados.mesa.numeroMesa);
       setMesaActual(datosGuardados.mesa);
       setDispositivoId(datosGuardados.dispositivoId);
-      setNombreUsuario(datosGuardados.nombreUsuario);
+      setNombreUsuario(datosGuardados.nombreUsuario || 'Cliente');
       
       // Reconectar al socket
       socketService.connect();
       socketService.unirseMesa(datosGuardados.mesa.numeroMesa);
+    } else {
+      console.log('❌ No hay sesión guardada o datos incompletos');
     }
     setCargando(false);
   }, []);

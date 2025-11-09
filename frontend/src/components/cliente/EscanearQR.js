@@ -10,7 +10,7 @@ import logo from '../../assets/logo.png';
 const EscanearQR = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { conectarMesa, cargando } = useMesa();
+  const { conectarMesa, cargando, estaConectado } = useMesa();
   const [numeroMesa, setNumeroMesa] = useState('');
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [error, setError] = useState('');
@@ -21,13 +21,20 @@ const EscanearQR = () => {
     // Activar animación al montar el componente
     setTimeout(() => setAnimado(true), 100);
     
+    // Si ya está conectado a una mesa, redirigir al menú
+    if (estaConectado()) {
+      console.log('✅ Usuario ya conectado, redirigiendo al menú...');
+      navigate('/menu', { replace: true });
+      return;
+    }
+    
     // Obtener número de mesa desde URL (QR)
     const mesaParam = searchParams.get('mesa');
     if (mesaParam) {
       setMesaDesdeQR(mesaParam);
       setNumeroMesa(mesaParam);
     }
-  }, [searchParams]);
+  }, [searchParams, estaConectado, navigate]);
 
   const handleConectar = async (e) => {
     e.preventDefault();
