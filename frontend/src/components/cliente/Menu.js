@@ -7,7 +7,6 @@ import { useFavoritos } from '../../context/FavoritosContext';
 import { useTasaBCV } from '../../context/TasaBCVContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
-import { MenuGridSkeleton } from '../common/SkeletonLoaders';
 import IndicadorTasa from './IndicadorTasa';
 import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Heart } from 'lucide-react';
 import logo from '../../assets/logo.png';
@@ -113,8 +112,11 @@ const Menu = () => {
     : productos;
 
   const productosFiltrados = todosLosProductos.filter(producto => {
-    const nombreCoincide = producto.nombre?.toLowerCase().includes(busqueda.toLowerCase()) || false;
-    const descripcionCoincide = producto.descripcion?.toLowerCase().includes(busqueda.toLowerCase()) || false;
+    if (!producto) return false;
+    
+    const busquedaLower = (busqueda || '').toLowerCase();
+    const nombreCoincide = (producto.nombre || '').toLowerCase().includes(busquedaLower);
+    const descripcionCoincide = (producto.descripcion || '').toLowerCase().includes(busquedaLower);
     const coincideBusqueda = nombreCoincide || descripcionCoincide;
     const coincideCategoria = categoriaSeleccionada === 'Todas' || producto.categoria === categoriaSeleccionada;
     return coincideBusqueda && coincideCategoria;
@@ -240,7 +242,10 @@ const Menu = () => {
 
         {/* Lista de productos por categoría */}
         {cargando ? (
-          <MenuGridSkeleton count={6} />
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600"></div>
+            <p className="text-gray-500 mt-4">Cargando productos...</p>
+          </div>
         ) : Object.keys(productosAgrupados).length === 0 ? (
           <div className="text-center py-12 fade-in">
             <div className="text-gray-400 mb-4">
@@ -309,7 +314,8 @@ const Menu = () => {
                             alt={producto.nombre}
                             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
                             onError={(e) => {
-                              e.target.src = 'https://via.placeholder.com/150?text=Producto';
+                              e.target.style.display = 'none';
+                              e.target.parentElement.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center"><svg class="w-12 h-12 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
                             }}
                           />
                         </div>
