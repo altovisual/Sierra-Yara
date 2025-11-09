@@ -113,8 +113,9 @@ const Menu = () => {
     : productos;
 
   const productosFiltrados = todosLosProductos.filter(producto => {
-    const coincideBusqueda = producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-                            producto.descripcion.toLowerCase().includes(busqueda.toLowerCase());
+    const nombreCoincide = producto.nombre?.toLowerCase().includes(busqueda.toLowerCase()) || false;
+    const descripcionCoincide = producto.descripcion?.toLowerCase().includes(busqueda.toLowerCase()) || false;
+    const coincideBusqueda = nombreCoincide || descripcionCoincide;
     const coincideCategoria = categoriaSeleccionada === 'Todas' || producto.categoria === categoriaSeleccionada;
     return coincideBusqueda && coincideCategoria;
   });
