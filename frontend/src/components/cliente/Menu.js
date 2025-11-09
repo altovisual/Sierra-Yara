@@ -125,10 +125,6 @@ const Menu = () => {
   const productosAgrupados = agruparPorCategoria(productosFiltrados);
 
   const handleAgregarAlCarrito = (producto) => {
-    console.log('Agregando producto al carrito:', producto);
-    console.log('Precio del producto:', producto.precio);
-    console.log('Precio original:', producto.precioOriginal);
-    
     // Verificar que el producto tenga un precio válido
     if (!producto.precio || producto.precio === 0) {
       console.error('Error: Producto con precio 0 o inválido', producto);
@@ -136,7 +132,20 @@ const Menu = () => {
     }
     
     agregarItem(producto, 1);
-    success(`${producto.nombre} agregado al carrito`);
+    
+    // Vibración sutil en dispositivos móviles
+    if (navigator.vibrate) {
+      navigator.vibrate(50); // 50ms de vibración
+    }
+    
+    // Animación del botón del carrito
+    const carritoBtn = document.querySelector('[data-carrito-btn]');
+    if (carritoBtn) {
+      carritoBtn.classList.add('animate-bounce');
+      setTimeout(() => {
+        carritoBtn.classList.remove('animate-bounce');
+      }, 500);
+    }
   };
 
   const handleToggleFavorito = (e, producto) => {
@@ -181,13 +190,14 @@ const Menu = () => {
 
             {/* Botón Carrito */}
             <button
+              data-carrito-btn
               onClick={() => navigate('/carrito')}
-              className="flex items-center gap-2 bg-white text-primary-600 hover:bg-primary-50 px-4 py-2 rounded-lg transition-colors relative"
+              className="flex items-center gap-2 bg-white text-primary-600 hover:bg-primary-50 px-4 py-2 rounded-lg transition-all relative"
             >
               <ShoppingCart size={20} />
               <span className="hidden sm:inline">Carrito</span>
               {obtenerCantidadTotal() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                   {obtenerCantidadTotal()}
                 </span>
               )}
