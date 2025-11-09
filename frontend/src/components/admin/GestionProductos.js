@@ -12,7 +12,6 @@ import AdminLayout from './AdminLayout';
 const GestionProductos = () => {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
-  const [cargando, setCargando] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [productoEditando, setProductoEditando] = useState(null);
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
@@ -35,7 +34,6 @@ const GestionProductos = () => {
 
   const cargarDatos = async () => {
     try {
-      setCargando(true);
       const [prodRes, catRes] = await Promise.all([
         productosAPI.obtenerTodos(),
         productosAPI.obtenerCategorias()
@@ -45,8 +43,6 @@ const GestionProductos = () => {
     } catch (err) {
       error('Error al cargar productos');
       console.error(err);
-    } finally {
-      setCargando(false);
     }
   };
 
@@ -195,16 +191,7 @@ const GestionProductos = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {cargando ? (
-              <tr>
-                <td colSpan="5" className="px-6 py-12 text-center">
-                  <div className="flex flex-col items-center justify-center gap-3">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-                    <p className="text-gray-500">Cargando productos...</p>
-                  </div>
-                </td>
-              </tr>
-            ) : productosFiltrados.map(producto => (
+            {productosFiltrados.map(producto => (
               <tr key={producto._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -255,7 +242,7 @@ const GestionProductos = () => {
           </tbody>
         </table>
 
-        {!cargando && productosFiltrados.length === 0 && (
+        {productosFiltrados.length === 0 && (
           <div className="text-center py-12">
             <Package size={48} className="mx-auto text-gray-300 mb-3" />
             <p className="text-gray-500">No se encontraron productos</p>

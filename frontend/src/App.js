@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { MesaProvider } from './context/MesaContext';
 import { CarritoProvider } from './context/CarritoContext';
 import { FavoritosProvider } from './context/FavoritosContext';
+import { AdminDataProvider } from './context/AdminDataContext';
 
 // Componentes del cliente
 import EscanearQR from './components/cliente/EscanearQR';
@@ -22,6 +23,7 @@ import AdminRoutes from './routes/AdminRoutes';
 function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AdminDataProvider>
       <MesaProvider>
         <CarritoProvider>
           <FavoritosProvider>
@@ -45,6 +47,7 @@ function App() {
           </FavoritosProvider>
         </CarritoProvider>
       </MesaProvider>
+      </AdminDataProvider>
     </Router>
   );
 }
