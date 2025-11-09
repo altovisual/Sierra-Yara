@@ -364,6 +364,10 @@ const GestionPedidos = () => {
               showTotal: (total) => `Total: ${total} pedidos`
             }}
             className="fade-in"
+            onRow={(record) => ({
+              onClick: () => verDetalle(record),
+              style: { cursor: 'pointer' }
+            })}
           />
         )}
 

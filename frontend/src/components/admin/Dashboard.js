@@ -140,6 +140,7 @@ const Dashboard = () => {
     oscillator.stop(audioContext.currentTime + 0.5);
   }, []);
 
+  // eslint-disable-next-line no-unused-vars
   const verDetallesMesa = useCallback((mesaId) => {
     const mesa = mesas.find(m => m._id === mesaId);
     if (mesa) {
