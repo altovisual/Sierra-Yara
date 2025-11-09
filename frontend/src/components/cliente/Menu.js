@@ -8,6 +8,7 @@ import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
 import { MenuGridSkeleton } from '../common/SkeletonLoaders';
 import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Bell, Heart } from 'lucide-react';
+import logo from '../../assets/logo.png';
 
 /**
  * Componente del menú interactivo
@@ -176,9 +177,16 @@ const Menu = () => {
       {/* Header */}
       <div className="bg-primary-600 text-white p-4 sticky top-0 z-10 shadow-lg">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-display font-bold">Sierra Yara Café</h1>
-            <p className="text-primary-100 text-sm">Explora nuestro menú</p>
+          <div className="flex items-center gap-3">
+            <img 
+              src={logo} 
+              alt="Sierra Yara Logo" 
+              className="h-12 w-12 object-contain"
+            />
+            <div>
+              <h1 className="text-2xl font-display font-bold">Sierra Yara Café</h1>
+              <p className="text-primary-100 text-sm">Explora nuestro menú</p>
+            </div>
           </div>
           
           <div className="flex items-center gap-2">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ConfigProvider, Layout, Menu, Typography, Avatar, Dropdown, Drawer, Button } from 'antd';
 import NotificacionesPedidos from './NotificacionesPedidos';
+import logo from '../../assets/logo.png';
 import {
   DashboardOutlined,
   ShoppingCartOutlined,
@@ -123,15 +124,30 @@ const AdminLayout = ({ children, title, extra }) => {
           marginBottom: '8px'
         }}>
           <div style={{ 
-            color: '#ffffff', 
-            fontSize: isMobile ? '20px' : '18px',
-            fontWeight: 'bold',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            letterSpacing: '0.5px'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
           }}>
-            {!collapsed || isMobile ? 'Sierra Yara' : 'SY'}
+            <img 
+              src={logo} 
+              alt="Sierra Yara Logo" 
+              style={{ 
+                height: collapsed && !isMobile ? '40px' : '45px',
+                width: 'auto',
+                objectFit: 'contain',
+                transition: 'all 0.2s'
+              }} 
+            />
+            {(!collapsed || isMobile) && (
+              <span style={{ 
+                color: '#ffffff', 
+                fontSize: '18px',
+                fontWeight: 'bold',
+                letterSpacing: '0.5px'
+              }}>
+                Sierra Yara
+              </span>
+            )}
           </div>
           {isMobile && (
             <Button 

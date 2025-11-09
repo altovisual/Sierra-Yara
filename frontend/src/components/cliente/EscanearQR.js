@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMesa } from '../../context/MesaContext';
-import { Coffee, Hash, Sparkles, ChevronRight } from 'lucide-react';
+import { Hash, Sparkles, ChevronRight } from 'lucide-react';
+import logo from '../../assets/logo.png';
 
 /**
  * Componente para escanear QR o ingresar número de mesa manualmente
@@ -64,7 +65,11 @@ const EscanearQR = () => {
           <div className="relative inline-block mb-4">
             <div className="absolute inset-0 bg-white/20 blur-xl rounded-full animate-pulse"></div>
             <div className="relative p-5 bg-white/10 backdrop-blur-sm rounded-full border-2 border-white/20 shadow-2xl transform hover:scale-110 transition-transform duration-300">
-              <Coffee className="w-16 h-16 text-white drop-shadow-lg" />
+              <img 
+                src={logo} 
+                alt="Sierra Yara Logo" 
+                className="w-16 h-16 object-contain drop-shadow-lg"
+              />
             </div>
             <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-yellow-300 animate-bounce" />
           </div>
