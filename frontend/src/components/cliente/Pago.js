@@ -240,17 +240,18 @@ const Pago = () => {
           <div className="space-y-3">
             {pedido.items.map((item, index) => (
               <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                <div className="flex items-center gap-3">
-                  <span className="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-semibold">
                     {item.cantidad}
                   </span>
                   <span className="text-gray-700 font-medium">
                     {item.nombreProducto}
                   </span>
                 </div>
-                <span className="text-gray-900 font-bold">
-                  {formatearPrecio(item.subtotal)}
-                </span>
+                <div className="text-right">
+                  <div className="text-gray-900 font-bold">${item.subtotal.toFixed(2)}</div>
+                  <div className="text-xs text-gray-500">{formatearPrecioDual(item.subtotal).bs}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -631,27 +632,27 @@ const Pago = () => {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
         <div className="max-w-4xl mx-auto p-4">
           <div className="space-y-2 mb-4">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Subtotal:</span>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Subtotal:</span>
               <div className="text-right">
-                <div>${pedido.total.toFixed(2)}</div>
-                <div className="text-xs">{formatearPrecioDual(pedido.total).bs}</div>
+                <div className="font-semibold text-gray-900">${pedido.total.toFixed(2)}</div>
+                <div className="text-xs text-gray-500">{formatearPrecioDual(pedido.total).bs}</div>
               </div>
             </div>
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Propina:</span>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Propina:</span>
               <div className="text-right">
-                <div>${calcularPropinaTotal().toFixed(2)}</div>
-                <div className="text-xs">{formatearPrecioDual(calcularPropinaTotal()).bs}</div>
+                <div className="font-semibold text-gray-900">${calcularPropinaTotal().toFixed(2)}</div>
+                <div className="text-xs text-gray-500">{formatearPrecioDual(calcularPropinaTotal()).bs}</div>
               </div>
             </div>
-            <div className="flex justify-between items-center border-t pt-2">
-              <span className="text-lg font-semibold text-gray-700">Total a Pagar:</span>
+            <div className="flex justify-between items-center border-t-2 border-gray-300 pt-3 mt-2">
+              <span className="text-lg font-bold text-gray-800">Total a Pagar:</span>
               <div className="text-right">
                 <div className="text-2xl font-bold text-primary-600">
                   ${calcularTotalConPropina().toFixed(2)}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-base font-semibold text-gray-700">
                   {formatearPrecioDual(calcularTotalConPropina()).bs}
                 </div>
               </div>
