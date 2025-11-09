@@ -184,19 +184,19 @@ const Menu = () => {
               <span className="hidden sm:inline text-sm">Pedidos</span>
             </button>
 
-            {/* Botón Carrito (solo si hay productos) */}
-            {obtenerCantidadTotal() > 0 && (
-              <button
-                onClick={() => navigate('/carrito')}
-                className="flex items-center gap-2 bg-white text-primary-600 hover:bg-primary-50 px-4 py-2 rounded-lg transition-colors relative"
-              >
-                <ShoppingCart size={20} />
-                <span className="hidden sm:inline">Carrito</span>
+            {/* Botón Carrito */}
+            <button
+              onClick={() => navigate('/carrito')}
+              className="flex items-center gap-2 bg-white text-primary-600 hover:bg-primary-50 px-4 py-2 rounded-lg transition-colors relative"
+            >
+              <ShoppingCart size={20} />
+              <span className="hidden sm:inline">Carrito</span>
+              {obtenerCantidadTotal() > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {obtenerCantidadTotal()}
                 </span>
-              </button>
-            )}
+              )}
+            </button>
           </div>
         </div>
       </div>
