@@ -1119,7 +1119,7 @@ const Dashboard = () => {
 
       {/* Modal de Detalle de Mesa */}
       <Modal
-        title={`Detalle de Mesa ${mesaSeleccionada?.numeroMesa || ''}`}
+        title={`Detalle de Mesa ${mesaSeleccionada?.numero || ''}`}
         open={modalMesaVisible}
         onCancel={() => setModalMesaVisible(false)}
         width={700}
@@ -1144,10 +1144,10 @@ const Dashboard = () => {
               <Text strong style={{ fontSize: '16px', display: 'block', marginBottom: '12px' }}>
                 Pedidos de esta mesa:
               </Text>
-              {pedidos.filter(p => p.mesa?.numero === mesaSeleccionada.numeroMesa).length > 0 ? (
+              {pedidos.filter(p => p.mesa?.numero === mesaSeleccionada.numero).length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {pedidos
-                    .filter(p => p.mesa?.numero === mesaSeleccionada.numeroMesa)
+                    .filter(p => p.mesa?.numero === mesaSeleccionada.numero)
                     .map(pedido => (
                       <div
                         key={pedido._id}
