@@ -28,16 +28,20 @@ const inicializarTasa = async () => {
     let tasaValor = null;
 
     try {
-      const response = await axios.get('https://pydolarve.org/api/v1/dollar?page=bcv', {
-        timeout: 10000
+      const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', {
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'Sierra-Yara-Cafe/1.0'
+        }
       });
       
-      if (response.data && response.data.monitors && response.data.monitors.usd) {
-        tasaValor = parseFloat(response.data.monitors.usd.price);
-        console.log('✅ Tasa obtenida de PyDolarVe:', tasaValor);
+      if (response.data && response.data.rates && response.data.rates.VES) {
+        tasaValor = parseFloat(response.data.rates.VES);
+        console.log('✅ Tasa obtenida de ExchangeRate-API:', tasaValor);
       }
     } catch (apiError) {
-      console.log('⚠️  No se pudo obtener de API, usando valor por defecto');
+      console.log('⚠️  No se pudo obtener de API:', apiError.message);
+      console.log('⚠️  Usando valor por defecto: 36.50');
       tasaValor = 36.50; // Valor por defecto
     }
 

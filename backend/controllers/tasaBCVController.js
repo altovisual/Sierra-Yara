@@ -99,30 +99,33 @@ exports.actualizarTasaDesdeAPI = async (req, res) => {
   try {
     console.log('🔄 Actualizando tasa BCV desde API...');
     
-    // Intentar obtener de PyDolarVe
     let tasaObtenida = null;
     
+    // Intentar con ExchangeRate-API primero (más confiable)
     try {
-      const response = await axios.get('https://pydolarve.org/api/v1/dollar?page=bcv', {
-        timeout: 10000
+      const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', {
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'Sierra-Yara-Cafe/1.0'
+        }
       });
       
-      if (response.data && response.data.monitors && response.data.monitors.usd) {
-        tasaObtenida = parseFloat(response.data.monitors.usd.price);
-        console.log('✅ Tasa obtenida de PyDolarVe:', tasaObtenida);
+      if (response.data && response.data.rates && response.data.rates.VES) {
+        tasaObtenida = parseFloat(response.data.rates.VES);
+        console.log('✅ Tasa obtenida de ExchangeRate-API:', tasaObtenida);
       }
     } catch (apiError) {
-      console.error('❌ Error al obtener de PyDolarVe:', apiError.message);
+      console.error('❌ Error al obtener de ExchangeRate-API:', apiError.message);
       
-      // Fallback: Intentar con ExchangeRate-API
+      // Fallback: Intentar con otra API
       try {
-        const fallbackResponse = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', {
-          timeout: 10000
+        const fallbackResponse = await axios.get('https://api.exchangerate.host/latest?base=USD&symbols=VES', {
+          timeout: 15000
         });
         
         if (fallbackResponse.data && fallbackResponse.data.rates && fallbackResponse.data.rates.VES) {
           tasaObtenida = parseFloat(fallbackResponse.data.rates.VES);
-          console.log('✅ Tasa obtenida de ExchangeRate-API (fallback):', tasaObtenida);
+          console.log('✅ Tasa obtenida de ExchangeRate.host (fallback):', tasaObtenida);
         }
       } catch (fallbackError) {
         console.error('❌ Error en fallback:', fallbackError.message);

@@ -157,12 +157,15 @@ const actualizarTasaBCVAuto = async () => {
   try {
     console.log('🔄 Actualizando tasa BCV automáticamente...');
     
-    const response = await axios.get('https://pydolarve.org/api/v1/dollar?page=bcv', {
-      timeout: 10000
+    const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', {
+      timeout: 15000,
+      headers: {
+        'User-Agent': 'Sierra-Yara-Cafe/1.0'
+      }
     });
     
-    if (response.data && response.data.monitors && response.data.monitors.usd) {
-      const tasaObtenida = parseFloat(response.data.monitors.usd.price);
+    if (response.data && response.data.rates && response.data.rates.VES) {
+      const tasaObtenida = parseFloat(response.data.rates.VES);
       
       if (tasaObtenida > 0) {
         await TasaBCV.actualizarTasa(tasaObtenida, 'api', 'sistema', 'Actualización automática');
@@ -171,6 +174,7 @@ const actualizarTasaBCVAuto = async () => {
     }
   } catch (error) {
     console.error('❌ Error al actualizar tasa BCV:', error.message);
+    console.log('ℹ️  Se usará la última tasa guardada');
   }
 };
 
