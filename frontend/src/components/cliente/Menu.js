@@ -146,14 +146,6 @@ const Menu = () => {
     }
   };
 
-  if (cargando) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Toast Container */}
