@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useMesa } from '../../context/MesaContext';
 import { pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
-import { formatearPrecio, formatearHora, obtenerColorEstado, obtenerTextoEstado } from '../../utils/helpers';
+import { formatearHora, obtenerColorEstado, obtenerTextoEstado } from '../../utils/helpers';
+import { useTasaBCV } from '../../context/TasaBCVContext';
 import { Clock, CheckCircle, ChefHat, Package, ArrowLeft, XCircle, ShoppingCart } from 'lucide-react';
 
 /**
@@ -12,6 +13,7 @@ import { Clock, CheckCircle, ChefHat, Package, ArrowLeft, XCircle, ShoppingCart 
 const MisPedidos = () => {
   const navigate = useNavigate();
   const { dispositivoId, mesaActual } = useMesa();
+  const { formatearPrecioDual } = useTasaBCV();
   const [pedidos, setPedidos] = useState([]);
   const [cargando, setCargando] = useState(true);
 
@@ -232,21 +234,6 @@ const MisPedidos = () => {
                   </div>
                 )}
 
-                {/* Items del pedido */}
-                <div className="space-y-2 mb-4">
-                  {pedido.items.map((item, index) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span className="text-gray-700">
-                        {item.cantidad}x {item.nombreProducto}
-                      </span>
-                      <span className="text-gray-800 font-medium">
-                        {formatearPrecio(item.subtotal)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Notas */}
                 {pedido.notas && (
                   <div className="bg-gray-50 p-3 rounded-lg mb-4">
                     <p className="text-sm text-gray-600">
@@ -258,9 +245,10 @@ const MisPedidos = () => {
                 {/* Total */}
                 <div className="border-t pt-3 flex justify-between items-center">
                   <span className="font-semibold text-gray-700">Total:</span>
-                  <span className="text-xl font-bold text-primary-600">
-                    {formatearPrecio(pedido.total)}
-                  </span>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-primary-600">${pedido.total.toFixed(2)}</div>
+                    <div className="text-sm text-gray-600">{formatearPrecioDual(pedido.total).bs}</div>
+                  </div>
                 </div>
 
                 {/* Botón de pago si no está pagado */}

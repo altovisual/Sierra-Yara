@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMesa } from '../../context/MesaContext';
 import { mesasAPI } from '../../services/api';
-import { formatearPrecio } from '../../utils/helpers';
+import { useTasaBCV } from '../../context/TasaBCVContext';
 import { ArrowLeft, Users, Receipt } from 'lucide-react';
 
 /**
@@ -11,6 +11,7 @@ import { ArrowLeft, Users, Receipt } from 'lucide-react';
 const CuentaMesa = () => {
   const navigate = useNavigate();
   const { mesaActual, dispositivoId } = useMesa();
+  const { formatearPrecioDual } = useTasaBCV();
   const [cuentaMesa, setCuentaMesa] = useState(null);
   const [cargando, setCargando] = useState(true);
 
@@ -122,9 +123,10 @@ const CuentaMesa = () => {
                       </span>
                     )}
                   </h4>
-                  <span className="text-lg font-bold text-primary-600">
-                    {formatearPrecio(dispositivo.total)}
-                  </span>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-primary-600">${dispositivo.total.toFixed(2)}</div>
+                    <div className="text-xs text-gray-500">{formatearPrecioDual(dispositivo.total).bs}</div>
+                  </div>
                 </div>
 
                 {/* Items del dispositivo */}
@@ -136,9 +138,10 @@ const CuentaMesa = () => {
                           <span className="text-gray-700">
                             {item.cantidad}x {item.nombreProducto}
                           </span>
-                          <span className="text-gray-600">
-                            {formatearPrecio(item.subtotal)}
-                          </span>
+                          <div className="text-right">
+                            <div className="text-gray-600">${item.subtotal.toFixed(2)}</div>
+                            <div className="text-xs text-gray-500">{formatearPrecioDual(item.subtotal).bs}</div>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -160,22 +163,29 @@ const CuentaMesa = () => {
           <div className="space-y-2 mb-4">
             <div className="flex justify-between text-gray-700">
               <span>Subtotal:</span>
-              <span className="font-medium">{formatearPrecio(cuentaMesa.totalMesa || 0)}</span>
+              <div className="text-right">
+                <div className="font-medium">${(cuentaMesa.totalMesa || 0).toFixed(2)}</div>
+                <div className="text-xs text-gray-500">{formatearPrecioDual(cuentaMesa.totalMesa || 0).bs}</div>
+              </div>
             </div>
             
             {cuentaMesa.propinaSugerida && (
               <div className="flex justify-between text-gray-600 text-sm">
                 <span>Propina sugerida (10%):</span>
-                <span>{formatearPrecio(cuentaMesa.propinaSugerida)}</span>
+                <div className="text-right">
+                  <div>${cuentaMesa.propinaSugerida.toFixed(2)}</div>
+                  <div className="text-xs">{formatearPrecioDual(cuentaMesa.propinaSugerida).bs}</div>
+                </div>
               </div>
             )}
           </div>
 
           <div className="border-t-2 border-primary-300 pt-4 flex justify-between items-center">
             <span className="text-xl font-bold text-gray-800">Total de la Mesa:</span>
-            <span className="text-3xl font-bold text-primary-600">
-              {formatearPrecio(cuentaMesa.totalMesa || 0)}
-            </span>
+            <div className="text-right">
+              <div className="text-3xl font-bold text-primary-600">${(cuentaMesa.totalMesa || 0).toFixed(2)}</div>
+              <div className="text-base text-gray-600">{formatearPrecioDual(cuentaMesa.totalMesa || 0).bs}</div>
+            </div>
           </div>
         </div>
 
