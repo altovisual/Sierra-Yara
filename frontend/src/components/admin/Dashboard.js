@@ -3,7 +3,7 @@ import { mesasAPI, pedidosAPI } from '../../services/api';
 import socketService from '../../services/socket';
 import { formatearPrecio, obtenerTextoEstado } from '../../utils/helpers';
 import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
-import { StatCardSkeleton, PedidoSkeleton } from '../common/SkeletonLoaders';
+import { StatCardSkeleton } from '../common/SkeletonLoaders';
 import {
   ShoppingOutlined,
   TableOutlined,
