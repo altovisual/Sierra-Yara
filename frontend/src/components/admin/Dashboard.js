@@ -264,7 +264,7 @@ const Dashboard = () => {
                   <div style={{ marginBottom: '8px' }}>
                     <Text strong style={{ color: '#6b7280' }}>Mesa:</Text>
                     <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1890ff' }}>
-                      Mesa {pedido.mesa?.numero || 'N/A'}
+                      Mesa {pedido.mesaId?.numero || 'N/A'}
                     </div>
                   </div>
                 </Col>
@@ -797,7 +797,7 @@ const Dashboard = () => {
                           color: '#ef4444',
                           marginBottom: '4px'
                         }}>
-                          Mesa {pedido.mesa?.numero || 'N/A'}
+                          Mesa {pedido.mesaId?.numero || 'N/A'}
                         </div>
                         <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', marginBottom: '4px' }}>
                           {formatearPrecio(pedido.total)}
@@ -1034,7 +1034,7 @@ const Dashboard = () => {
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Text type="secondary" style={{ fontSize: '12px' }}>
-                          Mesa {pedido.mesa?.numero || 'N/A'}
+                          Mesa {pedido.mesaId?.numero || 'N/A'}
                         </Text>
                         <Tag 
                           color={
@@ -1184,7 +1184,7 @@ const Dashboard = () => {
               </Text>
               {pedidos.filter(p => {
                 // Filtrar solo pedidos activos de esta mesa específica
-                const mesaPedidoNumero = p.mesa?.numero;
+                const mesaPedidoNumero = p.mesaId?.numero;
                 const mesaSeleccionadaNumero = mesaSeleccionada.numero;
                 const esDeLaMesa = mesaPedidoNumero === mesaSeleccionadaNumero;
                 const esActivo = !['entregado', 'cancelado'].includes(p.estado);
@@ -1201,7 +1201,7 @@ const Dashboard = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {pedidos
                     .filter(p => {
-                      const esDeLaMesa = p.mesa?.numero === mesaSeleccionada.numero;
+                      const esDeLaMesa = p.mesaId?.numero === mesaSeleccionada.numero;
                       const esActivo = !['entregado', 'cancelado'].includes(p.estado);
                       return esDeLaMesa && esActivo;
                     })
