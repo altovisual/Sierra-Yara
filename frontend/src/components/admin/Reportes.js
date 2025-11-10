@@ -1,13 +1,36 @@
 import React, { useState } from 'react';
 import { reportesAPI } from '../../services/api';
-import { FileSpreadsheet, Download, Calendar, TrendingUp, Package, DollarSign } from 'lucide-react';
+import AdminLayout from './AdminLayout';
+import {
+  Card,
+  Button,
+  DatePicker,
+  Space,
+  Row,
+  Col,
+  Typography,
+  message,
+  Divider,
+  Alert
+} from 'antd';
+import {
+  FileExcelOutlined,
+  DownloadOutlined,
+  DollarOutlined,
+  ShoppingOutlined,
+  BarChartOutlined
+} from '@ant-design/icons';
+import dayjs from 'dayjs';
+
+const { Title, Text, Paragraph } = Typography;
+const { RangePicker } = DatePicker;
 
 /**
  * Componente para generar y descargar reportes en Excel
  */
 const Reportes = () => {
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
+  const [fechaInicio, setFechaInicio] = useState(null);
+  const [fechaFin, setFechaFin] = useState(null);
   const [descargando, setDescargando] = useState(null);
 
   const handleDescargarReporte = (tipo) => {
@@ -32,255 +55,207 @@ const Reportes = () => {
           break;
       }
       
-      // Resetear estado después de un momento
+      message.success('Descargando reporte...');
       setTimeout(() => setDescargando(null), 2000);
     } catch (error) {
       console.error('Error al descargar reporte:', error);
-      alert('Error al generar el reporte. Por favor intenta de nuevo.');
+      message.error('Error al generar el reporte. Por favor intenta de nuevo.');
       setDescargando(null);
     }
   };
 
   const establecerRangoRapido = (dias) => {
-    const hoy = new Date();
-    const inicio = new Date();
-    inicio.setDate(hoy.getDate() - dias);
+    const hoy = dayjs();
+    const inicio = dayjs().subtract(dias, 'day');
     
-    setFechaInicio(inicio.toISOString().split('T')[0]);
-    setFechaFin(hoy.toISOString().split('T')[0]);
+    setFechaInicio(inicio.format('YYYY-MM-DD'));
+    setFechaFin(hoy.format('YYYY-MM-DD'));
   };
 
   const limpiarFechas = () => {
-    setFechaInicio('');
-    setFechaFin('');
+    setFechaInicio(null);
+    setFechaFin(null);
+  };
+
+  const handleRangeChange = (dates) => {
+    if (dates) {
+      setFechaInicio(dates[0].format('YYYY-MM-DD'));
+      setFechaFin(dates[1].format('YYYY-MM-DD'));
+    } else {
+      limpiarFechas();
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
-            <FileSpreadsheet className="text-primary-600" size={36} />
-            Reportes y Exportación
-          </h1>
-          <p className="text-gray-600">
-            Genera reportes detallados en formato Excel para análisis de ventas y productos
-          </p>
-        </div>
+    <AdminLayout title="Reportes y Exportación">
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
 
         {/* Filtros de Fecha */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Calendar size={24} className="text-primary-600" />
-            Filtrar por Rango de Fechas
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha Inicio
-              </label>
-              <input
-                type="date"
-                value={fechaInicio}
-                onChange={(e) => setFechaInicio(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-            </div>
+        <Card title="Filtrar por Rango de Fechas">
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <RangePicker
+              style={{ width: '100%' }}
+              format="YYYY-MM-DD"
+              placeholder={['Fecha Inicio', 'Fecha Fin']}
+              onChange={handleRangeChange}
+              value={fechaInicio && fechaFin ? [dayjs(fechaInicio), dayjs(fechaFin)] : null}
+            />
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha Fin
-              </label>
-              <input
-                type="date"
-                value={fechaFin}
-                onChange={(e) => setFechaFin(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            <Space wrap>
+              <Button onClick={() => establecerRangoRapido(7)}>
+                Últimos 7 días
+              </Button>
+              <Button onClick={() => establecerRangoRapido(30)}>
+                Últimos 30 días
+              </Button>
+              <Button onClick={() => establecerRangoRapido(90)}>
+                Últimos 3 meses
+              </Button>
+              <Button danger onClick={limpiarFechas}>
+                Limpiar filtros
+              </Button>
+            </Space>
+
+            {(fechaInicio || fechaFin) && (
+              <Alert
+                message={`Reportes filtrados: ${fechaInicio || 'Inicio'} → ${fechaFin || 'Hoy'}`}
+                type="info"
+                showIcon
               />
-            </div>
-          </div>
-
-          {/* Rangos Rápidos */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <button
-              onClick={() => establecerRangoRapido(7)}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-            >
-              Últimos 7 días
-            </button>
-            <button
-              onClick={() => establecerRangoRapido(30)}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-            >
-              Últimos 30 días
-            </button>
-            <button
-              onClick={() => establecerRangoRapido(90)}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-            >
-              Últimos 3 meses
-            </button>
-            <button
-              onClick={limpiarFechas}
-              className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors"
-            >
-              Limpiar filtros
-            </button>
-          </div>
-
-          {(fechaInicio || fechaFin) && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-800">
-                📊 Reportes filtrados: {fechaInicio || 'Inicio'} → {fechaFin || 'Hoy'}
-              </p>
-            </div>
-          )}
-        </div>
+            )}
+          </Space>
+        </Card>
 
         {/* Tarjetas de Reportes */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Row gutter={[16, 16]}>
           {/* Reporte de Ventas */}
-          <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <DollarSign className="text-green-600" size={28} />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800">
-                Reporte de Ventas
-              </h3>
-            </div>
-            
-            <p className="text-gray-600 text-sm mb-4">
-              Detalle completo de todas las ventas con información de pedidos, productos, métodos de pago y propinas.
-            </p>
-            
-            <ul className="text-sm text-gray-600 mb-4 space-y-1">
-              <li>• Fecha y hora de venta</li>
-              <li>• Productos vendidos</li>
-              <li>• Métodos de pago</li>
-              <li>• Propinas y totales</li>
-            </ul>
-            
-            <button
-              onClick={() => handleDescargarReporte('ventas')}
-              disabled={descargando === 'ventas'}
-              className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+          <Col xs={24} md={8}>
+            <Card
+              hoverable
+              style={{ height: '100%' }}
             >
-              {descargando === 'ventas' ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Generando...
-                </>
-              ) : (
-                <>
-                  <Download size={20} />
-                  Descargar Excel
-                </>
-              )}
-            </button>
-          </div>
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <DollarOutlined style={{ fontSize: '32px', color: '#52c41a' }} />
+                  <Title level={4} style={{ margin: 0 }}>Reporte de Ventas</Title>
+                </div>
+                
+                <Paragraph type="secondary">
+                  Detalle completo de todas las ventas con información de pedidos, productos, métodos de pago y propinas.
+                </Paragraph>
+                
+                <ul style={{ paddingLeft: '20px', color: '#8c8c8c' }}>
+                  <li>Fecha y hora de venta</li>
+                  <li>Productos vendidos</li>
+                  <li>Métodos de pago</li>
+                  <li>Propinas y totales</li>
+                </ul>
+                
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  onClick={() => handleDescargarReporte('ventas')}
+                  loading={descargando === 'ventas'}
+                  block
+                >
+                  {descargando === 'ventas' ? 'Generando...' : 'Descargar Excel'}
+                </Button>
+              </Space>
+            </Card>
+          </Col>
 
           {/* Reporte de Productos */}
-          <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Package className="text-purple-600" size={28} />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800">
-                Productos Más Vendidos
-              </h3>
-            </div>
-            
-            <p className="text-gray-600 text-sm mb-4">
-              Análisis de productos ordenados por cantidad vendida con estadísticas de ventas.
-            </p>
-            
-            <ul className="text-sm text-gray-600 mb-4 space-y-1">
-              <li>• Ranking de productos</li>
-              <li>• Unidades vendidas</li>
-              <li>• Ingresos por producto</li>
-              <li>• Promedio por venta</li>
-            </ul>
-            
-            <button
-              onClick={() => handleDescargarReporte('productos')}
-              disabled={descargando === 'productos'}
-              className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+          <Col xs={24} md={8}>
+            <Card
+              hoverable
+              style={{ height: '100%' }}
             >
-              {descargando === 'productos' ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Generando...
-                </>
-              ) : (
-                <>
-                  <Download size={20} />
-                  Descargar Excel
-                </>
-              )}
-            </button>
-          </div>
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <ShoppingOutlined style={{ fontSize: '32px', color: '#722ed1' }} />
+                  <Title level={4} style={{ margin: 0 }}>Productos Más Vendidos</Title>
+                </div>
+                
+                <Paragraph type="secondary">
+                  Análisis de productos ordenados por cantidad vendida con estadísticas de ventas.
+                </Paragraph>
+                
+                <ul style={{ paddingLeft: '20px', color: '#8c8c8c' }}>
+                  <li>Ranking de productos</li>
+                  <li>Unidades vendidas</li>
+                  <li>Ingresos por producto</li>
+                  <li>Promedio por venta</li>
+                </ul>
+                
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  onClick={() => handleDescargarReporte('productos')}
+                  loading={descargando === 'productos'}
+                  block
+                >
+                  {descargando === 'productos' ? 'Generando...' : 'Descargar Excel'}
+                </Button>
+              </Space>
+            </Card>
+          </Col>
 
           {/* Reporte Completo */}
-          <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow border-2 border-primary-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-primary-100 rounded-lg">
-                <TrendingUp className="text-primary-600" size={28} />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800">
-                Reporte Completo
-              </h3>
-            </div>
-            
-            <p className="text-gray-600 text-sm mb-4">
-              Reporte integral con múltiples hojas: resumen general, ventas, productos y análisis por mesa.
-            </p>
-            
-            <ul className="text-sm text-gray-600 mb-4 space-y-1">
-              <li>• 📊 Resumen general</li>
-              <li>• 💰 Ventas detalladas</li>
-              <li>• 📦 Productos vendidos</li>
-              <li>• 🪑 Análisis por mesa</li>
-            </ul>
-            
-            <button
-              onClick={() => handleDescargarReporte('completo')}
-              disabled={descargando === 'completo'}
-              className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+          <Col xs={24} md={8}>
+            <Card
+              hoverable
+              style={{ height: '100%', borderColor: '#1890ff' }}
             >
-              {descargando === 'completo' ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Generando...
-                </>
-              ) : (
-                <>
-                  <Download size={20} />
-                  Descargar Excel
-                </>
-              )}
-            </button>
-          </div>
-        </div>
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <BarChartOutlined style={{ fontSize: '32px', color: '#1890ff' }} />
+                  <Title level={4} style={{ margin: 0 }}>Reporte Completo</Title>
+                </div>
+                
+                <Paragraph type="secondary">
+                  Reporte integral con múltiples hojas: resumen general, ventas, productos y análisis por mesa.
+                </Paragraph>
+                
+                <ul style={{ paddingLeft: '20px', color: '#8c8c8c' }}>
+                  <li>📊 Resumen general</li>
+                  <li>💰 Ventas detalladas</li>
+                  <li>📦 Productos vendidos</li>
+                  <li>🪑 Análisis por mesa</li>
+                </ul>
+                
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  onClick={() => handleDescargarReporte('completo')}
+                  loading={descargando === 'completo'}
+                  block
+                >
+                  {descargando === 'completo' ? 'Generando...' : 'Descargar Excel'}
+                </Button>
+              </Space>
+            </Card>
+          </Col>
+        </Row>
 
         {/* Información adicional */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-            <FileSpreadsheet size={20} />
-            Información sobre los reportes
-          </h3>
-          <ul className="text-sm text-blue-800 space-y-2">
-            <li>• Los reportes se generan en formato Excel (.xlsx) compatible con Microsoft Excel, Google Sheets y LibreOffice</li>
-            <li>• Todos los montos están expresados en dólares ($)</li>
-            <li>• Solo se incluyen pedidos confirmados como pagados</li>
-            <li>• Si no seleccionas fechas, se exportarán todos los datos disponibles</li>
-            <li>• Los archivos se descargan automáticamente al hacer clic en "Descargar Excel"</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+        <Card>
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FileExcelOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
+              <Title level={5} style={{ margin: 0 }}>Información sobre los reportes</Title>
+            </div>
+            <Divider style={{ margin: '12px 0' }} />
+            <ul style={{ paddingLeft: '20px', color: '#595959' }}>
+              <li>Los reportes se generan en formato Excel (.xlsx) compatible con Microsoft Excel, Google Sheets y LibreOffice</li>
+              <li>Todos los montos están expresados en dólares ($)</li>
+              <li>Solo se incluyen pedidos confirmados como pagados</li>
+              <li>Si no seleccionas fechas, se exportarán todos los datos disponibles</li>
+              <li>Los archivos se descargan automáticamente al hacer clic en "Descargar Excel"</li>
+            </ul>
+          </Space>
+        </Card>
+      </Space>
+    </AdminLayout>
   );
 };
 
