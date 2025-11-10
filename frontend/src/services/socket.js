@@ -74,7 +74,13 @@ class SocketService {
   unirseMesa(numeroMesa) {
     if (this.socket && this.connected) {
       this.socket.emit('unirse_mesa', numeroMesa);
-      console.log(`📍 Unido a la mesa ${numeroMesa}`);
+      console.log(`📍 Emitiendo evento unirse_mesa para mesa ${numeroMesa}`);
+      console.log(`📍 Socket conectado: ${this.connected}`);
+      console.log(`📍 Socket ID: ${this.socket.id}`);
+    } else {
+      console.error('❌ No se puede unir a la mesa - Socket no conectado');
+      console.log('Socket:', this.socket);
+      console.log('Connected:', this.connected);
     }
   }
 
@@ -151,7 +157,12 @@ class SocketService {
   // Escuchar evento de mesa liberada (para clientes)
   onMesaLiberada(callback) {
     if (this.socket) {
+      console.log('👂 Registrando listener para evento: mesa-liberada');
+      console.log('👂 Socket existe:', !!this.socket);
+      console.log('👂 Socket conectado:', this.connected);
       this.socket.on('mesa-liberada', callback);
+    } else {
+      console.error('❌ No se puede registrar listener - Socket no existe');
     }
   }
 

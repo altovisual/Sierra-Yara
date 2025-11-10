@@ -89,6 +89,24 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Endpoint de prueba para emitir evento de mesa liberada
+app.post('/api/test/liberar-mesa/:numeroMesa', (req, res) => {
+  const numeroMesa = parseInt(req.params.numeroMesa);
+  console.log(`🧪 TEST: Emitiendo evento mesa-liberada para mesa ${numeroMesa}`);
+  console.log(`📡 Sala: mesa_${numeroMesa}`);
+  
+  req.io.to(`mesa_${numeroMesa}`).emit('mesa-liberada', {
+    numeroMesa,
+    mensaje: 'TEST: La mesa ha sido liberada'
+  });
+  
+  res.json({
+    success: true,
+    message: `Evento emitido a mesa_${numeroMesa}`,
+    numeroMesa
+  });
+});
+
 // Manejo de WebSockets
 io.on('connection', (socket) => {
   console.log(`✅ Cliente conectado: ${socket.id}`);
