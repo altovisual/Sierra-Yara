@@ -119,14 +119,22 @@ export const MesaProvider = ({ children }) => {
   }, [mesaActual]);
 
   // Conectar a una mesa (escaneo de QR)
-  const conectarMesa = async (numeroMesa, nombre = '') => {
+  const conectarMesa = async (numeroMesa, nombre = '', datosCliente = null) => {
     try {
       setCargando(true);
       setError(null);
 
-      const response = await mesasAPI.conectarDispositivo(numeroMesa, {
+      const datosConexion = {
         nombreUsuario: nombre || `Cliente ${Date.now()}`
-      });
+      };
+
+      // Agregar datos adicionales del cliente si están disponibles
+      if (datosCliente) {
+        datosConexion.cedula = datosCliente.cedula;
+        datosConexion.telefono = datosCliente.telefono;
+      }
+
+      const response = await mesasAPI.conectarDispositivo(numeroMesa, datosConexion);
 
       const { dispositivoId: nuevoDispositivoId, nombreUsuario: nuevoNombre } = response.data.data;
 
@@ -138,11 +146,12 @@ export const MesaProvider = ({ children }) => {
       setDispositivoId(nuevoDispositivoId);
       setNombreUsuario(nuevoNombre);
 
-      // Guardar en localStorage con timestamp
+      // Guardar en localStorage con timestamp y datos del cliente
       guardarEnStorage('sesionMesa', {
         mesa,
         dispositivoId: nuevoDispositivoId,
         nombreUsuario: nuevoNombre,
+        datosCliente: datosCliente || null,
         timestamp: Date.now() // Agregar timestamp para expiración
       });
 

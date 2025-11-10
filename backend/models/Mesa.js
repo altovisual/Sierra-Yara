@@ -23,6 +23,8 @@ const mesaSchema = new mongoose.Schema({
   dispositivosActivos: [{
     dispositivoId: String,
     nombreUsuario: String,
+    cedula: String,
+    telefono: String,
     horaConexion: Date
   }],
   totalMesa: {

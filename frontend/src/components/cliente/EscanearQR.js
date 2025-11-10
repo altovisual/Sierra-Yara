@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useMesa } from '../../context/MesaContext';
-import { Hash, Sparkles, ChevronRight } from 'lucide-react';
+import { Hash, ChevronRight, User, CreditCard, Phone } from 'lucide-react';
 import logo from '../../assets/logo.png';
 
 /**
@@ -15,6 +15,9 @@ const EscanearQR = () => {
   
   const [numeroMesa, setNumeroMesa] = useState('');
   const [nombreUsuario, setNombreUsuario] = useState('');
+  const [apellidoUsuario, setApellidoUsuario] = useState('');
+  const [cedulaUsuario, setCedulaUsuario] = useState('');
+  const [telefonoUsuario, setTelefonoUsuario] = useState('');
   const [error, setError] = useState('');
   const [animado, setAnimado] = useState(false);
   const [mesaDesdeQR, setMesaDesdeQR] = useState(null);
@@ -73,8 +76,47 @@ const EscanearQR = () => {
       return;
     }
 
+    if (!nombreUsuario.trim()) {
+      setError('Por favor ingresa tu nombre');
+      return;
+    }
+
+    if (!apellidoUsuario.trim()) {
+      setError('Por favor ingresa tu apellido');
+      return;
+    }
+
+    if (!cedulaUsuario.trim()) {
+      setError('Por favor ingresa tu cédula de identidad');
+      return;
+    }
+
+    if (!telefonoUsuario.trim()) {
+      setError('Por favor ingresa tu número de teléfono');
+      return;
+    }
+
+    // Validar formato de cédula (solo números, mínimo 6 dígitos)
+    if (!/^\d{6,}$/.test(cedulaUsuario.replace(/[.-]/g, ''))) {
+      setError('La cédula debe contener al menos 6 dígitos');
+      return;
+    }
+
+    // Validar formato de teléfono (solo números, mínimo 10 dígitos)
+    if (!/^\d{10,}$/.test(telefonoUsuario.replace(/[\s()-]/g, ''))) {
+      setError('El teléfono debe contener al menos 10 dígitos');
+      return;
+    }
+
     try {
-      await conectarMesa(parseInt(numeroMesa), nombreUsuario);
+      const nombreCompleto = `${nombreUsuario.trim()} ${apellidoUsuario.trim()}`;
+      const datosCliente = {
+        nombre: nombreCompleto,
+        cedula: cedulaUsuario.trim(),
+        telefono: telefonoUsuario.trim()
+      };
+      
+      await conectarMesa(parseInt(numeroMesa), nombreCompleto, datosCliente);
       navigate('/menu');
     } catch (err) {
       console.error('Error completo:', err);
@@ -147,7 +189,7 @@ const EscanearQR = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mt-4">
-                  Solo necesitamos tu nombre para continuar
+                  Por favor completa tus datos para continuar
                 </p>
               </>
             ) : (
@@ -188,21 +230,65 @@ const EscanearQR = () => {
             {/* Nombre */}
             <div className="transform transition-all duration-300 hover:scale-[1.02]">
               <label className="flex items-center gap-2 text-gray-700 font-semibold mb-2">
-                <Sparkles size={18} className="text-primary-600" />
-                Tu Nombre {mesaDesdeQR ? '*' : '(opcional)'}
+                <User size={18} className="text-primary-600" />
+                Nombre *
               </label>
               <input
                 type="text"
                 value={nombreUsuario}
                 onChange={(e) => setNombreUsuario(e.target.value)}
                 placeholder="Ej: Juan"
-                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-200 focus:border-primary-500 transition-all text-lg hover:border-gray-300"
-                required={mesaDesdeQR}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-200 focus:border-primary-500 transition-all hover:border-gray-300"
+                required
               />
-              <p className="text-sm text-gray-500 mt-2 flex items-center gap-1">
-                <span>💡</span>
-                {mesaDesdeQR ? 'Ayúdanos a identificar tu pedido' : 'Ayuda a identificar tu pedido en la mesa'}
-              </p>
+            </div>
+
+            {/* Apellido */}
+            <div className="transform transition-all duration-300 hover:scale-[1.02]">
+              <label className="flex items-center gap-2 text-gray-700 font-semibold mb-2">
+                <User size={18} className="text-primary-600" />
+                Apellido *
+              </label>
+              <input
+                type="text"
+                value={apellidoUsuario}
+                onChange={(e) => setApellidoUsuario(e.target.value)}
+                placeholder="Ej: Pérez"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-200 focus:border-primary-500 transition-all hover:border-gray-300"
+                required
+              />
+            </div>
+
+            {/* Cédula de Identidad */}
+            <div className="transform transition-all duration-300 hover:scale-[1.02]">
+              <label className="flex items-center gap-2 text-gray-700 font-semibold mb-2">
+                <CreditCard size={18} className="text-primary-600" />
+                Cédula de Identidad *
+              </label>
+              <input
+                type="text"
+                value={cedulaUsuario}
+                onChange={(e) => setCedulaUsuario(e.target.value)}
+                placeholder="Ej: 12345678"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-200 focus:border-primary-500 transition-all hover:border-gray-300"
+                required
+              />
+            </div>
+
+            {/* Número de Teléfono */}
+            <div className="transform transition-all duration-300 hover:scale-[1.02]">
+              <label className="flex items-center gap-2 text-gray-700 font-semibold mb-2">
+                <Phone size={18} className="text-primary-600" />
+                Número de Teléfono *
+              </label>
+              <input
+                type="tel"
+                value={telefonoUsuario}
+                onChange={(e) => setTelefonoUsuario(e.target.value)}
+                placeholder="Ej: 04121234567"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary-200 focus:border-primary-500 transition-all hover:border-gray-300"
+                required
+              />
             </div>
 
             {/* Error */}

@@ -67,7 +67,7 @@ exports.obtenerMesaPorNumero = async (req, res) => {
 // @access  Public
 exports.conectarDispositivo = async (req, res) => {
   try {
-    const { nombreUsuario } = req.body;
+    const { nombreUsuario, cedula, telefono } = req.body;
     const numeroMesa = parseInt(req.params.numeroMesa);
 
     let mesa = await Mesa.findOne({ numeroMesa });
@@ -84,10 +84,12 @@ exports.conectarDispositivo = async (req, res) => {
     // Generar ID único para el dispositivo
     const dispositivoId = uuidv4();
 
-    // Agregar dispositivo a la mesa
+    // Agregar dispositivo a la mesa con datos completos del cliente
     mesa.dispositivosActivos.push({
       dispositivoId,
       nombreUsuario: nombreUsuario || `Cliente ${mesa.dispositivosActivos.length + 1}`,
+      cedula: cedula || null,
+      telefono: telefono || null,
       horaConexion: new Date()
     });
 
@@ -105,7 +107,9 @@ exports.conectarDispositivo = async (req, res) => {
         mesaId: mesa._id,
         numeroMesa: mesa.numeroMesa,
         dispositivoId,
-        nombreUsuario: nombreUsuario || `Cliente ${mesa.dispositivosActivos.length}`
+        nombreUsuario: nombreUsuario || `Cliente ${mesa.dispositivosActivos.length}`,
+        cedula: cedula || null,
+        telefono: telefono || null
       }
     });
   } catch (error) {
