@@ -16,6 +16,7 @@ const pedidosRoutes = require('./routes/pedidos');
 const promocionesRoutes = require('./routes/promociones');
 const tasaBCVRoutes = require('./routes/tasaBCV');
 const reporteRoutes = require('./routes/reporteRoutes');
+const clienteRoutes = require('./routes/clienteRoutes');
 
 // Inicializar Express
 const app = express();
@@ -55,6 +56,7 @@ app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/promociones', promocionesRoutes);
 app.use('/api/tasa-bcv', tasaBCVRoutes);
 app.use('/api/reportes', reporteRoutes);
+app.use('/api/clientes', clienteRoutes);
 
 // Ruta para obtener información de pago
 app.get('/api/config/pago', (req, res) => {

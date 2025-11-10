@@ -113,4 +113,16 @@ export const reportesAPI = {
   },
 };
 
+// ============ CLIENTES ============
+export const clientesAPI = {
+  obtenerTodos: (params) => api.get('/clientes', { params }),
+  obtenerPorId: (id) => api.get(`/clientes/${id}`),
+  obtenerPorCedula: (cedula) => api.get(`/clientes/cedula/${cedula}`),
+  crear: (datos) => api.post('/clientes', datos),
+  actualizar: (id, datos) => api.put(`/clientes/${id}`, datos),
+  desactivar: (id) => api.delete(`/clientes/${id}`),
+  obtenerEstadisticas: () => api.get('/clientes/estadisticas/resumen'),
+  exportarMarketing: (params) => api.get('/clientes/exportar/marketing', { params }),
+};
+
 export default api;

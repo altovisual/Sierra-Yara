@@ -1,6 +1,7 @@
 const Pedido = require('../models/Pedido');
 const Mesa = require('../models/Mesa');
 const Producto = require('../models/Producto');
+const Cliente = require('../models/Cliente');
 
 /**
  * Controlador para la gestión de pedidos
@@ -360,6 +361,30 @@ exports.confirmarPago = async (req, res) => {
     pedido.pagado = true;
     pedido.estadoPago = 'confirmado';
     await pedido.save();
+
+    // Actualizar estadísticas del cliente si tiene cédula
+    if (pedido.cedula) {
+      try {
+        const cliente = await Cliente.findOne({ cedula: pedido.cedula });
+        if (cliente) {
+          // Actualizar estadísticas
+          await cliente.actualizarEstadisticas(pedido);
+          
+          // Agregar productos preferidos
+          for (const item of pedido.items) {
+            if (item.productoId) {
+              await cliente.agregarProductoPreferido(
+                item.productoId,
+                item.nombreProducto
+              );
+            }
+          }
+        }
+      } catch (clienteError) {
+        console.error('Error al actualizar estadísticas del cliente:', clienteError);
+        // Continuar aunque falle la actualización del cliente
+      }
+    }
 
     // Actualizar el estado de la mesa
     const Mesa = require('../models/Mesa');

@@ -1,5 +1,6 @@
 const Mesa = require('../models/Mesa');
 const Pedido = require('../models/Pedido');
+const Cliente = require('../models/Cliente');
 const { v4: uuidv4 } = require('uuid');
 
 /**
@@ -79,6 +80,39 @@ exports.conectarDispositivo = async (req, res) => {
         estado: 'ocupada',
         horaOcupacion: new Date()
       });
+    }
+
+    // Registrar o actualizar cliente si tiene cédula y teléfono
+    if (cedula && telefono && nombreUsuario) {
+      try {
+        let cliente = await Cliente.findOne({ cedula });
+        
+        if (cliente) {
+          // Actualizar cliente existente
+          cliente.nombre = nombreUsuario;
+          cliente.telefono = telefono;
+          cliente.totalVisitas += 1;
+          cliente.ultimaVisita = new Date();
+          
+          // Agregar mesa a preferidas si no está
+          if (!cliente.mesasPreferidas.includes(numeroMesa)) {
+            cliente.mesasPreferidas.push(numeroMesa);
+          }
+          
+          await cliente.save();
+        } else {
+          // Crear nuevo cliente
+          await Cliente.create({
+            nombre: nombreUsuario,
+            cedula,
+            telefono,
+            mesasPreferidas: [numeroMesa]
+          });
+        }
+      } catch (clienteError) {
+        console.error('Error al registrar cliente:', clienteError);
+        // Continuar aunque falle el registro del cliente
+      }
     }
 
     // Generar ID único para el dispositivo
