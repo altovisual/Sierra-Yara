@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMesa } from '../../context/MesaContext';
 import { mesasAPI } from '../../services/api';
 import { useTasaBCV } from '../../context/TasaBCVContext';
-import { ArrowLeft, Users, Receipt } from 'lucide-react';
+import { ArrowLeft, Users, Receipt, CheckCircle, Clock, XCircle } from 'lucide-react';
 
 /**
  * Componente para ver la cuenta completa de la mesa
@@ -115,24 +115,73 @@ const CuentaMesa = () => {
             cuentaMesa.pedidosPorDispositivo.map((dispositivo, index) => (
               <div key={index} className="card p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-gray-800">
-                    {dispositivo.nombreUsuario || `Cliente ${index + 1}`}
-                    {dispositivo.dispositivoId === dispositivoId && (
-                      <span className="ml-2 text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
-                        Tú
-                      </span>
+                  <div>
+                    <h4 className="font-semibold text-gray-800">
+                      {dispositivo.nombreUsuario || `Cliente ${index + 1}`}
+                      {dispositivo.dispositivoId === dispositivoId && (
+                        <span className="ml-2 text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
+                          Tú
+                        </span>
+                      )}
+                    </h4>
+                    {/* Estado de pago del dispositivo */}
+                    {dispositivo.pendiente === 0 ? (
+                      <div className="flex items-center gap-1 text-green-600 text-sm mt-1">
+                        <CheckCircle size={16} />
+                        <span className="font-medium">Pagado</span>
+                      </div>
+                    ) : dispositivo.pagado > 0 ? (
+                      <div className="flex items-center gap-1 text-yellow-600 text-sm mt-1">
+                        <Clock size={16} />
+                        <span className="font-medium">Pago parcial</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-red-600 text-sm mt-1">
+                        <XCircle size={16} />
+                        <span className="font-medium">Pendiente</span>
+                      </div>
                     )}
-                  </h4>
+                  </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-primary-600">${dispositivo.total.toFixed(2)}</div>
-                    <div className="text-xs text-gray-500">{formatearPrecioDual(dispositivo.total).bs}</div>
+                    <div className="text-lg font-bold text-primary-600">${(dispositivo.total + dispositivo.propina).toFixed(2)}</div>
+                    <div className="text-xs text-gray-500">{formatearPrecioDual(dispositivo.total + dispositivo.propina).bs}</div>
+                    {dispositivo.pagado > 0 && (
+                      <div className="text-xs text-green-600 mt-1">
+                        Pagado: ${dispositivo.pagado.toFixed(2)}
+                      </div>
+                    )}
+                    {dispositivo.pendiente > 0 && (
+                      <div className="text-xs text-red-600">
+                        Pendiente: ${dispositivo.pendiente.toFixed(2)}
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Items del dispositivo */}
-                <div className="space-y-2 pl-4 border-l-2 border-gray-200">
+                {/* Pedidos del dispositivo */}
+                <div className="space-y-3 pl-4 border-l-2 border-gray-200">
                   {dispositivo.pedidos?.map((pedido) => (
-                    <div key={pedido._id} className="space-y-1">
+                    <div key={pedido._id} className="space-y-2">
+                      {/* Estado del pedido */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Pedido #{pedido._id.slice(-6)}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          pedido.estadoPago === 'confirmado' 
+                            ? 'bg-green-100 text-green-700'
+                            : pedido.estadoPago === 'procesando'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : pedido.estadoPago === 'rechazado'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {pedido.estadoPago === 'confirmado' ? '✓ Pagado' : 
+                           pedido.estadoPago === 'procesando' ? '⏳ Procesando' :
+                           pedido.estadoPago === 'rechazado' ? '✗ Rechazado' :
+                           '⏸ Pendiente'}
+                        </span>
+                      </div>
+                      
+                      {/* Items del pedido */}
                       {pedido.items?.map((item, itemIndex) => (
                         <div key={itemIndex} className="flex justify-between text-sm">
                           <span className="text-gray-700">
@@ -144,6 +193,15 @@ const CuentaMesa = () => {
                           </div>
                         </div>
                       ))}
+                      
+                      {/* Total del pedido con propina */}
+                      <div className="flex justify-between text-sm font-medium pt-2 border-t border-gray-200">
+                        <span className="text-gray-700">Total (+ propina):</span>
+                        <div className="text-right">
+                          <div className="text-gray-800">${(pedido.total + pedido.propina).toFixed(2)}</div>
+                          <div className="text-xs text-gray-500">{formatearPrecioDual(pedido.total + pedido.propina).bs}</div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -169,21 +227,49 @@ const CuentaMesa = () => {
               </div>
             </div>
             
-            {cuentaMesa.propinaSugerida && (
-              <div className="flex justify-between text-gray-600 text-sm">
-                <span>Propina sugerida (10%):</span>
+            {cuentaMesa.totalPagado > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span className="flex items-center gap-1">
+                  <CheckCircle size={16} />
+                  Pagado:
+                </span>
                 <div className="text-right">
-                  <div>${cuentaMesa.propinaSugerida.toFixed(2)}</div>
-                  <div className="text-xs">{formatearPrecioDual(cuentaMesa.propinaSugerida).bs}</div>
+                  <div className="font-medium">${cuentaMesa.totalPagado.toFixed(2)}</div>
+                  <div className="text-xs">{formatearPrecioDual(cuentaMesa.totalPagado).bs}</div>
+                </div>
+              </div>
+            )}
+            
+            {cuentaMesa.totalPendiente > 0 && (
+              <div className="flex justify-between text-red-600">
+                <span className="flex items-center gap-1">
+                  <Clock size={16} />
+                  Pendiente:
+                </span>
+                <div className="text-right">
+                  <div className="font-medium">${cuentaMesa.totalPendiente.toFixed(2)}</div>
+                  <div className="text-xs">{formatearPrecioDual(cuentaMesa.totalPendiente).bs}</div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="border-t-2 border-primary-300 pt-4 flex justify-between items-center">
-            <span className="text-xl font-bold text-gray-800">Total de la Mesa:</span>
+          <div className={`border-t-2 pt-4 flex justify-between items-center ${
+            cuentaMesa.totalPendiente === 0 ? 'border-green-300' : 'border-primary-300'
+          }`}>
+            <div>
+              <span className="text-xl font-bold text-gray-800">Total de la Mesa:</span>
+              {cuentaMesa.totalPendiente === 0 && (
+                <div className="flex items-center gap-1 text-green-600 text-sm mt-1">
+                  <CheckCircle size={16} />
+                  <span className="font-medium">Completamente Pagado</span>
+                </div>
+              )}
+            </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-primary-600">${(cuentaMesa.totalMesa || 0).toFixed(2)}</div>
+              <div className={`text-3xl font-bold ${
+                cuentaMesa.totalPendiente === 0 ? 'text-green-600' : 'text-primary-600'
+              }`}>${(cuentaMesa.totalMesa || 0).toFixed(2)}</div>
               <div className="text-base text-gray-600">{formatearPrecioDual(cuentaMesa.totalMesa || 0).bs}</div>
             </div>
           </div>

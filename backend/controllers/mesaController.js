@@ -304,29 +304,50 @@ exports.obtenerCuentaMesa = async (req, res) => {
     // Agrupar pedidos por dispositivo
     const cuentaPorDispositivo = {};
     let totalMesa = 0;
+    let totalPagado = 0;
 
     mesa.pedidos.forEach(pedido => {
       if (!cuentaPorDispositivo[pedido.dispositivoId]) {
         cuentaPorDispositivo[pedido.dispositivoId] = {
+          dispositivoId: pedido.dispositivoId,
           nombreUsuario: pedido.nombreUsuario,
           pedidos: [],
           total: 0,
-          propina: 0
+          propina: 0,
+          pagado: 0,
+          pendiente: 0
         };
       }
 
       cuentaPorDispositivo[pedido.dispositivoId].pedidos.push(pedido);
       cuentaPorDispositivo[pedido.dispositivoId].total += pedido.total;
       cuentaPorDispositivo[pedido.dispositivoId].propina += pedido.propina;
+      
+      // Calcular cuánto ha pagado este dispositivo
+      if (pedido.estadoPago === 'confirmado') {
+        cuentaPorDispositivo[pedido.dispositivoId].pagado += pedido.total + pedido.propina;
+        totalPagado += pedido.total + pedido.propina;
+      }
+      
       totalMesa += pedido.total + pedido.propina;
     });
+
+    // Calcular pendiente por dispositivo
+    Object.values(cuentaPorDispositivo).forEach(cuenta => {
+      cuenta.pendiente = cuenta.total + cuenta.propina - cuenta.pagado;
+    });
+
+    // Convertir objeto a array
+    const pedidosPorDispositivo = Object.values(cuentaPorDispositivo);
 
     res.json({
       success: true,
       data: {
         numeroMesa: mesa.numeroMesa,
-        cuentaPorDispositivo,
+        pedidosPorDispositivo,
         totalMesa,
+        totalPagado,
+        totalPendiente: totalMesa - totalPagado,
         dispositivosActivos: mesa.dispositivosActivos
       }
     });
