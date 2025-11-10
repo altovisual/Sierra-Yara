@@ -13,14 +13,11 @@ const EscanearQR = () => {
   const { numeroMesa: mesaParam } = useParams();
   const { conectarMesa, desconectarMesa, cargando, estaConectado, mesaActual } = useMesa();
   
-  // Inicializar con el valor de la URL si existe
-  const mesaDesdeURL = mesaParam || searchParams.get('mesa');
-  
-  const [numeroMesa, setNumeroMesa] = useState(mesaDesdeURL || '');
+  const [numeroMesa, setNumeroMesa] = useState('');
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [error, setError] = useState('');
   const [animado, setAnimado] = useState(false);
-  const [mesaDesdeQR, setMesaDesdeQR] = useState(mesaDesdeURL);
+  const [mesaDesdeQR, setMesaDesdeQR] = useState(null);
 
   useEffect(() => {
     // Activar animación al montar el componente
@@ -29,7 +26,9 @@ const EscanearQR = () => {
     // Obtener número de mesa desde URL (parámetro de ruta o query param)
     const mesaDesdeRuta = mesaParam || searchParams.get('mesa');
     
-    console.log('🔍 Verificando URL - Mesa desde ruta:', mesaDesdeRuta);
+    console.log('🔍 DEBUG - mesaParam:', mesaParam);
+    console.log('🔍 DEBUG - searchParams.get("mesa"):', searchParams.get('mesa'));
+    console.log('🔍 DEBUG - mesaDesdeRuta:', mesaDesdeRuta);
     
     // Si hay número de mesa en la URL
     if (mesaDesdeRuta) {
@@ -55,6 +54,7 @@ const EscanearQR = () => {
     } else {
       console.log('❌ No hay mesa en la URL');
       setMesaDesdeQR(null);
+      setNumeroMesa('');
       
       // Solo si NO hay mesa en URL Y ya está conectado, redirigir al menú
       if (estaConectado()) {
@@ -91,6 +91,10 @@ const EscanearQR = () => {
       }
     }
   };
+
+  // Log para debugging en el render
+  console.log('🎨 RENDER - mesaDesdeQR:', mesaDesdeQR);
+  console.log('🎨 RENDER - numeroMesa:', numeroMesa);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 flex items-center justify-center p-4 relative overflow-hidden">
