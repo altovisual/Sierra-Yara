@@ -8,6 +8,7 @@ import GestionInventario from '../components/admin/GestionInventario';
 import GeneradorQR from '../components/admin/GeneradorQR';
 import GestionTasaBCV from '../components/admin/GestionTasaBCV';
 import Reportes from '../components/admin/Reportes';
+import GestionClientes from '../components/admin/GestionClientes';
 
 const AdminRoutes = () => {
   return (
@@ -20,6 +21,7 @@ const AdminRoutes = () => {
       <Route path="/generar-qr" element={<GeneradorQR />} />
       <Route path="/tasa-bcv" element={<GestionTasaBCV />} />
       <Route path="/reportes" element={<Reportes />} />
+      <Route path="/clientes" element={<GestionClientes />} />
       <Route path="*" element={<Navigate to="/admin" replace />} />
     </Routes>
   );
