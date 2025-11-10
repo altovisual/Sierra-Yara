@@ -4,6 +4,8 @@ import { pedidosAPI, configAPI } from '../../services/api';
 import { calcularPropina } from '../../utils/helpers';
 import { CreditCard, Smartphone, DollarSign, ArrowLeft, Copy, Check, Fingerprint, Gift, CheckCircle, Users } from 'lucide-react';
 import { useTasaBCV } from '../../context/TasaBCVContext';
+import { useMesa } from '../../context/MesaContext';
+import socketService from '../../services/socket';
 
 /**
  * Componente para procesar el pago de un pedido
@@ -12,6 +14,7 @@ const Pago = () => {
   const { pedidoId } = useParams();
   const navigate = useNavigate();
   const { formatearPrecioDual } = useTasaBCV();
+  const { mesaActual } = useMesa();
   
   const [pedido, setPedido] = useState(null);
   const [datosPago, setDatosPago] = useState(null);
@@ -20,6 +23,7 @@ const Pago = () => {
   const [propinaPersonalizada, setPropinaPersonalizada] = useState('');
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
+  const [esperandoAprobacion, setEsperandoAprobacion] = useState(false);
   const [copiado, setCopiado] = useState('');
   const [comprobante, setComprobante] = useState(null);
   const [referencia, setReferencia] = useState('');
@@ -31,6 +35,30 @@ const Pago = () => {
     cargarDatos();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pedidoId]);
+
+  // Escuchar cuando el pedido es marcado como pagado
+  useEffect(() => {
+    if (!pedidoId || !mesaActual) return;
+
+    const handlePedidoActualizado = (data) => {
+      console.log('📡 Evento pedido actualizado recibido:', data);
+      
+      // Si es nuestro pedido y fue marcado como pagado
+      if (data.pedidoId === pedidoId && data.pagado === true) {
+        console.log('✅ Pago aprobado para pedido:', pedidoId);
+        setEsperandoAprobacion(false);
+        setProcesando(false);
+        alert('¡Pago aprobado! ✅\n\nTu pago ha sido verificado y aprobado exitosamente.');
+        navigate('/mis-pedidos');
+      }
+    };
+
+    socketService.onPedidoActualizado(handlePedidoActualizado);
+
+    return () => {
+      socketService.off('pedido_actualizado', handlePedidoActualizado);
+    };
+  }, [pedidoId, mesaActual, navigate]);
 
   const cargarDatos = async () => {
     try {
@@ -150,15 +178,26 @@ const Pago = () => {
         reader.readAsDataURL(comprobante);
       } else {
         await pedidosAPI.procesarPago(pedidoId, formData);
-        const mensajes = {
-          'efectivo': '¡Método de pago registrado!\n\nPuedes acercarte a la caja para realizar el pago en efectivo.',
-          'biopago': '¡Método de pago registrado!\n\nPuedes acercarte a la caja para pagar con BioPago (huella digital).',
-          'punto_venta': '¡Método de pago registrado!\n\nEl personal se acercará a tu mesa con el punto de venta.',
-          'default': '¡Pago registrado exitosamente!\n\nEl personal verificará tu pago en breve.'
-        };
-        alert(mensajes[metodoPago] || mensajes.default);
-        navigate('/mis-pedidos');
-        setProcesando(false);
+        
+        // Para punto de venta y biopago, mantener estado "procesando" hasta que se apruebe
+        if (['punto_venta', 'biopago'].includes(metodoPago)) {
+          setEsperandoAprobacion(true);
+          const mensajes = {
+            'biopago': '¡Método de pago registrado!\n\nPuedes acercarte a la caja para pagar con BioPago (huella digital).\n\nEsperando confirmación del pago...',
+            'punto_venta': '¡Método de pago registrado!\n\nEl personal se acercará a tu mesa con el punto de venta.\n\nEsperando confirmación del pago...'
+          };
+          alert(mensajes[metodoPago]);
+          // NO navegar ni quitar procesando, esperar evento de WebSocket
+        } else {
+          // Para efectivo, navegar inmediatamente
+          const mensajes = {
+            'efectivo': '¡Método de pago registrado!\n\nPuedes acercarte a la caja para realizar el pago en efectivo.',
+            'default': '¡Pago registrado exitosamente!\n\nEl personal verificará tu pago en breve.'
+          };
+          alert(mensajes[metodoPago] || mensajes.default);
+          navigate('/mis-pedidos');
+          setProcesando(false);
+        }
       }
     } catch (error) {
       console.error('Error al procesar pago:', error);
@@ -660,10 +699,22 @@ const Pago = () => {
           </div>
           <button
             onClick={handleProcesarPago}
-            disabled={!metodoPago || procesando}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!metodoPago || procesando || esperandoAprobacion}
+            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {procesando ? 'Procesando...' : 'Confirmar Pago'}
+            {esperandoAprobacion ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Esperando aprobación del pago...
+              </>
+            ) : procesando ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Procesando...
+              </>
+            ) : (
+              'Confirmar Pago'
+            )}
           </button>
         </div>
       </div>

@@ -341,8 +341,11 @@ exports.confirmarPago = async (req, res) => {
       // Emitir evento de actualización
       const io = req.app.get('io');
       if (io) {
+        console.log(`💰 Pago confirmado para pedido ${pedido._id}`);
+        console.log(`📡 Emitiendo evento pedido_actualizado a mesa_${mesa.numeroMesa}`);
+        
         io.emit('mesa_actualizada', { mesa });
-        io.to(`mesa-${mesa.numeroMesa}`).emit('pedido_actualizado', { 
+        io.to(`mesa_${mesa.numeroMesa}`).emit('pedido_actualizado', { 
           pedidoId: pedido._id,
           pagado: true,
           estadoPago: 'confirmado'
