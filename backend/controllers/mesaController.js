@@ -259,10 +259,11 @@ exports.cerrarMesa = async (req, res) => {
     // Emitir evento WebSocket para desconectar a los clientes
     if (req.io) {
       console.log(`🚪 Emitiendo evento mesa-liberada para mesa ${numeroMesa}`);
-      req.io.to(`mesa-${numeroMesa}`).emit('mesa-liberada', {
+      req.io.to(`mesa_${numeroMesa}`).emit('mesa-liberada', {
         numeroMesa,
         mensaje: 'La mesa ha sido liberada por el administrador'
       });
+      console.log(`📡 Evento emitido a sala: mesa_${numeroMesa}`);
     }
 
     res.json({

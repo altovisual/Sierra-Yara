@@ -63,25 +63,51 @@ export const MesaProvider = ({ children }) => {
 
   // Escuchar evento de mesa liberada
   useEffect(() => {
-    if (!mesaActual) return;
+    if (!mesaActual) {
+      console.log('⚠️ No hay mesa actual, no se escucha evento de liberación');
+      return;
+    }
+
+    console.log(`👂 Escuchando evento de liberación para mesa ${mesaActual.numeroMesa}`);
 
     const handleMesaLiberada = (data) => {
-      console.log('🚪 Mesa liberada por el administrador:', data);
+      console.log('🚪 EVENTO RECIBIDO: Mesa liberada por el administrador:', data);
+      console.log('🚪 Mesa actual:', mesaActual?.numeroMesa);
+      console.log('🚪 Mesa liberada:', data.numeroMesa);
       
-      // Mostrar alerta al usuario
-      alert(`La mesa ${data.numeroMesa} ha sido liberada por el administrador. Debes volver a conectarte.`);
-      
-      // Desconectar automáticamente
-      desconectarMesa();
-      
-      // Redirigir a la página de escaneo
-      window.location.href = '/escanear';
+      // Verificar que sea la mesa correcta
+      if (mesaActual && mesaActual.numeroMesa === data.numeroMesa) {
+        console.log('✅ Es nuestra mesa, desconectando...');
+        
+        // Limpiar todos los datos
+        console.log('🧹 Limpiando localStorage...');
+        limpiarStorage('sesionMesa');
+        limpiarStorage('carrito');
+        limpiarStorage('promocion');
+        if (LIMPIAR_FAVORITOS_AL_CAMBIAR_MESA) {
+          limpiarStorage('favoritos');
+        }
+        
+        // Desconectar socket
+        console.log('📡 Desconectando socket...');
+        socketService.disconnect();
+        
+        // Mostrar alerta al usuario
+        alert(`La mesa ${data.numeroMesa} ha sido liberada por el administrador. Debes volver a conectarte.`);
+        
+        // Redirigir a la página de escaneo
+        console.log('🔄 Redirigiendo a /escanear...');
+        window.location.href = '/escanear';
+      } else {
+        console.log('⚠️ No es nuestra mesa, ignorando evento');
+      }
     };
 
     socketService.onMesaLiberada(handleMesaLiberada);
 
     // Cleanup
     return () => {
+      console.log(`🔇 Dejando de escuchar evento de liberación para mesa ${mesaActual?.numeroMesa}`);
       socketService.off('mesa-liberada', handleMesaLiberada);
     };
   }, [mesaActual]);
