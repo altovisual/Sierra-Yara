@@ -188,12 +188,20 @@ exports.actualizarEstadoPedido = async (req, res) => {
     // Emitir evento de actualización de estado en tiempo real
     const io = req.app.get('io');
     if (io) {
-      // Notificar al cliente específico
-      io.emit('estado_pedido_actualizado', {
-        pedidoId: pedido._id,
-        estado: pedido.estado,
-        dispositivoId: pedido.dispositivoId
-      });
+      // Obtener la mesa del pedido para emitir a la sala correcta
+      const Mesa = require('../models/Mesa');
+      const mesa = await Mesa.findById(pedido.mesaId);
+      
+      if (mesa) {
+        console.log(`📊 Emitiendo estado_pedido_actualizado a mesa_${mesa.numeroMesa}`);
+        // Notificar a todos los clientes de la mesa
+        io.to(`mesa_${mesa.numeroMesa}`).emit('estado_pedido_actualizado', {
+          pedidoId: pedido._id,
+          estado: pedido.estado,
+          dispositivoId: pedido.dispositivoId,
+          numeroMesa: mesa.numeroMesa
+        });
+      }
       
       // Notificar al admin
       io.emit('pedido_actualizado', {
