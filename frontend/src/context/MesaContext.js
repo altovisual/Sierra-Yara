@@ -52,9 +52,15 @@ export const MesaProvider = ({ children }) => {
       setDispositivoId(datosGuardados.dispositivoId);
       setNombreUsuario(datosGuardados.nombreUsuario || 'Cliente');
       
-      // Reconectar al socket
-      socketService.connect();
-      socketService.unirseMesa(datosGuardados.mesa.numeroMesa);
+      // Reconectar al socket y esperar a que se conecte
+      socketService.connect()
+        .then(() => {
+          console.log('🔌 Socket conectado, uniéndose a la mesa...');
+          socketService.unirseMesa(datosGuardados.mesa.numeroMesa);
+        })
+        .catch(err => {
+          console.error('❌ Error al conectar socket:', err);
+        });
     } else {
       console.log('❌ No hay sesión guardada o datos incompletos');
     }
@@ -141,7 +147,8 @@ export const MesaProvider = ({ children }) => {
       });
 
       // Conectar al socket y unirse a la sala de la mesa
-      socketService.connect();
+      await socketService.connect();
+      console.log('🔌 Socket conectado, uniéndose a la mesa...');
       socketService.unirseMesa(numeroMesa);
 
       return { mesa, dispositivoId: nuevoDispositivoId };

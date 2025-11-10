@@ -34,31 +34,34 @@ class SocketService {
   connect() {
     if (this.socket && this.connected) {
       console.log('Socket ya está conectado');
-      return this.socket;
+      return Promise.resolve(this.socket);
     }
 
-    this.socket = io(SOCKET_URL, {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
-    });
+    return new Promise((resolve, reject) => {
+      this.socket = io(SOCKET_URL, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
+      });
 
-    this.socket.on('connect', () => {
-      console.log('✅ Conectado al servidor WebSocket');
-      this.connected = true;
-    });
+      this.socket.on('connect', () => {
+        console.log('✅ Conectado al servidor WebSocket');
+        console.log('✅ Socket ID:', this.socket.id);
+        this.connected = true;
+        resolve(this.socket);
+      });
 
-    this.socket.on('disconnect', () => {
-      console.log('❌ Desconectado del servidor WebSocket');
-      this.connected = false;
-    });
+      this.socket.on('disconnect', () => {
+        console.log('❌ Desconectado del servidor WebSocket');
+        this.connected = false;
+      });
 
-    this.socket.on('connect_error', (error) => {
-      console.error('Error de conexión WebSocket:', error);
+      this.socket.on('connect_error', (error) => {
+        console.error('Error de conexión WebSocket:', error);
+        reject(error);
+      });
     });
-
-    return this.socket;
   }
 
   // Desconectar del servidor
