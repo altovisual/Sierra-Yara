@@ -68,8 +68,24 @@ const Pago = () => {
         configAPI.obtenerDatosPago()
       ]);
       
-      setPedido(pedidoRes.data.data);
+      const pedidoData = pedidoRes.data.data;
+      setPedido(pedidoData);
       setDatosPago(configRes.data.data);
+
+      // Verificar si el pedido ya está pagado
+      if (pedidoData.pagado) {
+        alert('Este pedido ya ha sido pagado y confirmado.');
+        navigate('/mis-pedidos');
+        return;
+      }
+
+      // Si hay un pago en proceso, establecer el estado
+      if (pedidoData.estadoPago === 'procesando') {
+        setEsperandoAprobacion(true);
+        setProcesando(true);
+        setMetodoPago(pedidoData.metodoPago || '');
+        console.log('⏳ Pago en proceso detectado:', pedidoData.metodoPago);
+      }
     } catch (error) {
       console.error('Error al cargar datos:', error);
       alert('Error al cargar información del pedido');
@@ -201,9 +217,55 @@ const Pago = () => {
       }
     } catch (error) {
       console.error('Error al procesar pago:', error);
-      const mensaje = error.response?.data?.message || error.message || 'Error desconocido';
-      alert(`Error al procesar el pago: ${mensaje}`);
-      setProcesando(false);
+      
+      // Manejar error de pago duplicado
+      if (error.response?.status === 400) {
+        const errorData = error.response.data;
+        
+        if (errorData.error?.includes('pago en proceso')) {
+          const confirmar = window.confirm(
+            `Ya existe un pago en proceso con ${errorData.estadoActual?.metodoPago}.\n\n` +
+            `¿Deseas cambiar el método de pago a ${metodoPago}?`
+          );
+          
+          if (confirmar) {
+            // Reintentar con confirmación de cambio
+            try {
+              await pedidosAPI.procesarPago(pedidoId, {
+                metodoPago,
+                propina: calcularPropinaTotal(),
+                referenciaPago: referencia,
+                forzarCambio: true
+              });
+              
+              if (['punto_venta', 'biopago'].includes(metodoPago)) {
+                setEsperandoAprobacion(true);
+                alert('Método de pago actualizado. Esperando confirmación...');
+              } else {
+                alert('Método de pago actualizado exitosamente.');
+                navigate('/mis-pedidos');
+                setProcesando(false);
+              }
+            } catch (err) {
+              alert('Error al cambiar el método de pago: ' + (err.response?.data?.error || err.message));
+              setProcesando(false);
+              setEsperandoAprobacion(false);
+            }
+          } else {
+            setProcesando(false);
+            setEsperandoAprobacion(false);
+          }
+        } else {
+          alert(errorData.error || 'Error al procesar el pago');
+          setProcesando(false);
+          setEsperandoAprobacion(false);
+        }
+      } else {
+        const mensaje = error.response?.data?.error || error.message || 'Error desconocido';
+        alert(`Error al procesar el pago: ${mensaje}`);
+        setProcesando(false);
+        setEsperandoAprobacion(false);
+      }
     }
   };
 
@@ -697,25 +759,50 @@ const Pago = () => {
               </div>
             </div>
           </div>
-          <button
-            onClick={handleProcesarPago}
-            disabled={!metodoPago || procesando || esperandoAprobacion}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {esperandoAprobacion ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Esperando aprobación del pago...
-              </>
-            ) : procesando ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Procesando...
-              </>
-            ) : (
-              'Confirmar Pago'
-            )}
-          </button>
+          {esperandoAprobacion && pedido?.estadoPago === 'procesando' ? (
+            <div className="space-y-3">
+              <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-5 h-5 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="font-semibold text-yellow-800">Pago en proceso</p>
+                </div>
+                <p className="text-sm text-yellow-700">
+                  Método actual: <span className="font-semibold">{pedido.metodoPago}</span>
+                </p>
+                <p className="text-xs text-yellow-600 mt-1">
+                  Esperando confirmación del personal...
+                </p>
+              </div>
+              
+              <button
+                onClick={() => {
+                  if (window.confirm('¿Deseas cambiar el método de pago? Se cancelará el pago actual.')) {
+                    setEsperandoAprobacion(false);
+                    setProcesando(false);
+                    setMetodoPago('');
+                  }
+                }}
+                className="w-full py-3 px-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Cambiar método de pago
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleProcesarPago}
+              disabled={!metodoPago || procesando}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {procesando ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Procesando...
+                </>
+              ) : (
+                'Confirmar Pago'
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

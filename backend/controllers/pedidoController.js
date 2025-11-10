@@ -247,11 +247,35 @@ exports.procesarPago = async (req, res) => {
       });
     }
 
+    // Verificar si el pedido ya está pagado (confirmado)
     if (pedido.pagado) {
       return res.status(400).json({
         success: false,
-        error: 'Este pedido ya ha sido pagado'
+        error: 'Este pedido ya ha sido pagado y confirmado'
       });
+    }
+
+    // Verificar si ya hay un pago en proceso
+    if (pedido.estadoPago === 'procesando') {
+      // Si ya hay un pago procesándose, verificar si es el mismo método
+      if (pedido.metodoPago === metodoPago) {
+        return res.status(400).json({
+          success: false,
+          error: 'Ya existe un pago en proceso con este método. Por favor espera la confirmación.',
+          estadoActual: {
+            metodoPago: pedido.metodoPago,
+            estadoPago: pedido.estadoPago
+          }
+        });
+      } else {
+        // Permitir cambiar el método de pago si está en proceso
+        console.log(`🔄 Cambiando método de pago de ${pedido.metodoPago} a ${metodoPago}`);
+      }
+    }
+
+    // Si el pago fue rechazado, permitir intentar de nuevo
+    if (pedido.estadoPago === 'rechazado') {
+      console.log('🔄 Reintentando pago después de rechazo');
     }
 
     // Actualizar información de pago
