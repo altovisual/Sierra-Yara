@@ -244,6 +244,9 @@ exports.cerrarMesa = async (req, res) => {
       });
     }
 
+    // Guardar número de mesa antes de cerrar
+    const numeroMesa = mesa.numeroMesa;
+    
     // Cerrar la mesa
     mesa.estado = 'libre';
     mesa.pedidos = [];
@@ -252,6 +255,15 @@ exports.cerrarMesa = async (req, res) => {
     mesa.horaCierre = new Date();
 
     await mesa.save();
+
+    // Emitir evento WebSocket para desconectar a los clientes
+    if (req.io) {
+      console.log(`🚪 Emitiendo evento mesa-liberada para mesa ${numeroMesa}`);
+      req.io.to(`mesa-${numeroMesa}`).emit('mesa-liberada', {
+        numeroMesa,
+        mensaje: 'La mesa ha sido liberada por el administrador'
+      });
+    }
 
     res.json({
       success: true,

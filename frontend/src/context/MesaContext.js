@@ -61,6 +61,31 @@ export const MesaProvider = ({ children }) => {
     setCargando(false);
   }, []);
 
+  // Escuchar evento de mesa liberada
+  useEffect(() => {
+    if (!mesaActual) return;
+
+    const handleMesaLiberada = (data) => {
+      console.log('🚪 Mesa liberada por el administrador:', data);
+      
+      // Mostrar alerta al usuario
+      alert(`La mesa ${data.numeroMesa} ha sido liberada por el administrador. Debes volver a conectarte.`);
+      
+      // Desconectar automáticamente
+      desconectarMesa();
+      
+      // Redirigir a la página de escaneo
+      window.location.href = '/escanear';
+    };
+
+    socketService.onMesaLiberada(handleMesaLiberada);
+
+    // Cleanup
+    return () => {
+      socketService.off('mesa-liberada', handleMesaLiberada);
+    };
+  }, [mesaActual]);
+
   // Conectar a una mesa (escaneo de QR)
   const conectarMesa = async (numeroMesa, nombre = '') => {
     try {

@@ -148,6 +148,13 @@ class SocketService {
     }
   }
 
+  // Escuchar evento de mesa liberada (para clientes)
+  onMesaLiberada(callback) {
+    if (this.socket) {
+      this.socket.on('mesa-liberada', callback);
+    }
+  }
+
   // Remover listener
   off(event, callback) {
     if (this.socket) {
