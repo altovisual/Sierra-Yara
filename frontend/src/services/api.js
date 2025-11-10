@@ -97,4 +97,20 @@ export const configAPI = {
   verificarSalud: () => api.get('/health'),
 };
 
+// ============ REPORTES ============
+export const reportesAPI = {
+  descargarReporteVentas: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    window.open(`${API_URL}/reportes/ventas/excel?${queryString}`, '_blank');
+  },
+  descargarReporteProductos: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    window.open(`${API_URL}/reportes/productos/excel?${queryString}`, '_blank');
+  },
+  descargarReporteCompleto: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    window.open(`${API_URL}/reportes/completo/excel?${queryString}`, '_blank');
+  },
+};
+
 export default api;

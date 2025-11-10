@@ -14,7 +14,8 @@ import {
   CloseOutlined,
   TagOutlined,
   InboxOutlined,
-  DollarOutlined
+  DollarOutlined,
+  FileTextOutlined
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
@@ -82,6 +83,11 @@ const AdminLayout = ({ children, title, extra }) => {
       label: <Link to="/admin/tasa-bcv">Tasa BCV</Link>,
     },
     {
+      key: 'reportes',
+      icon: <FileTextOutlined />,
+      label: <Link to="/admin/reportes">Reportes</Link>,
+    },
+    {
       key: 'qr',
       icon: <QrcodeOutlined />,
       label: <Link to="/admin/generar-qr">Generar QR</Link>,
@@ -97,6 +103,7 @@ const AdminLayout = ({ children, title, extra }) => {
     if (path.includes('/promociones')) return 'promociones';
     if (path.includes('/inventario')) return 'inventario';
     if (path.includes('/tasa-bcv')) return 'tasa-bcv';
+    if (path.includes('/reportes')) return 'reportes';
     if (path.includes('/generar-qr')) return 'qr';
     return 'dashboard';
   };
