@@ -17,6 +17,7 @@ import Promociones from './components/cliente/Promociones';
 
 // Componente de protección
 import ProtectedRoute from './components/common/ProtectedRoute';
+import HomeRedirect from './components/common/HomeRedirect';
 
 // Rutas de administración
 import AdminRoutes from './routes/AdminRoutes';
@@ -33,12 +34,14 @@ function App() {
             <CarritoProvider>
               <FavoritosProvider>
                 <Routes>
+            {/* Ruta raíz - maneja redirección con query params */}
+            <Route path="/" element={<HomeRedirect />} />
+            
             {/* Rutas públicas (sin protección) */}
             <Route path="/escanear" element={<EscanearQR />} />
             <Route path="/mesa/:numeroMesa" element={<EscanearQR />} />
             
             {/* Rutas protegidas (requieren estar conectado a una mesa) */}
-            <Route path="/" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
             <Route path="/menu" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
             <Route path="/promociones" element={<ProtectedRoute><Promociones /></ProtectedRoute>} />
             <Route path="/carrito" element={<ProtectedRoute><Carrito /></ProtectedRoute>} />
