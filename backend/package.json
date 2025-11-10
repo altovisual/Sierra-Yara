@@ -15,19 +15,24 @@
     "postdeploy": "bash scripts/postdeploy.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["restaurant", "menu", "orders", "qr"],
+  "keywords": [
+    "restaurant",
+    "menu",
+    "orders",
+    "qr"
+  ],
   "author": "Altovisual",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^8.0.3",
-    "socket.io": "^4.6.1",
+    "axios": "^1.6.2",
+    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "uuid": "^9.0.1",
-    "body-parser": "^1.20.2",
-    "axios": "^1.6.2",
-    "node-cron": "^3.0.3"
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "node-cron": "^3.0.3",
+    "socket.io": "^4.6.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

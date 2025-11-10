@@ -11,7 +11,7 @@ const EscanearQR = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { numeroMesa: mesaParam } = useParams();
-  const { conectarMesa, desconectarMesa, cargando, estaConectado } = useMesa();
+  const { conectarMesa, desconectarMesa, cargando, estaConectado, mesaActual } = useMesa();
   const [numeroMesa, setNumeroMesa] = useState('');
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [error, setError] = useState('');
@@ -25,19 +25,26 @@ const EscanearQR = () => {
     // Obtener número de mesa desde URL (parámetro de ruta o query param)
     const mesaDesdeRuta = mesaParam || searchParams.get('mesa');
     
-    // Si hay número de mesa en la URL, SIEMPRE mostrar el formulario
+    // Si hay número de mesa en la URL
     if (mesaDesdeRuta) {
       console.log('📱 QR escaneado - Mesa:', mesaDesdeRuta);
       
-      // Limpiar sesión anterior automáticamente (importante para móviles)
-      if (estaConectado()) {
-        console.log('🧹 Limpiando sesión anterior para nuevo QR...');
+      // Si ya está conectado a una mesa DIFERENTE, limpiar sesión
+      if (estaConectado() && mesaActual && mesaActual.numeroMesa !== parseInt(mesaDesdeRuta)) {
+        console.log('🔄 Cambiando de mesa', mesaActual.numeroMesa, '→', mesaDesdeRuta);
+        console.log('🧹 Limpiando sesión anterior...');
         desconectarMesa();
+      }
+      // Si está conectado a la MISMA mesa, redirigir al menú
+      else if (estaConectado() && mesaActual && mesaActual.numeroMesa === parseInt(mesaDesdeRuta)) {
+        console.log('✅ Ya conectado a esta mesa, redirigiendo al menú...');
+        navigate('/menu', { replace: true });
+        return;
       }
       
       setMesaDesdeQR(mesaDesdeRuta);
       setNumeroMesa(mesaDesdeRuta);
-      return; // No redirigir, mostrar formulario
+      return; // Mostrar formulario
     }
     
     // Solo si NO hay mesa en URL Y ya está conectado, redirigir al menú
@@ -45,7 +52,7 @@ const EscanearQR = () => {
       console.log('✅ Usuario ya conectado, redirigiendo al menú...');
       navigate('/menu', { replace: true });
     }
-  }, [mesaParam, searchParams, estaConectado, desconectarMesa, navigate]);
+  }, [mesaParam, searchParams, estaConectado, mesaActual, desconectarMesa, navigate]);
 
   const handleConectar = async (e) => {
     e.preventDefault();

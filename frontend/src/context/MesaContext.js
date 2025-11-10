@@ -2,6 +2,11 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { mesasAPI } from '../services/api';
 import socketService from '../services/socket';
 import { guardarEnStorage, obtenerDeStorage, limpiarStorage } from '../utils/helpers';
+import { 
+  TIEMPO_EXPIRACION_SESION, 
+  LIMPIAR_CARRITO_AL_CAMBIAR_MESA, 
+  LIMPIAR_FAVORITOS_AL_CAMBIAR_MESA 
+} from '../config/sesion';
 
 /**
  * Contexto para gestionar el estado de la mesa y dispositivo actual
@@ -29,7 +34,20 @@ export const MesaProvider = ({ children }) => {
     console.log('📦 Datos guardados en localStorage:', datosGuardados);
     
     if (datosGuardados && datosGuardados.mesa && datosGuardados.dispositivoId) {
+      // Verificar si la sesión ha expirado
+      const ahora = Date.now();
+      const tiempoTranscurrido = ahora - (datosGuardados.timestamp || 0);
+      
+      if (tiempoTranscurrido > TIEMPO_EXPIRACION_SESION) {
+        console.log('⏰ Sesión expirada. Limpiando datos...');
+        limpiarStorage('sesionMesa');
+        setCargando(false);
+        return;
+      }
+      
       console.log('✅ Restaurando sesión de mesa:', datosGuardados.mesa.numeroMesa);
+      console.log(`⏱️ Tiempo restante: ${Math.round((TIEMPO_EXPIRACION_SESION - tiempoTranscurrido) / 1000 / 60)} minutos`);
+      
       setMesaActual(datosGuardados.mesa);
       setDispositivoId(datosGuardados.dispositivoId);
       setNombreUsuario(datosGuardados.nombreUsuario || 'Cliente');
@@ -63,11 +81,12 @@ export const MesaProvider = ({ children }) => {
       setDispositivoId(nuevoDispositivoId);
       setNombreUsuario(nuevoNombre);
 
-      // Guardar en localStorage
+      // Guardar en localStorage con timestamp
       guardarEnStorage('sesionMesa', {
         mesa,
         dispositivoId: nuevoDispositivoId,
-        nombreUsuario: nuevoNombre
+        nombreUsuario: nuevoNombre,
+        timestamp: Date.now() // Agregar timestamp para expiración
       });
 
       // Conectar al socket y unirse a la sala de la mesa
@@ -91,7 +110,7 @@ export const MesaProvider = ({ children }) => {
       const response = await mesasAPI.obtenerPorNumero(mesaActual.numeroMesa);
       setMesaActual(response.data.data);
       
-      // Actualizar en localStorage
+      // Actualizar en localStorage manteniendo el timestamp original
       const datosGuardados = obtenerDeStorage('sesionMesa');
       if (datosGuardados) {
         guardarEnStorage('sesionMesa', {
@@ -106,11 +125,29 @@ export const MesaProvider = ({ children }) => {
 
   // Desconectar de la mesa
   const desconectarMesa = () => {
+    console.log('🚪 Desconectando de la mesa y limpiando datos...');
     setMesaActual(null);
     setDispositivoId(null);
     setNombreUsuario('');
+    
+    // Limpiar sesión de mesa (siempre)
     limpiarStorage('sesionMesa');
+    
+    // Limpiar carrito según configuración
+    if (LIMPIAR_CARRITO_AL_CAMBIAR_MESA) {
+      limpiarStorage('carrito');
+      limpiarStorage('promocion');
+      console.log('🛒 Carrito limpiado');
+    }
+    
+    // Limpiar favoritos según configuración
+    if (LIMPIAR_FAVORITOS_AL_CAMBIAR_MESA) {
+      limpiarStorage('favoritos');
+      console.log('⭐ Favoritos limpiados');
+    }
+    
     socketService.disconnect();
+    console.log('✅ Sesión limpiada completamente');
   };
 
   // Verificar si el usuario está conectado a una mesa
