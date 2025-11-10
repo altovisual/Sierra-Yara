@@ -12,11 +12,15 @@ const EscanearQR = () => {
   const [searchParams] = useSearchParams();
   const { numeroMesa: mesaParam } = useParams();
   const { conectarMesa, desconectarMesa, cargando, estaConectado, mesaActual } = useMesa();
-  const [numeroMesa, setNumeroMesa] = useState('');
+  
+  // Inicializar con el valor de la URL si existe
+  const mesaDesdeURL = mesaParam || searchParams.get('mesa');
+  
+  const [numeroMesa, setNumeroMesa] = useState(mesaDesdeURL || '');
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [error, setError] = useState('');
   const [animado, setAnimado] = useState(false);
-  const [mesaDesdeQR, setMesaDesdeQR] = useState(null);
+  const [mesaDesdeQR, setMesaDesdeQR] = useState(mesaDesdeURL);
 
   useEffect(() => {
     // Activar animación al montar el componente
@@ -24,6 +28,8 @@ const EscanearQR = () => {
     
     // Obtener número de mesa desde URL (parámetro de ruta o query param)
     const mesaDesdeRuta = mesaParam || searchParams.get('mesa');
+    
+    console.log('🔍 Verificando URL - Mesa desde ruta:', mesaDesdeRuta);
     
     // Si hay número de mesa en la URL
     if (mesaDesdeRuta) {
@@ -42,15 +48,19 @@ const EscanearQR = () => {
         return;
       }
       
+      // Establecer que viene desde QR
+      console.log('✅ Estableciendo mesaDesdeQR:', mesaDesdeRuta);
       setMesaDesdeQR(mesaDesdeRuta);
       setNumeroMesa(mesaDesdeRuta);
-      return; // Mostrar formulario
-    }
-    
-    // Solo si NO hay mesa en URL Y ya está conectado, redirigir al menú
-    if (estaConectado()) {
-      console.log('✅ Usuario ya conectado, redirigiendo al menú...');
-      navigate('/menu', { replace: true });
+    } else {
+      console.log('❌ No hay mesa en la URL');
+      setMesaDesdeQR(null);
+      
+      // Solo si NO hay mesa en URL Y ya está conectado, redirigir al menú
+      if (estaConectado()) {
+        console.log('✅ Usuario ya conectado, redirigiendo al menú...');
+        navigate('/menu', { replace: true });
+      }
     }
   }, [mesaParam, searchParams, estaConectado, mesaActual, desconectarMesa, navigate]);
 
@@ -105,7 +115,6 @@ const EscanearQR = () => {
                 className="w-16 h-16 object-contain drop-shadow-lg"
               />
             </div>
-            <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-yellow-300 animate-bounce" />
           </div>
           <h1 className="text-6xl font-display font-bold text-white mb-3 tracking-wider drop-shadow-2xl animate-fade-in">
             SIERRA YARA
