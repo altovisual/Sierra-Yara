@@ -7,7 +7,6 @@ import { useFavoritos } from '../../context/FavoritosContext';
 import { useTasaBCV } from '../../context/TasaBCVContext';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
-import IndicadorTasa from './IndicadorTasa';
 import { ShoppingCart, Plus, Search, ClipboardList, Tag, TrendingUp, Heart } from 'lucide-react';
 import logo from '../../assets/logo.png';
 
@@ -207,9 +206,6 @@ const Menu = () => {
       </div>
 
       <div className="max-w-4xl mx-auto p-4">
-        {/* Indicador de Tasa BCV */}
-        <IndicadorTasa />
-
         {/* Barra de búsqueda */}
         <div className="mb-6">
           <div className="relative">
@@ -226,26 +222,28 @@ const Menu = () => {
 
         {/* Filtro de categorías - Sticky */}
         <div className="sticky top-[112px] z-10 bg-gray-50 -mx-4 px-4 py-3 mb-6 shadow-sm">
-          <div className="overflow-x-auto">
-            <div className="flex gap-2 pb-2">
-              {categorias.map(categoria => (
-                <button
-                  key={categoria}
-                  onClick={() => setCategoriaSeleccionada(categoria)}
-                  className={`px-4 py-2 rounded-full whitespace-nowrap transition-all flex items-center gap-1 ${
-                    categoria === 'Promociones'
-                      ? categoriaSeleccionada === categoria
-                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
-                        : 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 hover:from-yellow-200 hover:to-orange-200'
-                      : categoriaSeleccionada === categoria
-                      ? 'bg-primary-600 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  {categoria === 'Promociones' && <Tag size={16} />}
-                  {categoria}
-                </button>
-              ))}
+          <div className="max-w-4xl mx-auto">
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 pb-2 justify-start lg:justify-center flex-nowrap lg:flex-wrap">
+                {categorias.map(categoria => (
+                  <button
+                    key={categoria}
+                    onClick={() => setCategoriaSeleccionada(categoria)}
+                    className={`px-4 py-2 rounded-full whitespace-nowrap transition-all flex items-center gap-1 text-sm font-medium ${
+                      categoria === 'Promociones'
+                        ? categoriaSeleccionada === categoria
+                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
+                          : 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 hover:from-yellow-200 hover:to-orange-200'
+                        : categoriaSeleccionada === categoria
+                        ? 'bg-primary-600 text-white shadow-md'
+                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {categoria === 'Promociones' && <Tag size={16} />}
+                    {categoria}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
