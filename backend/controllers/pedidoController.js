@@ -22,6 +22,11 @@ exports.crearPedido = async (req, res) => {
       });
     }
 
+    // Obtener datos del cliente desde dispositivosActivos
+    const dispositivo = mesa.dispositivosActivos.find(d => d.dispositivoId === dispositivoId);
+    const cedulaCliente = dispositivo?.cedula || null;
+    const telefonoCliente = dispositivo?.telefono || null;
+
     // Validar y enriquecer los items con información del producto
     const itemsEnriquecidos = await Promise.all(
       items.map(async (item) => {
@@ -50,11 +55,13 @@ exports.crearPedido = async (req, res) => {
       })
     );
 
-    // Crear el pedido
+    // Crear el pedido con datos completos del cliente
     const pedido = await Pedido.create({
       mesaId,
       dispositivoId,
       nombreUsuario,
+      cedula: cedulaCliente,
+      telefono: telefonoCliente,
       items: itemsEnriquecidos,
       notas,
       estado: 'recibido'

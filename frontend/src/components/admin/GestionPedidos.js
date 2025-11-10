@@ -202,8 +202,25 @@ const GestionPedidos = () => {
       title: 'Cliente',
       dataIndex: 'nombreUsuario',
       key: 'cliente',
-      width: 120,
-      render: (nombre) => nombre || 'Anónimo'
+      width: 150,
+      render: (nombre, record) => (
+        <Tooltip title={
+          <div>
+            <div><strong>Nombre:</strong> {nombre || 'Anónimo'}</div>
+            <div><strong>Cédula:</strong> {record.cedula || 'N/A'}</div>
+            <div><strong>Teléfono:</strong> {record.telefono || 'N/A'}</div>
+          </div>
+        }>
+          <div style={{ cursor: 'pointer' }}>
+            <div style={{ fontWeight: 500 }}>{nombre || 'Anónimo'}</div>
+            {record.telefono && (
+              <div style={{ fontSize: '11px', color: '#666' }}>
+                📱 {record.telefono}
+              </div>
+            )}
+          </div>
+        </Tooltip>
+      )
     },
     {
       title: 'Items',
@@ -396,17 +413,23 @@ const GestionPedidos = () => {
           {pedidoSeleccionado && (
             <div>
               <Descriptions bordered column={2} size="small">
-                <Descriptions.Item label="ID">
+                <Descriptions.Item label="ID" span={2}>
                   {pedidoSeleccionado._id}
                 </Descriptions.Item>
                 <Descriptions.Item label="Mesa">
                   {pedidoSeleccionado.mesaId?.numeroMesa || 'N/A'}
                 </Descriptions.Item>
-                <Descriptions.Item label="Cliente">
-                  {pedidoSeleccionado.nombreUsuario || 'Anónimo'}
-                </Descriptions.Item>
                 <Descriptions.Item label="Fecha">
                   {dayjs(pedidoSeleccionado.createdAt).format('DD/MM/YYYY HH:mm')}
+                </Descriptions.Item>
+                <Descriptions.Item label="Cliente" span={2}>
+                  <strong>{pedidoSeleccionado.nombreUsuario || 'Anónimo'}</strong>
+                </Descriptions.Item>
+                <Descriptions.Item label="Cédula">
+                  {pedidoSeleccionado.cedula || 'N/A'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Teléfono">
+                  {pedidoSeleccionado.telefono || 'N/A'}
                 </Descriptions.Item>
                 <Descriptions.Item label="Estado">
                   <Tag color={getEstadoColor(pedidoSeleccionado.estado)}>

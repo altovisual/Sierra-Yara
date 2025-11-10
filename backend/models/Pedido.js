@@ -18,6 +18,14 @@ const pedidoSchema = new mongoose.Schema({
     type: String,
     default: 'Cliente'
   },
+  cedula: {
+    type: String,
+    default: null
+  },
+  telefono: {
+    type: String,
+    default: null
+  },
   items: [{
     productoId: {
       type: mongoose.Schema.Types.ObjectId,
