@@ -3,6 +3,7 @@ import { productosAPI } from '../../services/api';
 import { Edit2, Trash2, Plus, X, Package } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
+import { TableSkeleton } from '../common/SkeletonLoaders';
 import AdminLayout from './AdminLayout';
 
 /**
@@ -11,6 +12,7 @@ import AdminLayout from './AdminLayout';
 const GestionProductos = () => {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [productoEditando, setProductoEditando] = useState(null);
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
@@ -33,6 +35,7 @@ const GestionProductos = () => {
 
   const cargarDatos = async () => {
     try {
+      setCargando(true);
       const [prodRes, catRes] = await Promise.all([
         productosAPI.obtenerTodos(),
         productosAPI.obtenerCategorias()
@@ -42,6 +45,8 @@ const GestionProductos = () => {
     } catch (err) {
       error('Error al cargar productos');
       console.error(err);
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -178,18 +183,21 @@ const GestionProductos = () => {
       </div>
 
       {/* Tabla de productos */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+      {cargando ? (
+        <TableSkeleton rows={8} />
+      ) : (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
             {productosFiltrados.map(producto => (
               <tr key={producto._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">
@@ -247,7 +255,8 @@ const GestionProductos = () => {
             <p className="text-gray-500">No se encontraron productos</p>
           </div>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Modal de crear/editar */}
       {modalAbierto && (
