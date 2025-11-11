@@ -1426,12 +1426,12 @@ const Dashboard = () => {
                     }}
                   >
                     <div>
-                      <Text strong>{item.nombre}</Text>
+                      <Text strong>{item.nombreProducto || item.nombre}</Text>
                       <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>
                         Cantidad: {item.cantidad}
                       </Text>
                     </div>
-                    <Text strong>{formatearPrecio(item.precio * item.cantidad)}</Text>
+                    <Text strong>{formatearPrecio((item.precioUnitario || item.precio) * item.cantidad)}</Text>
                   </div>
                 ))}
               </div>
