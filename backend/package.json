@@ -12,6 +12,7 @@
     "qr": "node scripts/generarQRMesas.js",
     "qr:local": "node scripts/generarQRLocal.js",
     "init-tasa": "node scripts/inicializarTasaBCV.js",
+    "init-admin": "node scripts/initAdmin.js",
     "postdeploy": "bash scripts/postdeploy.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
