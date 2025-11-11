@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import { MesaProvider } from './context/MesaContext';
 import { CarritoProvider } from './context/CarritoContext';
 import { FavoritosProvider } from './context/FavoritosContext';
@@ -28,12 +29,13 @@ import AdminRoutes from './routes/AdminRoutes';
 function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <TasaBCVProvider>
-        <AdminDataProvider>
-          <MesaProvider>
-            <CarritoProvider>
-              <FavoritosProvider>
-                <Routes>
+      <AuthProvider>
+        <TasaBCVProvider>
+          <AdminDataProvider>
+            <MesaProvider>
+              <CarritoProvider>
+                <FavoritosProvider>
+                  <Routes>
             {/* Ruta raíz - maneja redirección con query params */}
             <Route path="/" element={<HomeRedirect />} />
             
@@ -54,12 +56,13 @@ function App() {
 
             {/* Ruta por defecto */}
             <Route path="*" element={<Navigate to="/escanear" replace />} />
-                </Routes>
-              </FavoritosProvider>
-            </CarritoProvider>
-          </MesaProvider>
-        </AdminDataProvider>
-      </TasaBCVProvider>
+                  </Routes>
+                </FavoritosProvider>
+              </CarritoProvider>
+            </MesaProvider>
+          </AdminDataProvider>
+        </TasaBCVProvider>
+      </AuthProvider>
     </Router>
   );
 }

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from '../components/admin/Login';
+import ProtectedRoute from '../components/admin/ProtectedRoute';
 import Dashboard from '../components/admin/Dashboard';
 import GestionPedidos from '../components/admin/GestionPedidos';
 import GestionProductos from '../components/admin/GestionProductos';
@@ -13,15 +15,19 @@ import GestionClientes from '../components/admin/GestionClientes';
 const AdminRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/pedidos" element={<GestionPedidos />} />
-      <Route path="/productos" element={<GestionProductos />} />
-      <Route path="/promociones" element={<GestionPromociones />} />
-      <Route path="/inventario" element={<GestionInventario />} />
-      <Route path="/generar-qr" element={<GeneradorQR />} />
-      <Route path="/tasa-bcv" element={<GestionTasaBCV />} />
-      <Route path="/reportes" element={<Reportes />} />
-      <Route path="/clientes" element={<GestionClientes />} />
+      {/* Ruta pública de login */}
+      <Route path="/login" element={<Login />} />
+      
+      {/* Rutas protegidas */}
+      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/pedidos" element={<ProtectedRoute><GestionPedidos /></ProtectedRoute>} />
+      <Route path="/productos" element={<ProtectedRoute><GestionProductos /></ProtectedRoute>} />
+      <Route path="/promociones" element={<ProtectedRoute><GestionPromociones /></ProtectedRoute>} />
+      <Route path="/inventario" element={<ProtectedRoute><GestionInventario /></ProtectedRoute>} />
+      <Route path="/generar-qr" element={<ProtectedRoute><GeneradorQR /></ProtectedRoute>} />
+      <Route path="/tasa-bcv" element={<ProtectedRoute><GestionTasaBCV /></ProtectedRoute>} />
+      <Route path="/reportes" element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
+      <Route path="/clientes" element={<ProtectedRoute><GestionClientes /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/admin" replace />} />
     </Routes>
   );

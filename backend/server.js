@@ -10,6 +10,7 @@ const TasaBCV = require('./models/TasaBCV');
 const axios = require('axios');
 
 // Importar rutas
+const authRoutes = require('./routes/authRoutes');
 const productosRoutes = require('./routes/productos');
 const mesasRoutes = require('./routes/mesas');
 const pedidosRoutes = require('./routes/pedidos');
@@ -50,6 +51,7 @@ app.use((req, res, next) => {
 });
 
 // Rutas de la API
+app.use('/api/auth', authRoutes);
 app.use('/api/productos', productosRoutes);
 app.use('/api/mesas', mesasRoutes);
 app.use('/api/pedidos', pedidosRoutes);

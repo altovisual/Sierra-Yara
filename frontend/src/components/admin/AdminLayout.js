@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ConfigProvider, Layout, Menu, Typography, Avatar, Dropdown, Drawer, Button } from 'antd';
+import { useAuth } from '../../context/AuthContext';
 import NotificacionesPedidos from './NotificacionesPedidos';
 import logo from '../../assets/logo.png';
 import {
@@ -26,7 +27,16 @@ const AdminLayout = ({ children, title, extra }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const { admin, logout } = useAuth();
+
+  const handleMenuClick = ({ key }) => {
+    if (key === '2') {
+      logout();
+      navigate('/admin/login');
+    }
+  };
 
   // Detectar si es móvil
   useEffect(() => {
@@ -332,7 +342,7 @@ const AdminLayout = ({ children, title, extra }) => {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <NotificacionesPedidos />
-              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
+              <Dropdown menu={{ items: userMenuItems, onClick: handleMenuClick }} placement="bottomRight" trigger={['click']}>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -349,7 +359,7 @@ const AdminLayout = ({ children, title, extra }) => {
                     }} 
                   />
                   {!isMobile && !collapsed && (
-                    <Text style={{ marginLeft: '4px', color: '#ffffff' }}>Admin</Text>
+                    <Text style={{ marginLeft: '4px', color: '#ffffff' }}>{admin?.nombre || 'Admin'}</Text>
                   )}
                 </div>
               </Dropdown>
