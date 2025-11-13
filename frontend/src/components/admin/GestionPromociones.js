@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './GestionPromociones.css';
 import { 
   Card, 
   Button, 
@@ -42,6 +43,15 @@ const GestionPromociones = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editando, setEditando] = useState(null);
   const [form] = Form.useForm();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const diasSemana = [
     { label: 'Lunes', value: 'lunes' },
@@ -281,42 +291,168 @@ const GestionPromociones = () => {
     },
   ];
 
+  // Renderizar card de promoción para móvil
+  const renderPromocionCard = (promocion) => {
+    const ahora = new Date();
+    const vigente = promocion.activa && 
+      new Date(promocion.fechaInicio) <= ahora && 
+      new Date(promocion.fechaFin) >= ahora;
+
+    return (
+      <div key={promocion._id} className="promo-card">
+        <div className="promo-card-header">
+          <div className="promo-card-title">
+            <h3>{promocion.titulo}</h3>
+            {promocion.destacada && (
+              <Tag color="gold" style={{ marginLeft: '8px' }}>
+                <TagOutlined /> Destacada
+              </Tag>
+            )}
+          </div>
+          <Tag 
+            color={vigente ? 'success' : 'default'}
+            icon={vigente ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+          >
+            {vigente ? 'Activa' : 'Inactiva'}
+          </Tag>
+        </div>
+
+        <p className="promo-card-description">{promocion.descripcion}</p>
+
+        <div className="promo-card-info">
+          <div className="promo-info-item">
+            <span className="promo-info-label">Descuento:</span>
+            <Tag color="green" style={{ fontSize: '14px', padding: '4px 12px' }}>
+              {promocion.tipoDescuento === 'porcentaje' 
+                ? `${promocion.descuento}%` 
+                : formatearPrecio(promocion.descuento)}
+            </Tag>
+          </div>
+          <div className="promo-info-item">
+            <span className="promo-info-label">Vigencia:</span>
+            <span className="promo-info-value">
+              {dayjs(promocion.fechaInicio).format('DD/MM/YY')} - {dayjs(promocion.fechaFin).format('DD/MM/YY')}
+            </span>
+          </div>
+          {promocion.diasSemana && promocion.diasSemana.length > 0 && (
+            <div className="promo-info-item">
+              <span className="promo-info-label">Días:</span>
+              <span className="promo-info-value">
+                {promocion.diasSemana.map(d => d.charAt(0).toUpperCase()).join(', ')}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="promo-card-actions">
+          <Switch
+            checked={promocion.activa}
+            onChange={() => toggleActiva(promocion._id)}
+            checkedChildren="ON"
+            unCheckedChildren="OFF"
+          />
+          <div className="promo-action-buttons">
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => abrirModal(promocion)}
+              style={{ minHeight: '40px' }}
+            >
+              Editar
+            </Button>
+            <Popconfirm
+              title="¿Eliminar promoción?"
+              description="Esta acción no se puede deshacer"
+              onConfirm={() => eliminarPromocion(promocion._id)}
+              okText="Sí"
+              cancelText="No"
+            >
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                style={{ minHeight: '40px' }}
+              >
+                Eliminar
+              </Button>
+            </Popconfirm>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <AdminLayout>
-      <Card
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <TagOutlined />
-            <span>Gestión de Promociones</span>
+      <div className="promociones-container">
+        {/* Header */}
+        <div className="promociones-header">
+          <div className="promociones-title">
+            <TagOutlined style={{ fontSize: isMobile ? '20px' : '24px' }} />
+            <div>
+              <h2>Gestión de Promociones</h2>
+              <p>{promociones.length} promociones en total</p>
+            </div>
           </div>
-        }
-        extra={
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => abrirModal()}
+            size={isMobile ? 'large' : 'middle'}
+            block={isMobile}
           >
             Nueva Promoción
           </Button>
-        }
-      >
-        <Table
-          columns={columns}
-          dataSource={promociones}
-          rowKey="_id"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-        />
-      </Card>
+        </div>
+
+        {/* Contenido */}
+        {loading ? (
+          <Card loading={true} />
+        ) : isMobile ? (
+          /* Vista de Cards para móvil */
+          <div className="promociones-grid">
+            {promociones.map(renderPromocionCard)}
+            {promociones.length === 0 && (
+              <Card style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <TagOutlined style={{ fontSize: '48px', color: '#d9d9d9', marginBottom: '16px' }} />
+                <p style={{ color: '#999', margin: 0 }}>No hay promociones</p>
+              </Card>
+            )}
+          </div>
+        ) : (
+          /* Vista de Tabla para desktop */
+          <Card>
+            <Table
+              columns={columns}
+              dataSource={promociones}
+              rowKey="_id"
+              loading={loading}
+              pagination={{ pageSize: 10 }}
+              scroll={{ x: 1000 }}
+            />
+          </Card>
+        )}
+      </div>
 
       <Modal
-        title={editando ? 'Editar Promoción' : 'Nueva Promoción'}
+        title={
+          <span style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 'bold' }}>
+            {editando ? 'Editar Promoción' : 'Nueva Promoción'}
+          </span>
+        }
         open={modalVisible}
         onCancel={cerrarModal}
         onOk={() => form.submit()}
-        width={800}
+        width={isMobile ? '95%' : 800}
+        style={{ maxWidth: '800px', top: isMobile ? 10 : 20 }}
+        bodyStyle={{ 
+          maxHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 200px)', 
+          overflowY: 'auto',
+          padding: isMobile ? '16px' : '24px'
+        }}
         okText="Guardar"
         cancelText="Cancelar"
+        okButtonProps={{ style: { minHeight: isMobile ? '44px' : '32px' } }}
+        cancelButtonProps={{ style: { minHeight: isMobile ? '44px' : '32px' } }}
       >
         <Form
           form={form}
@@ -330,7 +466,10 @@ const GestionPromociones = () => {
                 label="Título"
                 rules={[{ required: true, message: 'El título es obligatorio' }]}
               >
-                <Input placeholder="Ej: 2x1 en Cafés" />
+                <Input 
+                  placeholder="Ej: 2x1 en Cafés" 
+                  style={{ fontSize: '16px', minHeight: isMobile ? '44px' : 'auto' }}
+                />
               </Form.Item>
             </Col>
 
@@ -343,24 +482,25 @@ const GestionPromociones = () => {
                 <TextArea 
                   rows={3} 
                   placeholder="Describe la promoción en detalle"
+                  style={{ fontSize: '16px' }}
                 />
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="tipoDescuento"
                 label="Tipo de Descuento"
                 rules={[{ required: true }]}
               >
-                <Select>
+                <Select style={{ fontSize: '16px' }}>
                   <Option value="porcentaje">Porcentaje (%)</Option>
                   <Option value="monto_fijo">Monto Fijo (Bs)</Option>
                 </Select>
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="descuento"
                 label="Descuento"
@@ -369,7 +509,7 @@ const GestionPromociones = () => {
                 <InputNumber
                   min={0}
                   max={100}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', fontSize: '16px', minHeight: isMobile ? '44px' : 'auto' }}
                   placeholder="0"
                 />
               </Form.Item>
@@ -382,27 +522,34 @@ const GestionPromociones = () => {
                 rules={[{ required: true, message: 'Las fechas son obligatorias' }]}
               >
                 <RangePicker 
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', fontSize: '16px' }}
                   format="DD/MM/YYYY"
+                  size={isMobile ? 'large' : 'middle'}
                 />
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="horaInicio"
                 label="Hora Inicio"
               >
-                <Input type="time" />
+                <Input 
+                  type="time" 
+                  style={{ fontSize: '16px', minHeight: isMobile ? '44px' : 'auto' }}
+                />
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="horaFin"
                 label="Hora Fin"
               >
-                <Input type="time" />
+                <Input 
+                  type="time" 
+                  style={{ fontSize: '16px', minHeight: isMobile ? '44px' : 'auto' }}
+                />
               </Form.Item>
             </Col>
 
@@ -424,6 +571,8 @@ const GestionPromociones = () => {
                   mode="multiple"
                   placeholder="Selecciona productos"
                   optionFilterProp="children"
+                  style={{ fontSize: '16px' }}
+                  size={isMobile ? 'large' : 'middle'}
                 >
                   {productos.map(producto => (
                     <Option key={producto._id} value={producto._id}>
@@ -442,27 +591,28 @@ const GestionPromociones = () => {
                 <TextArea 
                   rows={2} 
                   placeholder="Ej: Válido solo para consumo en local"
+                  style={{ fontSize: '16px' }}
                 />
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="activa"
                 label="Activa"
                 valuePropName="checked"
               >
-                <Switch />
+                <Switch size={isMobile ? 'default' : 'small'} />
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="destacada"
                 label="Destacada"
                 valuePropName="checked"
               >
-                <Switch />
+                <Switch size={isMobile ? 'default' : 'small'} />
               </Form.Item>
             </Col>
           </Row>
