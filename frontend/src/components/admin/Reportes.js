@@ -15,7 +15,7 @@ import {
 } from 'antd';
 import {
   FileExcelOutlined,
-  DownloadOutlined,
+  FilePdfOutlined,
   DollarOutlined,
   ShoppingOutlined,
   BarChartOutlined
@@ -33,29 +33,46 @@ const Reportes = () => {
   const [fechaFin, setFechaFin] = useState(null);
   const [descargando, setDescargando] = useState(null);
 
-  const handleDescargarReporte = (tipo) => {
-    setDescargando(tipo);
+  const handleDescargarReporte = (tipo, formato = 'excel') => {
+    const key = `${tipo}-${formato}`;
+    setDescargando(key);
     
     const params = {};
     if (fechaInicio) params.fechaInicio = fechaInicio;
     if (fechaFin) params.fechaFin = fechaFin;
 
     try {
-      switch (tipo) {
-        case 'ventas':
-          reportesAPI.descargarReporteVentas(params);
-          break;
-        case 'productos':
-          reportesAPI.descargarReporteProductos(params);
-          break;
-        case 'completo':
-          reportesAPI.descargarReporteCompleto(params);
-          break;
-        default:
-          break;
+      if (formato === 'excel') {
+        switch (tipo) {
+          case 'ventas':
+            reportesAPI.descargarReporteVentas(params);
+            break;
+          case 'productos':
+            reportesAPI.descargarReporteProductos(params);
+            break;
+          case 'completo':
+            reportesAPI.descargarReporteCompleto(params);
+            break;
+          default:
+            break;
+        }
+      } else if (formato === 'pdf') {
+        switch (tipo) {
+          case 'ventas':
+            reportesAPI.descargarReporteVentasPDF(params);
+            break;
+          case 'productos':
+            reportesAPI.descargarReporteProductosPDF(params);
+            break;
+          case 'completo':
+            reportesAPI.descargarReporteCompletoPDF(params);
+            break;
+          default:
+            break;
+        }
       }
       
-      message.success('Descargando reporte...');
+      message.success(`Descargando reporte en ${formato.toUpperCase()}...`);
       setTimeout(() => setDescargando(null), 2000);
     } catch (error) {
       console.error('Error al descargar reporte:', error);
@@ -151,15 +168,25 @@ const Reportes = () => {
                   <li>Propinas y totales</li>
                 </ul>
                 
-                <Button
-                  type="primary"
-                  icon={<DownloadOutlined />}
-                  onClick={() => handleDescargarReporte('ventas')}
-                  loading={descargando === 'ventas'}
-                  block
-                >
-                  {descargando === 'ventas' ? 'Generando...' : 'Descargar Excel'}
-                </Button>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Button
+                    type="primary"
+                    icon={<FileExcelOutlined />}
+                    onClick={() => handleDescargarReporte('ventas', 'excel')}
+                    loading={descargando === 'ventas-excel'}
+                    block
+                  >
+                    {descargando === 'ventas-excel' ? 'Generando...' : 'Descargar Excel'}
+                  </Button>
+                  <Button
+                    icon={<FilePdfOutlined />}
+                    onClick={() => handleDescargarReporte('ventas', 'pdf')}
+                    loading={descargando === 'ventas-pdf'}
+                    block
+                  >
+                    {descargando === 'ventas-pdf' ? 'Generando...' : 'Descargar PDF'}
+                  </Button>
+                </Space>
               </Space>
             </Card>
           </Col>
@@ -187,15 +214,25 @@ const Reportes = () => {
                   <li>Promedio por venta</li>
                 </ul>
                 
-                <Button
-                  type="primary"
-                  icon={<DownloadOutlined />}
-                  onClick={() => handleDescargarReporte('productos')}
-                  loading={descargando === 'productos'}
-                  block
-                >
-                  {descargando === 'productos' ? 'Generando...' : 'Descargar Excel'}
-                </Button>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Button
+                    type="primary"
+                    icon={<FileExcelOutlined />}
+                    onClick={() => handleDescargarReporte('productos', 'excel')}
+                    loading={descargando === 'productos-excel'}
+                    block
+                  >
+                    {descargando === 'productos-excel' ? 'Generando...' : 'Descargar Excel'}
+                  </Button>
+                  <Button
+                    icon={<FilePdfOutlined />}
+                    onClick={() => handleDescargarReporte('productos', 'pdf')}
+                    loading={descargando === 'productos-pdf'}
+                    block
+                  >
+                    {descargando === 'productos-pdf' ? 'Generando...' : 'Descargar PDF'}
+                  </Button>
+                </Space>
               </Space>
             </Card>
           </Col>
@@ -223,15 +260,25 @@ const Reportes = () => {
                   <li>🪑 Análisis por mesa</li>
                 </ul>
                 
-                <Button
-                  type="primary"
-                  icon={<DownloadOutlined />}
-                  onClick={() => handleDescargarReporte('completo')}
-                  loading={descargando === 'completo'}
-                  block
-                >
-                  {descargando === 'completo' ? 'Generando...' : 'Descargar Excel'}
-                </Button>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Button
+                    type="primary"
+                    icon={<FileExcelOutlined />}
+                    onClick={() => handleDescargarReporte('completo', 'excel')}
+                    loading={descargando === 'completo-excel'}
+                    block
+                  >
+                    {descargando === 'completo-excel' ? 'Generando...' : 'Descargar Excel'}
+                  </Button>
+                  <Button
+                    icon={<FilePdfOutlined />}
+                    onClick={() => handleDescargarReporte('completo', 'pdf')}
+                    loading={descargando === 'completo-pdf'}
+                    block
+                  >
+                    {descargando === 'completo-pdf' ? 'Generando...' : 'Descargar PDF'}
+                  </Button>
+                </Space>
               </Space>
             </Card>
           </Col>

@@ -2,6 +2,7 @@ const Pedido = require('../models/Pedido');
 const Mesa = require('../models/Mesa');
 const Producto = require('../models/Producto');
 const XLSX = require('xlsx');
+const PDFDocument = require('pdfkit');
 
 /**
  * @desc    Generar reporte de ventas en Excel
@@ -395,6 +396,659 @@ exports.generarReporteCompleto = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error al generar el reporte completo'
+    });
+  }
+};
+
+/**
+ * @desc    Generar reporte de ventas en PDF
+ * @route   GET /api/reportes/ventas/pdf
+ * @access  Private (Admin)
+ */
+exports.generarReporteVentasPDF = async (req, res) => {
+  try {
+    const { fechaInicio, fechaFin } = req.query;
+
+    // Construir filtro de fechas
+    const filtro = { pagado: true };
+    if (fechaInicio || fechaFin) {
+      filtro.createdAt = {};
+      if (fechaInicio) {
+        filtro.createdAt.$gte = new Date(fechaInicio);
+      }
+      if (fechaFin) {
+        const fechaFinDate = new Date(fechaFin);
+        fechaFinDate.setHours(23, 59, 59, 999);
+        filtro.createdAt.$lte = fechaFinDate;
+      }
+    }
+
+    // Obtener pedidos con populate
+    const pedidos = await Pedido.find(filtro)
+      .populate('mesaId', 'numeroMesa')
+      .populate('items.productoId', 'nombre categoria precio')
+      .sort({ createdAt: -1 });
+
+    // Crear documento PDF
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    // Configurar headers para descarga
+    const nombreArchivo = `ventas_${fechaInicio || 'inicio'}_${fechaFin || 'fin'}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
+
+    // Pipe el PDF al response
+    doc.pipe(res);
+
+    // Título del reporte
+    doc.fontSize(20).font('Helvetica-Bold').text('Reporte de Ventas', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica').text(`Sierra Yara Café`, { align: 'center' });
+    doc.moveDown(0.3);
+    
+    // Período del reporte
+    const periodoTexto = fechaInicio && fechaFin 
+      ? `Período: ${fechaInicio} - ${fechaFin}`
+      : 'Período: Todos los registros';
+    doc.fontSize(10).text(periodoTexto, { align: 'center' });
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-VE')}`, { align: 'center' });
+    doc.moveDown(1);
+
+    // Calcular totales
+    let totalVentas = 0;
+    let totalPropinas = 0;
+    let totalItems = 0;
+
+    pedidos.forEach(pedido => {
+      totalVentas += pedido.total;
+      totalPropinas += pedido.propina || 0;
+      pedido.items.forEach(item => {
+        totalItems += item.cantidad;
+      });
+    });
+
+    const totalGeneral = totalVentas + totalPropinas;
+
+    // Resumen ejecutivo
+    doc.fontSize(14).font('Helvetica-Bold').text('Resumen Ejecutivo', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica');
+    
+    const y = doc.y;
+    doc.text(`Total de Pedidos:`, 50, y);
+    doc.text(`${pedidos.length}`, 200, y, { align: 'left' });
+    
+    doc.text(`Total Items Vendidos:`, 50, y + 20);
+    doc.text(`${totalItems}`, 200, y + 20, { align: 'left' });
+    
+    doc.text(`Total Ventas:`, 50, y + 40);
+    doc.text(`$${totalVentas.toFixed(2)}`, 200, y + 40, { align: 'left' });
+    
+    doc.text(`Total Propinas:`, 50, y + 60);
+    doc.text(`$${totalPropinas.toFixed(2)}`, 200, y + 60, { align: 'left' });
+    
+    doc.fontSize(12).font('Helvetica-Bold');
+    doc.text(`Total General:`, 50, y + 80);
+    doc.text(`$${totalGeneral.toFixed(2)}`, 200, y + 80, { align: 'left' });
+    
+    doc.moveDown(3);
+
+    // Detalle de ventas
+    doc.fontSize(14).font('Helvetica-Bold').text('Detalle de Ventas', { underline: true });
+    doc.moveDown(0.5);
+
+    // Tabla de ventas
+    const tableTop = doc.y;
+    const colWidths = {
+      fecha: 70,
+      mesa: 40,
+      producto: 150,
+      cant: 35,
+      precio: 50,
+      subtotal: 60
+    };
+
+    // Encabezados de tabla
+    doc.fontSize(9).font('Helvetica-Bold');
+    let xPos = 50;
+    doc.text('Fecha', xPos, tableTop);
+    xPos += colWidths.fecha;
+    doc.text('Mesa', xPos, tableTop);
+    xPos += colWidths.mesa;
+    doc.text('Producto', xPos, tableTop);
+    xPos += colWidths.producto;
+    doc.text('Cant', xPos, tableTop);
+    xPos += colWidths.cant;
+    doc.text('Precio', xPos, tableTop);
+    xPos += colWidths.precio;
+    doc.text('Subtotal', xPos, tableTop);
+
+    // Línea separadora
+    doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
+
+    let yPos = tableTop + 25;
+    doc.fontSize(8).font('Helvetica');
+
+    // Agregar datos
+    for (const pedido of pedidos) {
+      for (const item of pedido.items) {
+        // Verificar si necesitamos una nueva página
+        if (yPos > 700) {
+          doc.addPage();
+          yPos = 50;
+          
+          // Re-dibujar encabezados
+          doc.fontSize(9).font('Helvetica-Bold');
+          xPos = 50;
+          doc.text('Fecha', xPos, yPos);
+          xPos += colWidths.fecha;
+          doc.text('Mesa', xPos, yPos);
+          xPos += colWidths.mesa;
+          doc.text('Producto', xPos, yPos);
+          xPos += colWidths.producto;
+          doc.text('Cant', xPos, yPos);
+          xPos += colWidths.cant;
+          doc.text('Precio', xPos, yPos);
+          xPos += colWidths.precio;
+          doc.text('Subtotal', xPos, yPos);
+          
+          doc.moveTo(50, yPos + 15).lineTo(550, yPos + 15).stroke();
+          yPos += 25;
+          doc.fontSize(8).font('Helvetica');
+        }
+
+        xPos = 50;
+        const fecha = new Date(pedido.createdAt).toLocaleDateString('es-VE');
+        const producto = item.productoId?.nombre || 'N/A';
+        const productoCorto = producto.length > 25 ? producto.substring(0, 22) + '...' : producto;
+        
+        doc.text(fecha, xPos, yPos, { width: colWidths.fecha });
+        xPos += colWidths.fecha;
+        doc.text(pedido.mesaId?.numeroMesa || 'N/A', xPos, yPos, { width: colWidths.mesa });
+        xPos += colWidths.mesa;
+        doc.text(productoCorto, xPos, yPos, { width: colWidths.producto });
+        xPos += colWidths.producto;
+        doc.text(item.cantidad.toString(), xPos, yPos, { width: colWidths.cant });
+        xPos += colWidths.cant;
+        doc.text(`$${item.precioUnitario.toFixed(2)}`, xPos, yPos, { width: colWidths.precio });
+        xPos += colWidths.precio;
+        doc.text(`$${(item.cantidad * item.precioUnitario).toFixed(2)}`, xPos, yPos, { width: colWidths.subtotal });
+        
+        yPos += 20;
+      }
+    }
+
+    // Pie de página
+    const pages = doc.bufferedPageRange();
+    for (let i = 0; i < pages.count; i++) {
+      doc.switchToPage(i);
+      doc.fontSize(8).font('Helvetica').text(
+        `Página ${i + 1} de ${pages.count}`,
+        50,
+        doc.page.height - 50,
+        { align: 'center' }
+      );
+    }
+
+    // Finalizar el PDF
+    doc.end();
+  } catch (error) {
+    console.error('Error al generar reporte PDF de ventas:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al generar el reporte PDF de ventas'
+    });
+  }
+};
+
+/**
+ * @desc    Generar reporte de productos en PDF
+ * @route   GET /api/reportes/productos/pdf
+ * @access  Private (Admin)
+ */
+exports.generarReporteProductosPDF = async (req, res) => {
+  try {
+    const { fechaInicio, fechaFin } = req.query;
+
+    // Construir filtro de fechas
+    const filtro = { pagado: true };
+    if (fechaInicio || fechaFin) {
+      filtro.createdAt = {};
+      if (fechaInicio) {
+        filtro.createdAt.$gte = new Date(fechaInicio);
+      }
+      if (fechaFin) {
+        const fechaFinDate = new Date(fechaFin);
+        fechaFinDate.setHours(23, 59, 59, 999);
+        filtro.createdAt.$lte = fechaFinDate;
+      }
+    }
+
+    // Agregar datos de productos vendidos
+    const productosVendidos = await Pedido.aggregate([
+      { $match: filtro },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.productoId',
+          cantidadVendida: { $sum: '$items.cantidad' },
+          totalVentas: { $sum: { $multiply: ['$items.cantidad', '$items.precioUnitario'] } },
+          numeroVentas: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'productos',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'producto'
+        }
+      },
+      { $unwind: { path: '$producto', preserveNullAndEmptyArrays: true } },
+      { $sort: { cantidadVendida: -1 } }
+    ]);
+
+    // Crear documento PDF
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    // Configurar headers para descarga
+    const nombreArchivo = `productos_vendidos_${fechaInicio || 'inicio'}_${fechaFin || 'fin'}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
+
+    // Pipe el PDF al response
+    doc.pipe(res);
+
+    // Título del reporte
+    doc.fontSize(20).font('Helvetica-Bold').text('Productos Más Vendidos', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica').text(`Sierra Yara Café`, { align: 'center' });
+    doc.moveDown(0.3);
+    
+    // Período del reporte
+    const periodoTexto = fechaInicio && fechaFin 
+      ? `Período: ${fechaInicio} - ${fechaFin}`
+      : 'Período: Todos los registros';
+    doc.fontSize(10).text(periodoTexto, { align: 'center' });
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-VE')}`, { align: 'center' });
+    doc.moveDown(1);
+
+    // Calcular totales
+    const totalUnidades = productosVendidos.reduce((sum, item) => sum + item.cantidadVendida, 0);
+    const totalIngresos = productosVendidos.reduce((sum, item) => sum + item.totalVentas, 0);
+
+    // Resumen ejecutivo
+    doc.fontSize(14).font('Helvetica-Bold').text('Resumen Ejecutivo', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica');
+    
+    const y = doc.y;
+    doc.text(`Total de Productos:`, 50, y);
+    doc.text(`${productosVendidos.length}`, 200, y, { align: 'left' });
+    
+    doc.text(`Unidades Vendidas:`, 50, y + 20);
+    doc.text(`${totalUnidades}`, 200, y + 20, { align: 'left' });
+    
+    doc.fontSize(12).font('Helvetica-Bold');
+    doc.text(`Ingresos Totales:`, 50, y + 40);
+    doc.text(`$${totalIngresos.toFixed(2)}`, 200, y + 40, { align: 'left' });
+    
+    doc.moveDown(2.5);
+
+    // Ranking de productos
+    doc.fontSize(14).font('Helvetica-Bold').text('Ranking de Productos', { underline: true });
+    doc.moveDown(0.5);
+
+    // Tabla de productos
+    const tableTop = doc.y;
+    const colWidths = {
+      rank: 35,
+      producto: 180,
+      categoria: 80,
+      unidades: 60,
+      ingresos: 70
+    };
+
+    // Encabezados de tabla
+    doc.fontSize(9).font('Helvetica-Bold');
+    let xPos = 50;
+    doc.text('#', xPos, tableTop);
+    xPos += colWidths.rank;
+    doc.text('Producto', xPos, tableTop);
+    xPos += colWidths.producto;
+    doc.text('Categoría', xPos, tableTop);
+    xPos += colWidths.categoria;
+    doc.text('Unidades', xPos, tableTop);
+    xPos += colWidths.unidades;
+    doc.text('Ingresos', xPos, tableTop);
+
+    // Línea separadora
+    doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
+
+    let yPos = tableTop + 25;
+    doc.fontSize(8).font('Helvetica');
+
+    // Agregar datos
+    productosVendidos.forEach((item, index) => {
+      // Verificar si necesitamos una nueva página
+      if (yPos > 700) {
+        doc.addPage();
+        yPos = 50;
+        
+        // Re-dibujar encabezados
+        doc.fontSize(9).font('Helvetica-Bold');
+        xPos = 50;
+        doc.text('#', xPos, yPos);
+        xPos += colWidths.rank;
+        doc.text('Producto', xPos, yPos);
+        xPos += colWidths.producto;
+        doc.text('Categoría', xPos, yPos);
+        xPos += colWidths.categoria;
+        doc.text('Unidades', xPos, yPos);
+        xPos += colWidths.unidades;
+        doc.text('Ingresos', xPos, yPos);
+        
+        doc.moveTo(50, yPos + 15).lineTo(550, yPos + 15).stroke();
+        yPos += 25;
+        doc.fontSize(8).font('Helvetica');
+      }
+
+      xPos = 50;
+      const producto = item.producto?.nombre || 'Producto eliminado';
+      const productoCorto = producto.length > 30 ? producto.substring(0, 27) + '...' : producto;
+      
+      doc.text((index + 1).toString(), xPos, yPos, { width: colWidths.rank });
+      xPos += colWidths.rank;
+      doc.text(productoCorto, xPos, yPos, { width: colWidths.producto });
+      xPos += colWidths.producto;
+      doc.text(item.producto?.categoria || 'N/A', xPos, yPos, { width: colWidths.categoria });
+      xPos += colWidths.categoria;
+      doc.text(item.cantidadVendida.toString(), xPos, yPos, { width: colWidths.unidades });
+      xPos += colWidths.unidades;
+      doc.text(`$${item.totalVentas.toFixed(2)}`, xPos, yPos, { width: colWidths.ingresos });
+      
+      yPos += 20;
+    });
+
+    // Pie de página
+    const pages = doc.bufferedPageRange();
+    for (let i = 0; i < pages.count; i++) {
+      doc.switchToPage(i);
+      doc.fontSize(8).font('Helvetica').text(
+        `Página ${i + 1} de ${pages.count}`,
+        50,
+        doc.page.height - 50,
+        { align: 'center' }
+      );
+    }
+
+    // Finalizar el PDF
+    doc.end();
+  } catch (error) {
+    console.error('Error al generar reporte PDF de productos:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al generar el reporte PDF de productos'
+    });
+  }
+};
+
+/**
+ * @desc    Generar reporte completo en PDF
+ * @route   GET /api/reportes/completo/pdf
+ * @access  Private (Admin)
+ */
+exports.generarReporteCompletoPDF = async (req, res) => {
+  try {
+    const { fechaInicio, fechaFin } = req.query;
+
+    // Construir filtro de fechas
+    const filtro = { pagado: true };
+    if (fechaInicio || fechaFin) {
+      filtro.createdAt = {};
+      if (fechaInicio) {
+        filtro.createdAt.$gte = new Date(fechaInicio);
+      }
+      if (fechaFin) {
+        const fechaFinDate = new Date(fechaFin);
+        fechaFinDate.setHours(23, 59, 59, 999);
+        filtro.createdAt.$lte = fechaFinDate;
+      }
+    }
+
+    // Obtener datos
+    const pedidos = await Pedido.find(filtro)
+      .populate('mesaId', 'numeroMesa')
+      .populate('items.productoId', 'nombre categoria precio')
+      .sort({ createdAt: -1 });
+
+    const productosVendidos = await Pedido.aggregate([
+      { $match: filtro },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.productoId',
+          cantidadVendida: { $sum: '$items.cantidad' },
+          totalVentas: { $sum: { $multiply: ['$items.cantidad', '$items.precioUnitario'] } },
+          numeroVentas: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'productos',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'producto'
+        }
+      },
+      { $unwind: { path: '$producto', preserveNullAndEmptyArrays: true } },
+      { $sort: { cantidadVendida: -1 } }
+    ]);
+
+    const ventasPorMesa = await Pedido.aggregate([
+      { $match: filtro },
+      {
+        $group: {
+          _id: '$mesaId',
+          numeroPedidos: { $sum: 1 },
+          totalVentas: { $sum: '$total' },
+          totalPropinas: { $sum: '$propina' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'mesas',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'mesa'
+        }
+      },
+      { $unwind: { path: '$mesa', preserveNullAndEmptyArrays: true } },
+      { $sort: { totalVentas: -1 } }
+    ]);
+
+    // Crear documento PDF
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+    // Configurar headers para descarga
+    const nombreArchivo = `reporte_completo_${fechaInicio || 'inicio'}_${fechaFin || 'fin'}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
+
+    // Pipe el PDF al response
+    doc.pipe(res);
+
+    // ===== PÁGINA 1: PORTADA Y RESUMEN GENERAL =====
+    doc.fontSize(24).font('Helvetica-Bold').text('Reporte Completo', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(16).font('Helvetica').text('Sierra Yara Café', { align: 'center' });
+    doc.moveDown(0.5);
+    
+    const periodoTexto = fechaInicio && fechaFin 
+      ? `Período: ${fechaInicio} - ${fechaFin}`
+      : 'Período: Todos los registros';
+    doc.fontSize(12).text(periodoTexto, { align: 'center' });
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-VE')}`, { align: 'center' });
+    doc.moveDown(2);
+
+    // Calcular totales generales
+    const totalVentas = pedidos.reduce((sum, p) => sum + p.total, 0);
+    const totalPropinas = pedidos.reduce((sum, p) => sum + (p.propina || 0), 0);
+    const totalGeneral = totalVentas + totalPropinas;
+    let totalItems = 0;
+    pedidos.forEach(p => p.items.forEach(i => totalItems += i.cantidad));
+
+    // Resumen General
+    doc.fontSize(16).font('Helvetica-Bold').text('Resumen General', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(11).font('Helvetica');
+    
+    let y = doc.y;
+    doc.text(`Total de Pedidos:`, 80, y);
+    doc.text(`${pedidos.length}`, 300, y);
+    
+    doc.text(`Total Items Vendidos:`, 80, y + 25);
+    doc.text(`${totalItems}`, 300, y + 25);
+    
+    doc.text(`Total Ventas:`, 80, y + 50);
+    doc.text(`$${totalVentas.toFixed(2)}`, 300, y + 50);
+    
+    doc.text(`Total Propinas:`, 80, y + 75);
+    doc.text(`$${totalPropinas.toFixed(2)}`, 300, y + 75);
+    
+    doc.fontSize(14).font('Helvetica-Bold');
+    doc.text(`Total General:`, 80, y + 100);
+    doc.text(`$${totalGeneral.toFixed(2)}`, 300, y + 100);
+    
+    doc.fontSize(11).font('Helvetica');
+    doc.text(`Ticket Promedio:`, 80, y + 125);
+    doc.text(`$${(totalGeneral / pedidos.length || 0).toFixed(2)}`, 300, y + 125);
+
+    doc.moveDown(3);
+
+    // Ventas por método de pago
+    const ventasPorMetodo = {};
+    pedidos.forEach(p => {
+      const metodo = p.metodoPago || 'No especificado';
+      if (!ventasPorMetodo[metodo]) {
+        ventasPorMetodo[metodo] = { cantidad: 0, total: 0 };
+      }
+      ventasPorMetodo[metodo].cantidad++;
+      ventasPorMetodo[metodo].total += p.total + (p.propina || 0);
+    });
+
+    doc.fontSize(14).font('Helvetica-Bold').text('Ventas por Método de Pago', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica');
+
+    y = doc.y;
+    Object.entries(ventasPorMetodo).forEach(([metodo, data], index) => {
+      doc.text(`${metodo}:`, 80, y + (index * 20));
+      doc.text(`${data.cantidad} pedidos - $${data.total.toFixed(2)}`, 300, y + (index * 20));
+    });
+
+    // ===== NUEVA PÁGINA: TOP PRODUCTOS =====
+    doc.addPage();
+    doc.fontSize(16).font('Helvetica-Bold').text('Top 10 Productos Más Vendidos', { underline: true });
+    doc.moveDown(0.5);
+
+    const top10 = productosVendidos.slice(0, 10);
+    const tableTop = doc.y;
+    
+    doc.fontSize(9).font('Helvetica-Bold');
+    let xPos = 50;
+    doc.text('#', xPos, tableTop);
+    xPos += 30;
+    doc.text('Producto', xPos, tableTop);
+    xPos += 200;
+    doc.text('Unidades', xPos, tableTop);
+    xPos += 70;
+    doc.text('Ingresos', xPos, tableTop);
+
+    doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
+
+    let yPos = tableTop + 25;
+    doc.fontSize(9).font('Helvetica');
+
+    top10.forEach((item, index) => {
+      xPos = 50;
+      const producto = item.producto?.nombre || 'N/A';
+      const productoCorto = producto.length > 35 ? producto.substring(0, 32) + '...' : producto;
+      
+      doc.text((index + 1).toString(), xPos, yPos);
+      xPos += 30;
+      doc.text(productoCorto, xPos, yPos);
+      xPos += 200;
+      doc.text(item.cantidadVendida.toString(), xPos, yPos);
+      xPos += 70;
+      doc.text(`$${item.totalVentas.toFixed(2)}`, xPos, yPos);
+      
+      yPos += 25;
+    });
+
+    doc.moveDown(2);
+
+    // Análisis por mesa
+    doc.fontSize(16).font('Helvetica-Bold').text('Análisis por Mesa', { underline: true });
+    doc.moveDown(0.5);
+
+    const tableTop2 = doc.y;
+    doc.fontSize(9).font('Helvetica-Bold');
+    xPos = 50;
+    doc.text('Mesa', xPos, tableTop2);
+    xPos += 60;
+    doc.text('Pedidos', xPos, tableTop2);
+    xPos += 70;
+    doc.text('Ventas', xPos, tableTop2);
+    xPos += 80;
+    doc.text('Propinas', xPos, tableTop2);
+    xPos += 80;
+    doc.text('Total', xPos, tableTop2);
+
+    doc.moveTo(50, tableTop2 + 15).lineTo(550, tableTop2 + 15).stroke();
+
+    yPos = tableTop2 + 25;
+    doc.fontSize(9).font('Helvetica');
+
+    ventasPorMesa.slice(0, 15).forEach(item => {
+      if (yPos > 700) {
+        doc.addPage();
+        yPos = 50;
+      }
+
+      xPos = 50;
+      doc.text(item.mesa?.numeroMesa || 'N/A', xPos, yPos);
+      xPos += 60;
+      doc.text(item.numeroPedidos.toString(), xPos, yPos);
+      xPos += 70;
+      doc.text(`$${item.totalVentas.toFixed(2)}`, xPos, yPos);
+      xPos += 80;
+      doc.text(`$${item.totalPropinas.toFixed(2)}`, xPos, yPos);
+      xPos += 80;
+      doc.text(`$${(item.totalVentas + item.totalPropinas).toFixed(2)}`, xPos, yPos);
+      
+      yPos += 20;
+    });
+
+    // Pie de página en todas las páginas
+    const pages = doc.bufferedPageRange();
+    for (let i = 0; i < pages.count; i++) {
+      doc.switchToPage(i);
+      doc.fontSize(8).font('Helvetica').text(
+        `Página ${i + 1} de ${pages.count}`,
+        50,
+        doc.page.height - 50,
+        { align: 'center' }
+      );
+    }
+
+    // Finalizar el PDF
+    doc.end();
+  } catch (error) {
+    console.error('Error al generar reporte PDF completo:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al generar el reporte PDF completo'
     });
   }
 };

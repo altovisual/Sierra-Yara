@@ -99,6 +99,7 @@ export const configAPI = {
 
 // ============ REPORTES ============
 export const reportesAPI = {
+  // Reportes en Excel
   descargarReporteVentas: (params) => {
     const queryString = new URLSearchParams(params).toString();
     window.open(`${API_URL}/reportes/ventas/excel?${queryString}`, '_blank');
@@ -110,6 +111,20 @@ export const reportesAPI = {
   descargarReporteCompleto: (params) => {
     const queryString = new URLSearchParams(params).toString();
     window.open(`${API_URL}/reportes/completo/excel?${queryString}`, '_blank');
+  },
+  
+  // Reportes en PDF
+  descargarReporteVentasPDF: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    window.open(`${API_URL}/reportes/ventas/pdf?${queryString}`, '_blank');
+  },
+  descargarReporteProductosPDF: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    window.open(`${API_URL}/reportes/productos/pdf?${queryString}`, '_blank');
+  },
+  descargarReporteCompletoPDF: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    window.open(`${API_URL}/reportes/completo/pdf?${queryString}`, '_blank');
   },
 };
 
