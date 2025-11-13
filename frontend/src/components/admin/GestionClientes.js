@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './GestionClientes.css';
 import { clientesAPI } from '../../services/api';
 import AdminLayout from './AdminLayout';
 import {
@@ -60,6 +61,15 @@ const GestionClientes = () => {
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [pedidosCliente, setPedidosCliente] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     cargarDatos();
@@ -284,16 +294,89 @@ const GestionClientes = () => {
     }
   ];
 
+  // Renderizar card de cliente para móvil
+  const renderClienteCard = (cliente) => (
+    <div key={cliente._id} className="cliente-card" onClick={() => verDetalleCliente(cliente)}>
+      <div className="cliente-card-header">
+        <div className="cliente-card-title">
+          <h3>{cliente.nombre}</h3>
+          <Tag 
+            icon={getSegmentoIcon(cliente.segmento)} 
+            color={getSegmentoColor(cliente.segmento)}
+            style={{ marginLeft: '8px' }}
+          >
+            {cliente.segmento.toUpperCase()}
+          </Tag>
+        </div>
+      </div>
+
+      <div className="cliente-card-info">
+        <div className="cliente-info-row">
+          <span className="cliente-info-icon"><IdcardOutlined /></span>
+          <span className="cliente-info-text">{cliente.cedula}</span>
+        </div>
+        <div className="cliente-info-row">
+          <span className="cliente-info-icon"><PhoneOutlined /></span>
+          <span className="cliente-info-text">{cliente.telefono}</span>
+        </div>
+        {cliente.email && (
+          <div className="cliente-info-row">
+            <span className="cliente-info-icon"><MailOutlined /></span>
+            <span className="cliente-info-text">{cliente.email}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="cliente-card-stats">
+        <div className="cliente-stat">
+          <ShoppingOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+          <div>
+            <div className="cliente-stat-value">{cliente.totalPedidos}</div>
+            <div className="cliente-stat-label">Pedidos</div>
+          </div>
+        </div>
+        <div className="cliente-stat">
+          <DollarOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
+          <div>
+            <div className="cliente-stat-value">${cliente.totalGastado.toFixed(2)}</div>
+            <div className="cliente-stat-label">Total</div>
+          </div>
+        </div>
+        <div className="cliente-stat">
+          <UserOutlined style={{ color: '#fa8c16', fontSize: '18px' }} />
+          <div>
+            <div className="cliente-stat-value">{cliente.totalVisitas}</div>
+            <div className="cliente-stat-label">Visitas</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="cliente-card-footer">
+        <div className="cliente-footer-item">
+          <span className="cliente-footer-label">Última visita:</span>
+          <span className="cliente-footer-value">{dayjs(cliente.ultimaVisita).fromNow()}</span>
+        </div>
+        {cliente.aceptaMarketing && (
+          <Tag color="success" style={{ marginTop: '8px' }}>
+            <MailOutlined /> Acepta Marketing
+          </Tag>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <AdminLayout>
-      <div style={{ padding: '24px' }}>
-        <div style={{ marginBottom: '24px' }}>
-          <Title level={2}>
-            <UserOutlined /> Gestión de Clientes
-          </Title>
-          <Text type="secondary">
-            Base de datos de clientes para marketing y análisis
-          </Text>
+      <div className="clientes-container">
+        <div className="clientes-header">
+          <div>
+            <Title level={isMobile ? 3 : 2} style={{ margin: 0 }}>
+              <UserOutlined /> Gestión de Clientes
+            </Title>
+            <Text type="secondary">
+              Base de datos de clientes para marketing y análisis
+            </Text>
+          </div>
         </div>
 
         {/* Estadísticas Generales */}
@@ -344,21 +427,22 @@ const GestionClientes = () => {
 
         {/* Filtros y Búsqueda */}
         <Card style={{ marginBottom: '24px' }}>
-          <Row gutter={16}>
+          <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
               <Search
                 placeholder="Buscar por nombre, cédula o teléfono..."
                 allowClear
                 enterButton={<SearchOutlined />}
-                size="large"
+                size={isMobile ? 'large' : 'middle'}
                 onSearch={buscarClientes}
                 onChange={(e) => e.target.value === '' && buscarClientes('')}
+                style={{ fontSize: '16px' }}
               />
             </Col>
-            <Col xs={24} md={6}>
+            <Col xs={24} md={12}>
               <Select
                 style={{ width: '100%' }}
-                size="large"
+                size={isMobile ? 'large' : 'middle'}
                 value={filtroSegmento}
                 onChange={filtrarPorSegmento}
               >
@@ -370,26 +454,28 @@ const GestionClientes = () => {
                 <Option value="inactivo">😴 Inactivos</Option>
               </Select>
             </Col>
-            <Col xs={24} md={6}>
-              <Space>
+            <Col xs={24}>
+              <Space wrap style={{ width: '100%', justifyContent: isMobile ? 'center' : 'flex-start' }}>
                 <Button
                   icon={<ReloadOutlined />}
-                  size="large"
+                  size={isMobile ? 'large' : 'middle'}
                   onClick={cargarDatos}
+                  style={{ minWidth: isMobile ? '120px' : 'auto' }}
                 >
                   Actualizar
                 </Button>
                 <Button
                   type="primary"
                   icon={<DownloadOutlined />}
-                  size="large"
+                  size={isMobile ? 'large' : 'middle'}
                   onClick={exportarParaMarketing}
+                  style={{ minWidth: isMobile ? '120px' : 'auto' }}
                 >
                   Exportar
                 </Button>
                 <Button
                   icon={<FilePdfOutlined />}
-                  size="large"
+                  size={isMobile ? 'large' : 'middle'}
                   onClick={async () => {
                     try {
                       await import('../../services/api').then(({ reportesAPI }) => {
@@ -400,7 +486,8 @@ const GestionClientes = () => {
                       message.error('Error al descargar el reporte');
                     }
                   }}
-                  style={{ borderColor: '#ff4d4f', color: '#ff4d4f' }}
+                  style={{ borderColor: '#ff4d4f', color: '#ff4d4f', minWidth: isMobile ? '120px' : 'auto' }}
+                  danger
                 >
                   PDF
                 </Button>
@@ -409,34 +496,61 @@ const GestionClientes = () => {
           </Row>
         </Card>
 
-        {/* Tabla de Clientes */}
-        <Card>
-          <Table
-            columns={columns}
-            dataSource={clientes}
-            rowKey="_id"
-            loading={cargando}
-            pagination={{
-              pageSize: 20,
-              showSizeChanger: true,
-              showTotal: (total) => `Total: ${total} clientes`
-            }}
-            scroll={{ x: 1200 }}
-          />
-        </Card>
+        {/* Tabla/Cards de Clientes */}
+        {cargando ? (
+          <Card loading={true} />
+        ) : isMobile ? (
+          /* Vista de Cards para móvil */
+          <div className="clientes-grid">
+            {clientes.map(renderClienteCard)}
+            {clientes.length === 0 && (
+              <Card style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <UserOutlined style={{ fontSize: '48px', color: '#d9d9d9', marginBottom: '16px' }} />
+                <p style={{ color: '#999', margin: 0 }}>No se encontraron clientes</p>
+              </Card>
+            )}
+          </div>
+        ) : (
+          /* Vista de Tabla para desktop */
+          <Card>
+            <Table
+              columns={columns}
+              dataSource={clientes}
+              rowKey="_id"
+              loading={cargando}
+              pagination={{
+                pageSize: 20,
+                showSizeChanger: true,
+                showTotal: (total) => `Total: ${total} clientes`
+              }}
+              scroll={{ x: 1200 }}
+            />
+          </Card>
+        )}
 
         {/* Modal de Detalle del Cliente */}
         <Modal
           title={
-            <div>
+            <span style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 'bold' }}>
               <UserOutlined /> Detalle del Cliente
-            </div>
+            </span>
           }
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
-          width={900}
+          width={isMobile ? '95%' : 900}
+          style={{ maxWidth: '900px', top: isMobile ? 10 : 20 }}
+          bodyStyle={{ 
+            maxHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 200px)', 
+            overflowY: 'auto',
+            padding: isMobile ? '16px' : '24px'
+          }}
           footer={[
-            <Button key="close" onClick={() => setModalVisible(false)}>
+            <Button 
+              key="close" 
+              onClick={() => setModalVisible(false)}
+              size={isMobile ? 'large' : 'middle'}
+              block={isMobile}
+            >
               Cerrar
             </Button>
           ]}
@@ -444,7 +558,13 @@ const GestionClientes = () => {
           {clienteSeleccionado && (
             <div>
               {/* Información del Cliente */}
-              <Descriptions bordered column={2} size="small">
+              <Descriptions 
+                bordered 
+                column={{ xs: 1, sm: 2 }} 
+                size="small"
+                labelStyle={{ fontWeight: '600', backgroundColor: '#fafafa' }}
+                contentStyle={{ backgroundColor: '#ffffff' }}
+              >
                 <Descriptions.Item label="Nombre" span={2}>
                   <strong>{clienteSeleccionado.nombre}</strong>
                 </Descriptions.Item>
@@ -476,21 +596,21 @@ const GestionClientes = () => {
 
               {/* Estadísticas */}
               <Row gutter={16} style={{ marginBottom: '16px' }}>
-                <Col span={6}>
+                <Col xs={12} sm={6}>
                   <Statistic
                     title="Total Visitas"
                     value={clienteSeleccionado.totalVisitas}
                     prefix={<UserOutlined />}
                   />
                 </Col>
-                <Col span={6}>
+                <Col xs={12} sm={6}>
                   <Statistic
                     title="Total Pedidos"
                     value={clienteSeleccionado.totalPedidos}
                     prefix={<ShoppingOutlined />}
                   />
                 </Col>
-                <Col span={6}>
+                <Col xs={12} sm={6}>
                   <Statistic
                     title="Total Gastado"
                     value={clienteSeleccionado.totalGastado.toFixed(2)}
@@ -498,7 +618,7 @@ const GestionClientes = () => {
                     valueStyle={{ color: '#3f8600' }}
                   />
                 </Col>
-                <Col span={6}>
+                <Col xs={12} sm={6}>
                   <Statistic
                     title="Promedio Gasto"
                     value={clienteSeleccionado.promedioGasto.toFixed(2)}
@@ -508,12 +628,12 @@ const GestionClientes = () => {
               </Row>
 
               <Row gutter={16} style={{ marginBottom: '16px' }}>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Card size="small" title="Primera Visita">
                     {dayjs(clienteSeleccionado.primeraVisita).format('DD/MM/YYYY HH:mm')}
                   </Card>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Card size="small" title="Última Visita">
                     {dayjs(clienteSeleccionado.ultimaVisita).format('DD/MM/YYYY HH:mm')}
                     <div style={{ fontSize: '12px', color: '#666' }}>

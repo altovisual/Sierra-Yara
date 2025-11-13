@@ -160,6 +160,31 @@
   gap: 12px;
 }
 
+/* Switch mejorado para móvil */
+.promo-card-actions .ant-switch {
+  min-width: 60px;
+  height: 28px;
+}
+
+.promo-card-actions .ant-switch-inner {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.promo-card-actions .ant-switch-handle {
+  width: 24px;
+  height: 24px;
+  top: 2px;
+}
+
+.promo-card-actions .ant-switch-handle::before {
+  border-radius: 50%;
+}
+
+.promo-card-actions .ant-switch-checked .ant-switch-handle {
+  inset-inline-start: calc(100% - 26px);
+}
+
 .promo-action-buttons {
   display: flex;
   gap: 8px;
