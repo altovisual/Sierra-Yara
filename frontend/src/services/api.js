@@ -153,6 +153,34 @@ export const reportesAPI = {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
   },
+  
+  // Reportes PDF mejorados
+  descargarReporteCompletoDetalladoPDF: async (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_URL}/reportes/completo-detallado/pdf?${queryString}`);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `estado_cuenta_${Date.now()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  },
+  
+  descargarReporteClientesPDF: async () => {
+    const response = await fetch(`${API_URL}/reportes/clientes/pdf`);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_clientes_${Date.now()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  },
 };
 
 // ============ CLIENTES ============

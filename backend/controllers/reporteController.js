@@ -4,37 +4,36 @@ const Producto = require('../models/Producto');
 const XLSX = require('xlsx');
 const PDFDocument = require('pdfkit');
 
-// ==================== FUNCIONES HELPER PARA PDF EMPRESARIAL ====================
+// ==================== FUNCIONES HELPER PARA PDF ESTILO LIMPIO ====================
 
 /**
- * Dibuja el encabezado corporativo del PDF
+ * Dibuja el encabezado limpio y profesional
  */
-const dibujarEncabezado = (doc, titulo, subtitulo) => {
-  // Fondo del encabezado
-  doc.rect(0, 0, doc.page.width, 120).fill('#2c3e50');
-  
-  // Logo/Nombre de la empresa
-  doc.fillColor('#ffffff')
-     .fontSize(28)
+const dibujarEncabezadoLimpio = (doc, titulo, subtitulo) => {
+  // Titulo principal
+  doc.fillColor('#000000')
+     .fontSize(24)
      .font('Helvetica-Bold')
-     .text('SIERRA YARA CAFE', 50, 30, { align: 'left' });
+     .text(titulo, 50, 40);
   
-  // Linea decorativa
-  doc.rect(50, 65, 200, 3).fill('#e74c3c');
-  
-  // Titulo del reporte
-  doc.fillColor('#ecf0f1')
-     .fontSize(16)
-     .font('Helvetica')
-     .text(titulo, 50, 75);
-  
+  // Subtitulo/fecha
   if (subtitulo) {
-    doc.fontSize(10)
-       .text(subtitulo, 50, 95);
+    doc.fillColor('#666666')
+       .fontSize(10)
+       .font('Helvetica')
+       .text(subtitulo, 50, 70);
   }
   
-  // Resetear color
+  // Linea separadora
+  doc.moveTo(50, 90)
+     .lineTo(doc.page.width - 50, 90)
+     .strokeColor('#cccccc')
+     .lineWidth(1)
+     .stroke();
+  
+  // Resetear
   doc.fillColor('#000000');
+  return 100;
 };
 
 /**
@@ -60,71 +59,125 @@ const dibujarCajaInfo = (doc, x, y, ancho, alto, titulo, valor, color = '#3498db
 };
 
 /**
- * Dibuja una tabla con estilo empresarial
+ * Dibuja una tabla con estilo limpio profesional
  */
-const dibujarTablaHeader = (doc, headers, x, y, colWidths) => {
-  // Fondo del header
-  doc.rect(x, y, Object.values(colWidths).reduce((a, b) => a + b, 0), 25).fill('#34495e');
+const dibujarTablaHeaderLimpio = (doc, headers, x, y, colWidths) => {
+  const totalWidth = Object.values(colWidths).reduce((a, b) => a + b, 0);
+  
+  // Fondo gris claro para header
+  doc.rect(x, y, totalWidth, 20).fillAndStroke('#f5f5f5', '#cccccc');
   
   // Textos del header
-  doc.fillColor('#ffffff')
+  doc.fillColor('#333333')
      .fontSize(9)
      .font('Helvetica-Bold');
   
   let xPos = x + 5;
   headers.forEach((header, index) => {
     const colWidth = Object.values(colWidths)[index];
-    doc.text(header, xPos, y + 8, { width: colWidth - 10, align: 'left' });
+    doc.text(header, xPos, y + 6, { width: colWidth - 10, align: 'left' });
     xPos += colWidth;
   });
   
   // Resetear
   doc.fillColor('#000000');
-  return y + 25;
+  return y + 20;
 };
 
 /**
- * Dibuja una fila de tabla con alternancia de colores
+ * Dibuja una fila de tabla con estilo limpio
  */
-const dibujarFilaTabla = (doc, datos, x, y, colWidths, esImpar) => {
+const dibujarFilaTablaLimpia = (doc, datos, x, y, colWidths, esImpar) => {
   const ancho = Object.values(colWidths).reduce((a, b) => a + b, 0);
   
-  // Fondo alternado
-  if (esImpar) {
-    doc.rect(x, y, ancho, 20).fill('#ecf0f1');
-  }
+  // Sin fondo, solo bordes
+  doc.rect(x, y, ancho, 18).stroke('#e0e0e0');
   
   // Textos
-  doc.fillColor('#000000')
+  doc.fillColor('#333333')
      .fontSize(8)
      .font('Helvetica');
   
   let xPos = x + 5;
   datos.forEach((dato, index) => {
     const colWidth = Object.values(colWidths)[index];
-    doc.text(dato, xPos, y + 6, { width: colWidth - 10, align: 'left' });
+    doc.text(dato, xPos, y + 5, { width: colWidth - 10, align: 'left' });
     xPos += colWidth;
   });
   
-  return y + 20;
+  return y + 18;
 };
 
 /**
- * Dibuja el pie de pagina corporativo
+ * Dibuja una seccion de resumen ejecutivo limpia
  */
-const dibujarPiePagina = (doc, numeroPagina, totalPaginas) => {
-  const y = doc.page.height - 50;
+const dibujarResumenEjecutivo = (doc, titulo, y) => {
+  doc.fillColor('#000000')
+     .fontSize(14)
+     .font('Helvetica-Bold')
+     .text(titulo, 50, y);
   
-  // Linea superior
-  doc.moveTo(50, y).lineTo(doc.page.width - 50, y).stroke('#bdc3c7');
+  doc.fillColor('#000000');
+  return y + 30;
+};
+
+/**
+ * Dibuja una tabla de resumen con 2 columnas
+ */
+const dibujarTablaResumen = (doc, datos, x, y, ancho) => {
+  const altoFila = 25;
+  const anchoMetrica = ancho * 0.7;
+  const anchoMonto = ancho * 0.3;
   
-  // Informacion
-  doc.fillColor('#7f8c8d')
+  // Header
+  doc.rect(x, y, ancho, 20).fillAndStroke('#4a5568', '#4a5568');
+  doc.fillColor('#ffffff')
+     .fontSize(10)
+     .font('Helvetica-Bold')
+     .text('Metrica', x + 10, y + 6, { width: anchoMetrica - 20 })
+     .text('Monto', x + anchoMetrica + 10, y + 6, { width: anchoMonto - 20, align: 'right' });
+  
+  let yPos = y + 20;
+  
+  // Filas de datos
+  datos.forEach((item, index) => {
+    // Fondo blanco para todas las filas
+    doc.rect(x, yPos, ancho, altoFila).fillAndStroke('#ffffff', '#e0e0e0');
+    
+    // Metrica
+    doc.fillColor('#333333')
+       .fontSize(9)
+       .font('Helvetica')
+       .text(item.metrica, x + 10, yPos + 8, { width: anchoMetrica - 20 });
+    
+    // Monto (verde si es positivo)
+    const color = item.monto.toString().includes('-') ? '#e53e3e' : '#38a169';
+    doc.fillColor(color)
+       .fontSize(9)
+       .font('Helvetica-Bold')
+       .text(item.monto, x + anchoMetrica + 10, yPos + 8, { width: anchoMonto - 20, align: 'right' });
+    
+    yPos += altoFila;
+  });
+  
+  doc.fillColor('#000000');
+  return yPos;
+};
+
+/**
+ * Dibuja el pie de pagina limpio
+ */
+const dibujarPiePaginaLimpio = (doc, numeroPagina, totalPaginas, sistema = 'Sierra Yara Cafe') => {
+  const y = doc.page.height - 40;
+  
+  // Texto centrado simple
+  doc.fillColor('#999999')
      .fontSize(8)
      .font('Helvetica')
-     .text('Sierra Yara Cafe - Sistema de Gestion', 50, y + 10, { align: 'left' })
-     .text('Pagina ' + numeroPagina + ' de ' + totalPaginas, 50, y + 10, { align: 'center' })
-     .text(new Date().toLocaleDateString('es-VE'), 50, y + 10, { align: 'right' });
+     .text('Pagina ' + numeroPagina + ' de ' + totalPaginas + ' | ' + sistema, 50, y, { 
+       width: doc.page.width - 100, 
+       align: 'center' 
+     });
   
   doc.fillColor('#000000');
 };

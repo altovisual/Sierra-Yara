@@ -67,6 +67,9 @@ const Reportes = () => {
           case 'completo':
             await reportesAPI.descargarReporteCompletoPDF(params);
             break;
+          case 'completo-detallado':
+            await reportesAPI.descargarReporteCompletoDetalladoPDF(params);
+            break;
           default:
             break;
         }
@@ -277,6 +280,16 @@ const Reportes = () => {
                     block
                   >
                     {descargando === 'completo-pdf' ? 'Generando...' : 'Descargar PDF'}
+                  </Button>
+                  <Button
+                    type="dashed"
+                    icon={<FilePdfOutlined />}
+                    onClick={() => handleDescargarReporte('completo-detallado', 'pdf')}
+                    loading={descargando === 'completo-detallado-pdf'}
+                    block
+                    style={{ borderColor: '#52c41a', color: '#52c41a' }}
+                  >
+                    {descargando === 'completo-detallado-pdf' ? 'Generando...' : 'Estado de Cuenta PDF'}
                   </Button>
                 </Space>
               </Space>

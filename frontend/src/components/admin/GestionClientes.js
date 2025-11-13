@@ -34,7 +34,8 @@ import {
   StarOutlined,
   CrownOutlined,
   TrophyOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  FilePdfOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
@@ -385,6 +386,23 @@ const GestionClientes = () => {
                   onClick={exportarParaMarketing}
                 >
                   Exportar
+                </Button>
+                <Button
+                  icon={<FilePdfOutlined />}
+                  size="large"
+                  onClick={async () => {
+                    try {
+                      await import('../../services/api').then(({ reportesAPI }) => {
+                        reportesAPI.descargarReporteClientesPDF();
+                      });
+                      message.success('Reporte de clientes descargado exitosamente');
+                    } catch (error) {
+                      message.error('Error al descargar el reporte');
+                    }
+                  }}
+                  style={{ borderColor: '#ff4d4f', color: '#ff4d4f' }}
+                >
+                  PDF
                 </Button>
               </Space>
             </Col>
