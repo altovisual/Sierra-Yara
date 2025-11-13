@@ -66,8 +66,78 @@ curl -X PUT https://sierra-yara.onrender.com/api/auth/cambiar-password \
 
 - **Rol:** Superadmin
 - **Permisos:** Acceso completo a todas las funciones
-- **Sesión:** Token JWT válido por 30 días
+- **Sesión:** Token JWT sin expiración (sesión persistente)
 - **Seguridad:** Password encriptado con bcrypt
+- **Keep-alive:** Backend siempre activo en Render (ping cada 10 min)
+
+### Funcionalidades Disponibles:
+
+#### 📊 Dashboard
+- Estadísticas en tiempo real
+- Mapa de mesas activas
+- Pedidos del día
+- Gráficos de ventas
+
+#### 🛒 Gestión de Pedidos
+- Vista completa de todos los pedidos
+- Cambio de estado en tiempo real
+- Confirmación de pagos
+- Cancelación de pedidos
+- Notificaciones con sonido
+
+#### 🍽️ Gestión de Productos
+- CRUD completo
+- Categorías
+- Control de disponibilidad
+- Precios en USD
+- Imágenes de productos
+
+#### 🎁 Gestión de Promociones
+- Creación de promociones
+- Programación por horarios y días
+- Descuentos por porcentaje o monto fijo
+- Activación/desactivación instantánea
+- Asignación a productos específicos
+
+#### 📦 Control de Inventario
+- Stock en tiempo real
+- Alertas de stock bajo
+- Actualización manual
+- Historial de movimientos
+
+#### 💱 Gestión de Tasa BCV
+- Actualización automática cada 6 horas
+- Actualización manual
+- Histórico de cambios
+- Estadísticas de variación
+
+#### 👥 Gestión de Clientes
+- Base de datos completa
+- Segmentación automática (Nuevo, Regular, Frecuente, VIP, Inactivo)
+- Estadísticas por cliente
+- Productos preferidos
+- Exportación para marketing
+- Reportes PDF
+
+#### 📈 Reportes
+- Reportes Excel (ventas, productos, clientes)
+- Reportes PDF profesionales
+- Estado de cuenta detallado
+- Gráficos y tablas visuales
+- Descarga directa
+
+#### 🏷️ Generador de QR
+- Códigos QR únicos por mesa
+- Personalización de diseño
+- Descarga en alta resolución
+- Listo para imprimir
+
+#### 📱 Panel 100% Responsive
+- Vista adaptativa (cards en móvil, tablas en desktop)
+- Inputs táctiles (44px, fuente 16px)
+- Botones grandes (40-44px)
+- Switches mejorados
+- Animaciones suaves
 
 ## 🎨 Diseño del Login
 

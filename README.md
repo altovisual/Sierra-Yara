@@ -29,29 +29,42 @@ Sistema completo de menú digital con gestión de pedidos en tiempo real, tasa B
 - ✅ Dashboard en tiempo real con estadísticas
 - ✅ Gestión completa de pedidos (CRUD)
 - ✅ Gestión de productos y categorías
-- ✅ **Sistema de promociones** con horarios
-- ✅ **Control de inventario** con alertas
-- ✅ **Gestión de tasa BCV** automática y manual
+- ✅ **Sistema de promociones** con horarios y días específicos
+- ✅ **Control de inventario** con alertas de stock bajo
+- ✅ **Gestión de tasa BCV** automática (cada 6h) y manual
+- ✅ **Gestión de clientes** con segmentación y marketing
+- ✅ **Reportes avanzados** en Excel y PDF profesionales
 - ✅ Generador de códigos QR por mesa
 - ✅ Notificaciones instantáneas con sonido
 - ✅ Visualización de mesas en tiempo real
 - ✅ Estadísticas de ventas y reportes
+- ✅ **Panel 100% responsive** - móvil, tablet y desktop
+- ✅ **Sesión sin expiración** para administradores
+- ✅ **Keep-alive automático** en Render
 
 ## 🛠️ Tecnologías Utilizadas
 
 ### Backend
 - **Node.js** + **Express** - Servidor y API REST
-- **MongoDB** + **Mongoose** - Base de datos
+- **MongoDB** + **Mongoose** - Base de datos NoSQL
 - **Socket.io** - Comunicación en tiempo real
+- **JWT** - Autenticación segura
+- **PDFKit** - Generación de reportes PDF
+- **ExcelJS** - Generación de reportes Excel
+- **Axios** - Cliente HTTP para APIs externas
+- **Node-cron** - Tareas programadas
 - **dotenv** - Gestión de variables de entorno
 
 ### Frontend
 - **React 18** - Framework de UI
 - **React Router** - Navegación
-- **Tailwind CSS** - Estilos modernos
+- **Tailwind CSS** - Estilos modernos y responsive
+- **Ant Design** - Componentes UI profesionales
 - **Axios** - Cliente HTTP
 - **Socket.io Client** - WebSockets
 - **Lucide React** - Iconos
+- **Day.js** - Manejo de fechas
+- **QRCode.react** - Generación de códigos QR
 
 ## 📦 Instalación
 
@@ -306,6 +319,34 @@ categoria: {
 
 ## 🆕 Características Recientes
 
+### ✅ Panel Admin 100% Responsive (v2.0 - Nov 2025)
+- **Vista adaptativa** - Cards en móvil, tablas en desktop
+- **Productos responsive** - Grid 1/2/3 columnas según pantalla
+- **Promociones responsive** - Switches mejorados y táctiles
+- **Clientes responsive** - Cards con estadísticas visuales
+- **Pedidos responsive** - Modal optimizado para móvil
+- **Inputs táctiles** - 44px altura, fuente 16px (evita zoom iOS)
+- **Botones grandes** - Mínimo 40-44px para fácil toque
+- **Animaciones suaves** - Fade-in y hover effects
+- **Diseño profesional** - Mantiene identidad Sierra Yara
+
+### ✅ Gestión de Clientes y Marketing (v2.0)
+- **Segmentación automática** - Nuevo, Regular, Frecuente, VIP, Inactivo
+- **Base de datos completa** - Nombre, cédula, teléfono, email
+- **Estadísticas por cliente** - Pedidos, gasto total, visitas
+- **Productos preferidos** - Análisis de consumo
+- **Exportación para marketing** - CSV con clientes que aceptan marketing
+- **Reportes PDF** - Reporte completo de clientes
+- **Filtros avanzados** - Por segmento y búsqueda
+
+### ✅ Reportes Profesionales (v2.0)
+- **Reportes Excel** - Ventas, productos, clientes
+- **Reportes PDF empresariales** - Diseño limpio y profesional
+- **Estado de cuenta detallado** - PDF con todos los pedidos
+- **Reporte de clientes** - PDF con estadísticas completas
+- **Gráficos y tablas** - Visualización clara de datos
+- **Descarga directa** - Sin abrir en navegador
+
 ### ✅ Sistema de Tasa BCV (v1.0)
 - Actualización automática cada 6 horas desde API externa
 - Conversión USD → Bs en tiempo real
@@ -320,13 +361,11 @@ categoria: {
 - Promociones aplicadas
 - Auto-restauración al reabrir
 
-### ✅ Panel Admin Mejorado (v1.0)
-- Diseño consistente con TailwindCSS
-- Gestión de tasa BCV
-- Control de inventario
-- Sistema de promociones
-- Generador de QR
-- Endpoint de limpieza de pedidos
+### ✅ Infraestructura Mejorada (v2.0)
+- **Sesión sin expiración** - Administradores no pierden sesión
+- **Keep-alive automático** - Backend siempre activo en Render
+- **Health check** - Monitoreo de estado del servidor
+- **Manejo de errores** - Sistema robusto sin crashes
 
 ## 📈 Roadmap
 
@@ -340,12 +379,16 @@ categoria: {
 - [x] PWA instalable
 - [x] Persistencia de datos
 
-### Fase 2: Optimización 🔄 (En Progreso)
+### Fase 2: Optimización ✅ (Completado)
 - [x] Gestión de promociones
 - [x] Control de inventario
-- [ ] Reportes avanzados
+- [x] Reportes avanzados (Excel y PDF)
+- [x] Gestión de clientes y marketing
+- [x] Panel admin 100% responsive
+- [x] Sesión persistente para admin
+- [x] Keep-alive automático
 - [ ] Modo offline completo
-- [ ] Sistema de autenticación
+- [ ] Sistema de autenticación avanzado
 
 ### Fase 3: Expansión 📅 (Q1 2026)
 - [ ] Notificaciones push
