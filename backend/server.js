@@ -19,6 +19,7 @@ const promocionesRoutes = require('./routes/promociones');
 const tasaBCVRoutes = require('./routes/tasaBCV');
 const reporteRoutes = require('./routes/reporteRoutes');
 const clienteRoutes = require('./routes/clienteRoutes');
+const healthRoutes = require('./routes/healthRoutes');
 
 // Inicializar Express
 const app = express();
@@ -52,6 +53,7 @@ app.use((req, res, next) => {
 });
 
 // Rutas de la API
+app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/productos', productosRoutes);
 app.use('/api/mesas', mesasRoutes);
@@ -224,6 +226,36 @@ const keepMongoDBAlive = async () => {
 cron.schedule('*/5 * * * *', keepMongoDBAlive);
 console.log('⏰ Cron job configurado: Keep-alive de MongoDB cada 5 minutos');
 
+// Función para mantener Render activo (evitar que entre en sleep mode)
+const keepRenderAlive = async () => {
+  try {
+    const https = require('https');
+    const http = require('http');
+    
+    // URL de tu servidor en Render (cambiar si es necesario)
+    const renderUrl = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL;
+    
+    if (renderUrl) {
+      const protocol = renderUrl.startsWith('https') ? https : http;
+      const url = new URL(renderUrl + '/api/health');
+      
+      protocol.get(url, (res) => {
+        console.log('🔄 Keep-alive Render - Status:', res.statusCode);
+      }).on('error', (err) => {
+        console.log('ℹ️  Keep-alive Render (local mode)');
+      });
+    } else {
+      console.log('ℹ️  Keep-alive Render (modo local - sin URL externa)');
+    }
+  } catch (error) {
+    console.log('ℹ️  Keep-alive Render (modo desarrollo)');
+  }
+};
+
+// Programar keep-alive de Render cada 10 minutos
+cron.schedule('*/10 * * * *', keepRenderAlive);
+console.log('⏰ Cron job configurado: Keep-alive de Render cada 10 minutos');
+
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, '0.0.0.0', () => {
@@ -235,14 +267,18 @@ server.listen(PORT, '0.0.0.0', () => {
 ║   🌐 Acceso local: http://192.168.1.105:${PORT}  ║
 ║   💱 Actualización automática de tasa BCV     ║
 ║   🏓 Keep-alive de MongoDB cada 5 minutos     ║
+║   🔄 Keep-alive de Render cada 10 minutos     ║
 ╚═══════════════════════════════════════════════╝
   `);
   
   // Actualizar tasa al iniciar el servidor
   actualizarTasaBCVAuto();
   
-  // Ejecutar primer keep-alive inmediatamente
+  // Ejecutar primer keep-alive de MongoDB inmediatamente
   setTimeout(keepMongoDBAlive, 5000);
+  
+  // Ejecutar primer keep-alive de Render después de 1 minuto
+  setTimeout(keepRenderAlive, 60000);
 });
 
 module.exports = { app, server, io };

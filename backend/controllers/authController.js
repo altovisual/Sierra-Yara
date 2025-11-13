@@ -1,11 +1,9 @@
 const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 
-// Generar JWT Token
+// Generar JWT Token sin expiracion
 const generarToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'sierra_yara_secret_key_2024', {
-    expiresIn: '30d'
-  });
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'sierra_yara_secret_key_2024');
 };
 
 // @desc    Registrar nuevo admin (solo para setup inicial)
