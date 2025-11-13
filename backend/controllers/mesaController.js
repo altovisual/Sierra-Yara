@@ -269,10 +269,11 @@ exports.cerrarMesa = async (req, res) => {
       });
     }
 
-    // Verificar que todos los pedidos estén pagados
+    // Verificar que todos los pedidos estén pagados (excluyendo cancelados)
     const pedidosPendientes = await Pedido.find({
       _id: { $in: mesa.pedidos },
-      pagado: false
+      pagado: false,
+      estado: { $ne: 'cancelado' }
     });
 
     if (pedidosPendientes.length > 0) {

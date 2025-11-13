@@ -583,10 +583,11 @@ exports.cancelarPedido = async (req, res) => {
     pedido.estado = 'cancelado';
     await pedido.save();
 
-    // Actualizar el total de la mesa
+    // Actualizar el total y estado de la mesa
     const mesa = await Mesa.findById(pedido.mesaId);
     if (mesa) {
       await mesa.calcularTotal();
+      await mesa.actualizarEstado();
       await mesa.save();
     }
 
