@@ -4,6 +4,148 @@ const Producto = require('../models/Producto');
 const XLSX = require('xlsx');
 const PDFDocument = require('pdfkit');
 
+// ==================== FUNCIONES HELPER PARA PDF EMPRESARIAL ====================
+
+/**
+ * Dibuja el encabezado corporativo del PDF
+ */
+const dibujarEncabezado = (doc, titulo, subtitulo) => {
+  // Fondo del encabezado
+  doc.rect(0, 0, doc.page.width, 120).fill('#2c3e50');
+  
+  // Logo/Nombre de la empresa
+  doc.fillColor('#ffffff')
+     .fontSize(28)
+     .font('Helvetica-Bold')
+     .text('SIERRA YARA CAFE', 50, 30, { align: 'left' });
+  
+  // Linea decorativa
+  doc.rect(50, 65, 200, 3).fill('#e74c3c');
+  
+  // Titulo del reporte
+  doc.fillColor('#ecf0f1')
+     .fontSize(16)
+     .font('Helvetica')
+     .text(titulo, 50, 75);
+  
+  if (subtitulo) {
+    doc.fontSize(10)
+       .text(subtitulo, 50, 95);
+  }
+  
+  // Resetear color
+  doc.fillColor('#000000');
+};
+
+/**
+ * Dibuja una caja de informacion destacada
+ */
+const dibujarCajaInfo = (doc, x, y, ancho, alto, titulo, valor, color = '#3498db') => {
+  // Fondo de la caja
+  doc.rect(x, y, ancho, alto).fill(color);
+  
+  // Titulo
+  doc.fillColor('#ffffff')
+     .fontSize(9)
+     .font('Helvetica')
+     .text(titulo, x + 10, y + 10, { width: ancho - 20, align: 'center' });
+  
+  // Valor
+  doc.fontSize(16)
+     .font('Helvetica-Bold')
+     .text(valor, x + 10, y + 28, { width: ancho - 20, align: 'center' });
+  
+  // Resetear color
+  doc.fillColor('#000000');
+};
+
+/**
+ * Dibuja una tabla con estilo empresarial
+ */
+const dibujarTablaHeader = (doc, headers, x, y, colWidths) => {
+  // Fondo del header
+  doc.rect(x, y, Object.values(colWidths).reduce((a, b) => a + b, 0), 25).fill('#34495e');
+  
+  // Textos del header
+  doc.fillColor('#ffffff')
+     .fontSize(9)
+     .font('Helvetica-Bold');
+  
+  let xPos = x + 5;
+  headers.forEach((header, index) => {
+    const colWidth = Object.values(colWidths)[index];
+    doc.text(header, xPos, y + 8, { width: colWidth - 10, align: 'left' });
+    xPos += colWidth;
+  });
+  
+  // Resetear
+  doc.fillColor('#000000');
+  return y + 25;
+};
+
+/**
+ * Dibuja una fila de tabla con alternancia de colores
+ */
+const dibujarFilaTabla = (doc, datos, x, y, colWidths, esImpar) => {
+  const ancho = Object.values(colWidths).reduce((a, b) => a + b, 0);
+  
+  // Fondo alternado
+  if (esImpar) {
+    doc.rect(x, y, ancho, 20).fill('#ecf0f1');
+  }
+  
+  // Textos
+  doc.fillColor('#000000')
+     .fontSize(8)
+     .font('Helvetica');
+  
+  let xPos = x + 5;
+  datos.forEach((dato, index) => {
+    const colWidth = Object.values(colWidths)[index];
+    doc.text(dato, xPos, y + 6, { width: colWidth - 10, align: 'left' });
+    xPos += colWidth;
+  });
+  
+  return y + 20;
+};
+
+/**
+ * Dibuja el pie de pagina corporativo
+ */
+const dibujarPiePagina = (doc, numeroPagina, totalPaginas) => {
+  const y = doc.page.height - 50;
+  
+  // Linea superior
+  doc.moveTo(50, y).lineTo(doc.page.width - 50, y).stroke('#bdc3c7');
+  
+  // Informacion
+  doc.fillColor('#7f8c8d')
+     .fontSize(8)
+     .font('Helvetica')
+     .text('Sierra Yara Cafe - Sistema de Gestion', 50, y + 10, { align: 'left' })
+     .text('Pagina ' + numeroPagina + ' de ' + totalPaginas, 50, y + 10, { align: 'center' })
+     .text(new Date().toLocaleDateString('es-VE'), 50, y + 10, { align: 'right' });
+  
+  doc.fillColor('#000000');
+};
+
+/**
+ * Dibuja una seccion con titulo
+ */
+const dibujarSeccion = (doc, titulo, y) => {
+  // Linea decorativa
+  doc.rect(50, y, 5, 20).fill('#e74c3c');
+  
+  // Titulo
+  doc.fillColor('#2c3e50')
+     .fontSize(14)
+     .font('Helvetica-Bold')
+     .text(titulo, 65, y + 3);
+  
+  doc.fillColor('#000000');
+  return y + 30;
+};
+
 /**
  * @desc    Generar reporte de ventas en Excel
  * @route   GET /api/reportes/ventas/excel
@@ -433,27 +575,18 @@ exports.generarReporteVentasPDF = async (req, res) => {
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
     // Configurar headers para descarga
-    const nombreArchivo = `ventas_${fechaInicio || 'inicio'}_${fechaFin || 'fin'}.pdf`;
+    const nombreArchivo = 'reporte_ventas_' + Date.now() + '.pdf';
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
+    res.setHeader('Content-Disposition', 'attachment; filename="' + nombreArchivo + '"');
 
     // Pipe el PDF al response
     doc.pipe(res);
 
-    // Título del reporte
-    doc.fontSize(20).font('Helvetica-Bold').text('Reporte de Ventas', { align: 'center' });
-    doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica').text('Sierra Yara Cafe', { align: 'center' });
-    doc.moveDown(0.3);
-    
-    // Período del reporte
-    let periodoTexto = 'Periodo: Todos los registros';
-    if (fechaInicio && fechaFin) {
-      periodoTexto = 'Periodo: ' + fechaInicio + ' - ' + fechaFin;
-    }
-    doc.fontSize(10).text(periodoTexto, { align: 'center' });
-    doc.text('Fecha de generacion: ' + new Date().toLocaleDateString('es-VE'), { align: 'center' });
-    doc.moveDown(1);
+    // ===== ENCABEZADO CORPORATIVO =====
+    let periodoTexto = fechaInicio && fechaFin 
+      ? 'Periodo: ' + fechaInicio + ' al ' + fechaFin
+      : 'Periodo: Todos los registros';
+    dibujarEncabezado(doc, 'REPORTE DE VENTAS', periodoTexto);
 
     // Calcular totales
     let totalVentas = 0;
@@ -469,126 +602,80 @@ exports.generarReporteVentasPDF = async (req, res) => {
     });
 
     const totalGeneral = totalVentas + totalPropinas;
+    const ticketPromedio = pedidos.length > 0 ? totalGeneral / pedidos.length : 0;
 
-    // Resumen ejecutivo
-    doc.fontSize(14).font('Helvetica-Bold').text('Resumen Ejecutivo', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica');
+    // ===== CAJAS DE RESUMEN =====
+    let y = 140;
+    dibujarCajaInfo(doc, 50, y, 120, 55, 'TOTAL PEDIDOS', pedidos.length.toString(), '#3498db');
+    dibujarCajaInfo(doc, 180, y, 120, 55, 'ITEMS VENDIDOS', totalItems.toString(), '#9b59b6');
+    dibujarCajaInfo(doc, 310, y, 120, 55, 'TICKET PROMEDIO', '$' + ticketPromedio.toFixed(2), '#e67e22');
     
-    const y = doc.y;
-    doc.text('Total de Pedidos:', 50, y);
-    doc.text(pedidos.length.toString(), 200, y, { align: 'left' });
-    
-    doc.text('Total Items Vendidos:', 50, y + 20);
-    doc.text(totalItems.toString(), 200, y + 20, { align: 'left' });
-    
-    doc.text('Total Ventas:', 50, y + 40);
-    doc.text('$' + totalVentas.toFixed(2), 200, y + 40, { align: 'left' });
-    
-    doc.text('Total Propinas:', 50, y + 60);
-    doc.text('$' + totalPropinas.toFixed(2), 200, y + 60, { align: 'left' });
-    
-    doc.fontSize(12).font('Helvetica-Bold');
-    doc.text('Total General:', 50, y + 80);
-    doc.text('$' + totalGeneral.toFixed(2), 200, y + 80, { align: 'left' });
-    
-    doc.moveDown(3);
+    y += 70;
+    dibujarCajaInfo(doc, 50, y, 155, 55, 'TOTAL VENTAS', '$' + totalVentas.toFixed(2), '#27ae60');
+    dibujarCajaInfo(doc, 215, y, 155, 55, 'TOTAL PROPINAS', '$' + totalPropinas.toFixed(2), '#16a085');
+    dibujarCajaInfo(doc, 380, y, 155, 55, 'TOTAL GENERAL', '$' + totalGeneral.toFixed(2), '#2ecc71');
 
-    // Detalle de ventas
-    doc.fontSize(14).font('Helvetica-Bold').text('Detalle de Ventas', { underline: true });
-    doc.moveDown(0.5);
+    // ===== SECCION DETALLE DE VENTAS =====
+    y = dibujarSeccion(doc, 'DETALLE DE VENTAS', 280);
 
-    // Tabla de ventas
-    const tableTop = doc.y;
+    // Tabla de ventas con diseño empresarial
     const colWidths = {
-      fecha: 70,
-      mesa: 40,
-      producto: 150,
-      cant: 35,
-      precio: 50,
-      subtotal: 60
+      fecha: 75,
+      mesa: 45,
+      producto: 160,
+      cant: 40,
+      precio: 60,
+      subtotal: 65
     };
 
-    // Encabezados de tabla
-    doc.fontSize(9).font('Helvetica-Bold');
-    let xPos = 50;
-    doc.text('Fecha', xPos, tableTop);
-    xPos += colWidths.fecha;
-    doc.text('Mesa', xPos, tableTop);
-    xPos += colWidths.mesa;
-    doc.text('Producto', xPos, tableTop);
-    xPos += colWidths.producto;
-    doc.text('Cant', xPos, tableTop);
-    xPos += colWidths.cant;
-    doc.text('Precio', xPos, tableTop);
-    xPos += colWidths.precio;
-    doc.text('Subtotal', xPos, tableTop);
+    let yPos = dibujarTablaHeader(
+      doc,
+      ['FECHA', 'MESA', 'PRODUCTO', 'CANT', 'PRECIO', 'SUBTOTAL'],
+      50,
+      y,
+      colWidths
+    );
 
-    // Línea separadora
-    doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
-
-    let yPos = tableTop + 25;
-    doc.fontSize(8).font('Helvetica');
-
-    // Agregar datos
+    // Agregar datos con filas alternadas
+    let contador = 0;
     for (const pedido of pedidos) {
       for (const item of pedido.items) {
         // Verificar si necesitamos una nueva página
-        if (yPos > 700) {
+        if (yPos > 720) {
           doc.addPage();
-          yPos = 50;
-          
-          // Re-dibujar encabezados
-          doc.fontSize(9).font('Helvetica-Bold');
-          xPos = 50;
-          doc.text('Fecha', xPos, yPos);
-          xPos += colWidths.fecha;
-          doc.text('Mesa', xPos, yPos);
-          xPos += colWidths.mesa;
-          doc.text('Producto', xPos, yPos);
-          xPos += colWidths.producto;
-          doc.text('Cant', xPos, yPos);
-          xPos += colWidths.cant;
-          doc.text('Precio', xPos, yPos);
-          xPos += colWidths.precio;
-          doc.text('Subtotal', xPos, yPos);
-          
-          doc.moveTo(50, yPos + 15).lineTo(550, yPos + 15).stroke();
-          yPos += 25;
-          doc.fontSize(8).font('Helvetica');
+          dibujarEncabezado(doc, 'REPORTE DE VENTAS (continuacion)', periodoTexto);
+          yPos = dibujarTablaHeader(
+            doc,
+            ['FECHA', 'MESA', 'PRODUCTO', 'CANT', 'PRECIO', 'SUBTOTAL'],
+            50,
+            150,
+            colWidths
+          );
         }
 
-        xPos = 50;
         const fecha = new Date(pedido.createdAt).toLocaleDateString('es-VE');
         const producto = item.productoId?.nombre || 'N/A';
-        const productoCorto = producto.length > 25 ? producto.substring(0, 22) + '...' : producto;
+        const productoCorto = producto.length > 28 ? producto.substring(0, 25) + '...' : producto;
         
-        doc.text(fecha, xPos, yPos, { width: colWidths.fecha });
-        xPos += colWidths.fecha;
-        doc.text(pedido.mesaId?.numeroMesa || 'N/A', xPos, yPos, { width: colWidths.mesa });
-        xPos += colWidths.mesa;
-        doc.text(productoCorto, xPos, yPos, { width: colWidths.producto });
-        xPos += colWidths.producto;
-        doc.text(item.cantidad.toString(), xPos, yPos, { width: colWidths.cant });
-        xPos += colWidths.cant;
-        doc.text('$' + item.precioUnitario.toFixed(2), xPos, yPos, { width: colWidths.precio });
-        xPos += colWidths.precio;
-        doc.text('$' + (item.cantidad * item.precioUnitario).toFixed(2), xPos, yPos, { width: colWidths.subtotal });
-        
-        yPos += 20;
+        const datos = [
+          fecha,
+          (pedido.mesaId?.numeroMesa || 'N/A').toString(),
+          productoCorto,
+          item.cantidad.toString(),
+          '$' + item.precioUnitario.toFixed(2),
+          '$' + (item.cantidad * item.precioUnitario).toFixed(2)
+        ];
+
+        yPos = dibujarFilaTabla(doc, datos, 50, yPos, colWidths, contador % 2 === 1);
+        contador++;
       }
     }
 
-    // Pie de página
+    // Pie de página en todas las páginas
     const pages = doc.bufferedPageRange();
     for (let i = 0; i < pages.count; i++) {
       doc.switchToPage(i);
-      doc.fontSize(8).font('Helvetica').text(
-        'Pagina ' + (i + 1) + ' de ' + pages.count,
-        50,
-        doc.page.height - 50,
-        { align: 'center' }
-      );
+      dibujarPiePagina(doc, i + 1, pages.count);
     }
 
     // Finalizar el PDF
@@ -653,135 +740,87 @@ exports.generarReporteProductosPDF = async (req, res) => {
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
     // Configurar headers para descarga
-    const nombreArchivo = `productos_vendidos_${fechaInicio || 'inicio'}_${fechaFin || 'fin'}.pdf`;
+    const nombreArchivo = 'reporte_productos_' + Date.now() + '.pdf';
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
+    res.setHeader('Content-Disposition', 'attachment; filename="' + nombreArchivo + '"');
 
     // Pipe el PDF al response
     doc.pipe(res);
 
-    // Título del reporte
-    doc.fontSize(20).font('Helvetica-Bold').text('Productos Mas Vendidos', { align: 'center' });
-    doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica').text('Sierra Yara Cafe', { align: 'center' });
-    doc.moveDown(0.3);
-    
-    // Período del reporte
-    let periodoTexto2 = 'Periodo: Todos los registros';
-    if (fechaInicio && fechaFin) {
-      periodoTexto2 = 'Periodo: ' + fechaInicio + ' - ' + fechaFin;
-    }
-    doc.fontSize(10).text(periodoTexto2, { align: 'center' });
-    doc.text('Fecha de generacion: ' + new Date().toLocaleDateString('es-VE'), { align: 'center' });
-    doc.moveDown(1);
+    // ===== ENCABEZADO CORPORATIVO =====
+    let periodoTexto = fechaInicio && fechaFin 
+      ? 'Periodo: ' + fechaInicio + ' al ' + fechaFin
+      : 'Periodo: Todos los registros';
+    dibujarEncabezado(doc, 'PRODUCTOS MAS VENDIDOS', periodoTexto);
 
     // Calcular totales
     const totalUnidades = productosVendidos.reduce((sum, item) => sum + item.cantidadVendida, 0);
     const totalIngresos = productosVendidos.reduce((sum, item) => sum + item.totalVentas, 0);
+    const promedioUnidades = productosVendidos.length > 0 ? totalUnidades / productosVendidos.length : 0;
 
-    // Resumen ejecutivo
-    doc.fontSize(14).font('Helvetica-Bold').text('Resumen Ejecutivo', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica');
+    // ===== CAJAS DE RESUMEN =====
+    let y = 140;
+    dibujarCajaInfo(doc, 50, y, 130, 55, 'PRODUCTOS', productosVendidos.length.toString(), '#3498db');
+    dibujarCajaInfo(doc, 190, y, 130, 55, 'UNIDADES', totalUnidades.toString(), '#9b59b6');
+    dibujarCajaInfo(doc, 330, y, 155, 55, 'PROMEDIO/PROD', promedioUnidades.toFixed(1), '#e67e22');
     
-    const y = doc.y;
-    doc.text('Total de Productos:', 50, y);
-    doc.text(productosVendidos.length.toString(), 200, y, { align: 'left' });
-    
-    doc.text('Unidades Vendidas:', 50, y + 20);
-    doc.text(totalUnidades.toString(), 200, y + 20, { align: 'left' });
-    
-    doc.fontSize(12).font('Helvetica-Bold');
-    doc.text('Ingresos Totales:', 50, y + 40);
-    doc.text('$' + totalIngresos.toFixed(2), 200, y + 40, { align: 'left' });
-    
-    doc.moveDown(2.5);
+    y += 70;
+    dibujarCajaInfo(doc, 115, y, 285, 55, 'INGRESOS TOTALES', '$' + totalIngresos.toFixed(2), '#27ae60');
 
-    // Ranking de productos
-    doc.fontSize(14).font('Helvetica-Bold').text('Ranking de Productos', { underline: true });
-    doc.moveDown(0.5);
+    // ===== SECCION RANKING DE PRODUCTOS =====
+    y = dibujarSeccion(doc, 'RANKING DE PRODUCTOS', 280);
 
-    // Tabla de productos
-    const tableTop = doc.y;
-    const colWidths = {
-      rank: 35,
-      producto: 180,
-      categoria: 80,
-      unidades: 60,
-      ingresos: 70
+    // Tabla de productos con diseño empresarial
+    const colWidthsProd = {
+      rank: 40,
+      producto: 190,
+      categoria: 85,
+      unidades: 65,
+      ingresos: 75
     };
 
-    // Encabezados de tabla
-    doc.fontSize(9).font('Helvetica-Bold');
-    let xPos = 50;
-    doc.text('#', xPos, tableTop);
-    xPos += colWidths.rank;
-    doc.text('Producto', xPos, tableTop);
-    xPos += colWidths.producto;
-    doc.text('Categoría', xPos, tableTop);
-    xPos += colWidths.categoria;
-    doc.text('Unidades', xPos, tableTop);
-    xPos += colWidths.unidades;
-    doc.text('Ingresos', xPos, tableTop);
+    let yPos = dibujarTablaHeader(
+      doc,
+      ['#', 'PRODUCTO', 'CATEGORIA', 'UNIDADES', 'INGRESOS'],
+      50,
+      y,
+      colWidthsProd
+    );
 
-    // Línea separadora
-    doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
-
-    let yPos = tableTop + 25;
-    doc.fontSize(8).font('Helvetica');
-
-    // Agregar datos
+    // Agregar datos con filas alternadas
     productosVendidos.forEach((item, index) => {
       // Verificar si necesitamos una nueva página
-      if (yPos > 700) {
+      if (yPos > 720) {
         doc.addPage();
-        yPos = 50;
-        
-        // Re-dibujar encabezados
-        doc.fontSize(9).font('Helvetica-Bold');
-        xPos = 50;
-        doc.text('#', xPos, yPos);
-        xPos += colWidths.rank;
-        doc.text('Producto', xPos, yPos);
-        xPos += colWidths.producto;
-        doc.text('Categoría', xPos, yPos);
-        xPos += colWidths.categoria;
-        doc.text('Unidades', xPos, yPos);
-        xPos += colWidths.unidades;
-        doc.text('Ingresos', xPos, yPos);
-        
-        doc.moveTo(50, yPos + 15).lineTo(550, yPos + 15).stroke();
-        yPos += 25;
-        doc.fontSize(8).font('Helvetica');
+        dibujarEncabezado(doc, 'PRODUCTOS MAS VENDIDOS (continuacion)', periodoTexto);
+        yPos = dibujarTablaHeader(
+          doc,
+          ['#', 'PRODUCTO', 'CATEGORIA', 'UNIDADES', 'INGRESOS'],
+          50,
+          150,
+          colWidthsProd
+        );
       }
 
-      xPos = 50;
       const producto = item.producto?.nombre || 'Producto eliminado';
-      const productoCorto = producto.length > 30 ? producto.substring(0, 27) + '...' : producto;
+      const productoCorto = producto.length > 32 ? producto.substring(0, 29) + '...' : producto;
       
-      doc.text((index + 1).toString(), xPos, yPos, { width: colWidths.rank });
-      xPos += colWidths.rank;
-      doc.text(productoCorto, xPos, yPos, { width: colWidths.producto });
-      xPos += colWidths.producto;
-      doc.text(item.producto?.categoria || 'N/A', xPos, yPos, { width: colWidths.categoria });
-      xPos += colWidths.categoria;
-      doc.text(item.cantidadVendida.toString(), xPos, yPos, { width: colWidths.unidades });
-      xPos += colWidths.unidades;
-      doc.text('$' + item.totalVentas.toFixed(2), xPos, yPos, { width: colWidths.ingresos });
-      
-      yPos += 20;
+      const datos = [
+        (index + 1).toString(),
+        productoCorto,
+        item.producto?.categoria || 'N/A',
+        item.cantidadVendida.toString(),
+        '$' + item.totalVentas.toFixed(2)
+      ];
+
+      yPos = dibujarFilaTabla(doc, datos, 50, yPos, colWidthsProd, index % 2 === 1);
     });
 
-    // Pie de página
+    // Pie de página en todas las páginas
     const pages = doc.bufferedPageRange();
     for (let i = 0; i < pages.count; i++) {
       doc.switchToPage(i);
-      doc.fontSize(8).font('Helvetica').text(
-        'Pagina ' + (i + 1) + ' de ' + pages.count,
-        50,
-        doc.page.height - 50,
-        { align: 'center' }
-      );
+      dibujarPiePagina(doc, i + 1, pages.count);
     }
 
     // Finalizar el PDF
@@ -873,26 +912,18 @@ exports.generarReporteCompletoPDF = async (req, res) => {
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
     // Configurar headers para descarga
-    const nombreArchivo = `reporte_completo_${fechaInicio || 'inicio'}_${fechaFin || 'fin'}.pdf`;
+    const nombreArchivo = 'reporte_completo_' + Date.now() + '.pdf';
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
+    res.setHeader('Content-Disposition', 'attachment; filename="' + nombreArchivo + '"');
 
     // Pipe el PDF al response
     doc.pipe(res);
 
-    // ===== PAGINA 1: PORTADA Y RESUMEN GENERAL =====
-    doc.fontSize(24).font('Helvetica-Bold').text('Reporte Completo', { align: 'center' });
-    doc.moveDown(0.5);
-    doc.fontSize(16).font('Helvetica').text('Sierra Yara Cafe', { align: 'center' });
-    doc.moveDown(0.5);
-    
-    let periodoTexto3 = 'Periodo: Todos los registros';
-    if (fechaInicio && fechaFin) {
-      periodoTexto3 = 'Periodo: ' + fechaInicio + ' - ' + fechaFin;
-    }
-    doc.fontSize(12).text(periodoTexto3, { align: 'center' });
-    doc.text('Fecha de generacion: ' + new Date().toLocaleDateString('es-VE'), { align: 'center' });
-    doc.moveDown(2);
+    // ===== ENCABEZADO CORPORATIVO =====
+    let periodoTexto = fechaInicio && fechaFin 
+      ? 'Periodo: ' + fechaInicio + ' al ' + fechaFin
+      : 'Periodo: Todos los registros';
+    dibujarEncabezado(doc, 'REPORTE COMPLETO DE GESTION', periodoTexto);
 
     // Calcular totales generales
     const totalVentas = pedidos.reduce((sum, p) => sum + p.total, 0);
@@ -900,36 +931,22 @@ exports.generarReporteCompletoPDF = async (req, res) => {
     const totalGeneral = totalVentas + totalPropinas;
     let totalItems = 0;
     pedidos.forEach(p => p.items.forEach(i => totalItems += i.cantidad));
+    const ticketPromedio = pedidos.length > 0 ? totalGeneral / pedidos.length : 0;
 
-    // Resumen General
-    doc.fontSize(16).font('Helvetica-Bold').text('Resumen General', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica');
+    // ===== CAJAS DE RESUMEN GENERAL =====
+    let y = 140;
+    dibujarCajaInfo(doc, 50, y, 120, 55, 'PEDIDOS', pedidos.length.toString(), '#3498db');
+    dibujarCajaInfo(doc, 180, y, 120, 55, 'ITEMS', totalItems.toString(), '#9b59b6');
+    dibujarCajaInfo(doc, 310, y, 120, 55, 'TICKET PROM', '$' + ticketPromedio.toFixed(2), '#e67e22');
     
-    let y = doc.y;
-    doc.text('Total de Pedidos:', 80, y);
-    doc.text(pedidos.length.toString(), 300, y);
-    
-    doc.text('Total Items Vendidos:', 80, y + 25);
-    doc.text(totalItems.toString(), 300, y + 25);
-    
-    doc.text('Total Ventas:', 80, y + 50);
-    doc.text('$' + totalVentas.toFixed(2), 300, y + 50);
-    
-    doc.text('Total Propinas:', 80, y + 75);
-    doc.text('$' + totalPropinas.toFixed(2), 300, y + 75);
-    
-    doc.fontSize(14).font('Helvetica-Bold');
-    doc.text('Total General:', 80, y + 100);
-    doc.text('$' + totalGeneral.toFixed(2), 300, y + 100);
-    
-    doc.fontSize(11).font('Helvetica');
-    doc.text('Ticket Promedio:', 80, y + 125);
-    doc.text('$' + (totalGeneral / pedidos.length || 0).toFixed(2), 300, y + 125);
+    y += 70;
+    dibujarCajaInfo(doc, 50, y, 155, 55, 'VENTAS', '$' + totalVentas.toFixed(2), '#27ae60');
+    dibujarCajaInfo(doc, 215, y, 155, 55, 'PROPINAS', '$' + totalPropinas.toFixed(2), '#16a085');
+    dibujarCajaInfo(doc, 380, y, 155, 55, 'TOTAL', '$' + totalGeneral.toFixed(2), '#2ecc71');
 
-    doc.moveDown(3);
+    // ===== VENTAS POR METODO DE PAGO =====
+    y = dibujarSeccion(doc, 'VENTAS POR METODO DE PAGO', 280);
 
-    // Ventas por método de pago
     const ventasPorMetodo = {};
     pedidos.forEach(p => {
       const metodo = p.metodoPago || 'No especificado';
@@ -940,109 +957,99 @@ exports.generarReporteCompletoPDF = async (req, res) => {
       ventasPorMetodo[metodo].total += p.total + (p.propina || 0);
     });
 
-    doc.fontSize(14).font('Helvetica-Bold').text('Ventas por Método de Pago', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica');
+    const colWidthsMetodo = { metodo: 200, cantidad: 100, total: 145 };
+    let yPosMetodo = dibujarTablaHeader(
+      doc,
+      ['METODO DE PAGO', 'PEDIDOS', 'TOTAL'],
+      50,
+      y,
+      colWidthsMetodo
+    );
 
-    y = doc.y;
-    Object.entries(ventasPorMetodo).forEach(([metodo, data], index) => {
-      doc.text(metodo + ':', 80, y + (index * 20));
-      doc.text(data.cantidad + ' pedidos - $' + data.total.toFixed(2), 300, y + (index * 20));
+    let contador = 0;
+    Object.entries(ventasPorMetodo).forEach(([metodo, data]) => {
+      const datos = [
+        metodo,
+        data.cantidad.toString() + ' pedidos',
+        '$' + data.total.toFixed(2)
+      ];
+      yPosMetodo = dibujarFilaTabla(doc, datos, 50, yPosMetodo, colWidthsMetodo, contador % 2 === 1);
+      contador++;
     });
 
-    // ===== NUEVA PÁGINA: TOP PRODUCTOS =====
+    // ===== NUEVA PAGINA: TOP 10 PRODUCTOS =====
     doc.addPage();
-    doc.fontSize(16).font('Helvetica-Bold').text('Top 10 Productos Mas Vendidos', { underline: true });
-    doc.moveDown(0.5);
+    dibujarEncabezado(doc, 'TOP 10 PRODUCTOS MAS VENDIDOS', periodoTexto);
 
+    y = 150;
     const top10 = productosVendidos.slice(0, 10);
-    const tableTop = doc.y;
+    const colWidthsTop = { rank: 40, producto: 220, unidades: 80, ingresos: 105 };
     
-    doc.fontSize(9).font('Helvetica-Bold');
-    let xPos = 50;
-    doc.text('#', xPos, tableTop);
-    xPos += 30;
-    doc.text('Producto', xPos, tableTop);
-    xPos += 200;
-    doc.text('Unidades', xPos, tableTop);
-    xPos += 70;
-    doc.text('Ingresos', xPos, tableTop);
-
-    doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
-
-    let yPos = tableTop + 25;
-    doc.fontSize(9).font('Helvetica');
+    let yPosTop = dibujarTablaHeader(
+      doc,
+      ['#', 'PRODUCTO', 'UNIDADES', 'INGRESOS'],
+      50,
+      y,
+      colWidthsTop
+    );
 
     top10.forEach((item, index) => {
-      xPos = 50;
       const producto = item.producto?.nombre || 'N/A';
-      const productoCorto = producto.length > 35 ? producto.substring(0, 32) + '...' : producto;
+      const productoCorto = producto.length > 38 ? producto.substring(0, 35) + '...' : producto;
       
-      doc.text((index + 1).toString(), xPos, yPos);
-      xPos += 30;
-      doc.text(productoCorto, xPos, yPos);
-      xPos += 200;
-      doc.text(item.cantidadVendida.toString(), xPos, yPos);
-      xPos += 70;
-      doc.text('$' + item.totalVentas.toFixed(2), xPos, yPos);
-      
-      yPos += 25;
+      const datos = [
+        (index + 1).toString(),
+        productoCorto,
+        item.cantidadVendida.toString(),
+        '$' + item.totalVentas.toFixed(2)
+      ];
+
+      yPosTop = dibujarFilaTabla(doc, datos, 50, yPosTop, colWidthsTop, index % 2 === 1);
     });
 
-    doc.moveDown(2);
+    // ===== ANALISIS POR MESA =====
+    y = dibujarSeccion(doc, 'ANALISIS POR MESA', yPosTop + 30);
 
-    // Análisis por mesa
-    doc.fontSize(16).font('Helvetica-Bold').text('Análisis por Mesa', { underline: true });
-    doc.moveDown(0.5);
+    const colWidthsMesa = { mesa: 70, pedidos: 80, ventas: 95, propinas: 95, total: 105 };
+    let yPosMesa = dibujarTablaHeader(
+      doc,
+      ['MESA', 'PEDIDOS', 'VENTAS', 'PROPINAS', 'TOTAL'],
+      50,
+      y,
+      colWidthsMesa
+    );
 
-    const tableTop2 = doc.y;
-    doc.fontSize(9).font('Helvetica-Bold');
-    xPos = 50;
-    doc.text('Mesa', xPos, tableTop2);
-    xPos += 60;
-    doc.text('Pedidos', xPos, tableTop2);
-    xPos += 70;
-    doc.text('Ventas', xPos, tableTop2);
-    xPos += 80;
-    doc.text('Propinas', xPos, tableTop2);
-    xPos += 80;
-    doc.text('Total', xPos, tableTop2);
-
-    doc.moveTo(50, tableTop2 + 15).lineTo(550, tableTop2 + 15).stroke();
-
-    yPos = tableTop2 + 25;
-    doc.fontSize(9).font('Helvetica');
-
+    contador = 0;
     ventasPorMesa.slice(0, 15).forEach(item => {
-      if (yPos > 700) {
+      if (yPosMesa > 720) {
         doc.addPage();
-        yPos = 50;
+        dibujarEncabezado(doc, 'ANALISIS POR MESA (continuacion)', periodoTexto);
+        yPosMesa = dibujarTablaHeader(
+          doc,
+          ['MESA', 'PEDIDOS', 'VENTAS', 'PROPINAS', 'TOTAL'],
+          50,
+          150,
+          colWidthsMesa
+        );
       }
 
-      xPos = 50;
-      doc.text(item.mesa?.numeroMesa || 'N/A', xPos, yPos);
-      xPos += 60;
-      doc.text(item.numeroPedidos.toString(), xPos, yPos);
-      xPos += 70;
-      doc.text('$' + item.totalVentas.toFixed(2), xPos, yPos);
-      xPos += 80;
-      doc.text('$' + item.totalPropinas.toFixed(2), xPos, yPos);
-      xPos += 80;
-      doc.text('$' + (item.totalVentas + item.totalPropinas).toFixed(2), xPos, yPos);
-      
-      yPos += 20;
+      const datos = [
+        (item.mesa?.numeroMesa || 'N/A').toString(),
+        item.numeroPedidos.toString(),
+        '$' + item.totalVentas.toFixed(2),
+        '$' + item.totalPropinas.toFixed(2),
+        '$' + (item.totalVentas + item.totalPropinas).toFixed(2)
+      ];
+
+      yPosMesa = dibujarFilaTabla(doc, datos, 50, yPosMesa, colWidthsMesa, contador % 2 === 1);
+      contador++;
     });
 
     // Pie de pagina en todas las paginas
     const pages = doc.bufferedPageRange();
     for (let i = 0; i < pages.count; i++) {
       doc.switchToPage(i);
-      doc.fontSize(8).font('Helvetica').text(
-        'Pagina ' + (i + 1) + ' de ' + pages.count,
-        50,
-        doc.page.height - 50,
-        { align: 'center' }
-      );
+      dibujarPiePagina(doc, i + 1, pages.count);
     }
 
     // Finalizar el PDF
@@ -1055,5 +1062,3 @@ exports.generarReporteCompletoPDF = async (req, res) => {
     });
   }
 };
-
-module.exports = exports;
