@@ -5,6 +5,7 @@ import { useToast } from '../../hooks/useToast';
 import ToastContainer from '../common/ToastContainer';
 import { TableSkeleton } from '../common/SkeletonLoaders';
 import AdminLayout from './AdminLayout';
+import './GestionProductos.css';
 
 /**
  * Componente para gestionar productos (CRUD)
@@ -141,20 +142,30 @@ const GestionProductos = () => {
     return coincideCategoria && coincideBusqueda;
   });
 
+  // Detectar si es móvil
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <AdminLayout>
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Gestión de Productos</h2>
-          <p className="text-gray-600">{productos.length} productos en total</p>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800">Gestión de Productos</h2>
+          <p className="text-sm md:text-base text-gray-600">{productos.length} productos en total</p>
         </div>
         <button
           onClick={() => abrirModal()}
-          className="btn-primary flex items-center gap-2"
+          className="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center"
         >
           <Plus size={20} />
           Nuevo Producto
@@ -162,18 +173,18 @@ const GestionProductos = () => {
       </div>
 
       {/* Filtros */}
-      <div className="mb-6 flex gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row gap-3">
         <input
           type="text"
           placeholder="Buscar productos..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="flex-1 px-4 py-3 md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
         />
         <select
           value={filtroCategoria}
           onChange={(e) => setFiltroCategoria(e.target.value)}
-          className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="px-4 py-3 md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base w-full sm:w-auto"
         >
           <option value="Todas">Todas las categorías</option>
           {categorias.map(cat => (
@@ -182,11 +193,69 @@ const GestionProductos = () => {
         </select>
       </div>
 
-      {/* Tabla de productos */}
+      {/* Tabla/Cards de productos */}
       {cargando ? (
         <TableSkeleton rows={8} />
+      ) : isMobile ? (
+        /* Vista de Cards para móvil */
+        <div className="space-y-4">
+          {productosFiltrados.map(producto => (
+            <div key={producto._id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+              <div className="flex gap-3">
+                <img
+                  src={producto.imagenUrl}
+                  alt={producto.nombre}
+                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                  onError={(e) => e.target.src = 'https://via.placeholder.com/100'}
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 text-base mb-1 truncate">{producto.nombre}</h3>
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">{producto.descripcion}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-gray-900">${Number(producto.precio).toFixed(2)}</span>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{producto.categoria}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
+                <button
+                  onClick={() => toggleDisponibilidad(producto)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium flex-1 mr-2 ${
+                    producto.disponible
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {producto.disponible ? '✓ Disponible' : '✗ No disponible'}
+                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => abrirModal(producto)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleEliminar(producto._id)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {productosFiltrados.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-lg shadow">
+              <Package size={48} className="mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500">No se encontraron productos</p>
+            </div>
+          )}
+        </div>
       ) : (
+        /* Vista de Tabla para desktop */
         <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -248,6 +317,7 @@ const GestionProductos = () => {
             ))}
           </tbody>
         </table>
+          </div>
 
         {productosFiltrados.length === 0 && (
           <div className="text-center py-12">
@@ -260,13 +330,13 @@ const GestionProductos = () => {
 
       {/* Modal de crear/editar */}
       {modalAbierto && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-800">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-2xl w-full p-4 md:p-6 my-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 md:mb-6">
+              <h3 className="text-xl md:text-2xl font-bold text-gray-800">
                 {productoEditando ? 'Editar Producto' : 'Nuevo Producto'}
               </h3>
-              <button onClick={cerrarModal} className="text-gray-500 hover:text-gray-700">
+              <button onClick={cerrarModal} className="text-gray-500 hover:text-gray-700 p-2">
                 <X size={24} />
               </button>
             </div>
@@ -281,7 +351,7 @@ const GestionProductos = () => {
                   required
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                 />
               </div>
 
@@ -294,11 +364,11 @@ const GestionProductos = () => {
                   rows="3"
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Precio (USD) *
@@ -309,7 +379,7 @@ const GestionProductos = () => {
                     required
                     value={formData.precio}
                     onChange={(e) => setFormData({ ...formData, precio: e.target.value })}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-3 md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                   />
                 </div>
 
@@ -321,7 +391,7 @@ const GestionProductos = () => {
                     required
                     value={formData.categoria}
                     onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-3 md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                   >
                     <option value="">Seleccionar...</option>
                     {categorias.map(cat => (
@@ -339,7 +409,7 @@ const GestionProductos = () => {
                   type="url"
                   value={formData.imagenUrl}
                   onChange={(e) => setFormData({ ...formData, imagenUrl: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 md:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                   placeholder="https://ejemplo.com/imagen.jpg"
                 />
               </div>
@@ -357,17 +427,17 @@ const GestionProductos = () => {
                 </label>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <button
                   type="button"
                   onClick={cerrarModal}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="flex-1 px-4 py-3 md:py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-base font-medium"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 btn-primary"
+                  className="flex-1 btn-primary py-3 md:py-2 text-base font-medium"
                 >
                   {productoEditando ? 'Actualizar' : 'Crear'} Producto
                 </button>

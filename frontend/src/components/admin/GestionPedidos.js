@@ -390,10 +390,12 @@ const GestionPedidos = () => {
 
         {/* Modal de detalle */}
         <Modal
-          title="Detalle del Pedido"
+          title={<span style={{ fontSize: '18px', fontWeight: 'bold' }}>Detalle del Pedido</span>}
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
-          width={700}
+          width="90%"
+          style={{ maxWidth: '700px', top: 20 }}
+          bodyStyle={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto', padding: '16px' }}
           footer={[
             <Button key="close" onClick={() => setModalVisible(false)}>
               Cerrar
@@ -412,7 +414,13 @@ const GestionPedidos = () => {
         >
           {pedidoSeleccionado && (
             <div>
-              <Descriptions bordered column={2} size="small">
+              <Descriptions 
+                bordered 
+                column={{ xs: 1, sm: 2 }} 
+                size="small"
+                labelStyle={{ fontWeight: '600', backgroundColor: '#fafafa' }}
+                contentStyle={{ backgroundColor: '#ffffff' }}
+              >
                 <Descriptions.Item label="ID" span={2}>
                   {pedidoSeleccionado._id}
                 </Descriptions.Item>
@@ -456,47 +464,111 @@ const GestionPedidos = () => {
               </Descriptions>
 
               {pedidoSeleccionado.notas && (
-                <Card size="small" title="Notas" style={{ marginTop: '16px' }}>
-                  {pedidoSeleccionado.notas}
+                <Card 
+                  size="small" 
+                  title={<span style={{ fontSize: '15px', fontWeight: '600' }}>Notas</span>} 
+                  style={{ marginTop: '16px' }}
+                  bodyStyle={{ padding: '12px', backgroundColor: '#fffbf0' }}
+                >
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.6' }}>
+                    {pedidoSeleccionado.notas}
+                  </p>
                 </Card>
               )}
 
-              <Card size="small" title="Items del Pedido" style={{ marginTop: '16px' }}>
+              <Card 
+                size="small" 
+                title={<span style={{ fontSize: '15px', fontWeight: '600' }}>Items del Pedido</span>} 
+                style={{ marginTop: '16px' }}
+                bodyStyle={{ padding: '12px' }}
+              >
                 {pedidoSeleccionado.items.map((item, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: idx < pedidoSeleccionado.items.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
-                    <span>
-                      <strong>{item.cantidad}x</strong> {item.nombreProducto}
+                  <div 
+                    key={idx} 
+                    style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'flex-start',
+                      padding: '10px 0', 
+                      borderBottom: idx < pedidoSeleccionado.items.length - 1 ? '1px solid #f0f0f0' : 'none',
+                      gap: '12px'
+                    }}
+                  >
+                    <span style={{ flex: 1, fontSize: '14px' }}>
+                      <strong style={{ color: '#456366', fontSize: '15px' }}>{item.cantidad}x</strong> {item.nombreProducto}
                     </span>
-                    <span>${Number(item.subtotal).toFixed(2)}</span>
+                    <span style={{ fontWeight: '600', fontSize: '15px', color: '#2c3e3f', whiteSpace: 'nowrap' }}>
+                      ${Number(item.subtotal).toFixed(2)}
+                    </span>
                   </div>
                 ))}
+                <div 
+                  style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    padding: '12px 0 4px 0', 
+                    marginTop: '8px',
+                    borderTop: '2px solid #456366',
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  <span>Total:</span>
+                  <span style={{ color: '#456366' }}>${Number(pedidoSeleccionado.total).toFixed(2)}</span>
+                </div>
               </Card>
 
               {pedidoSeleccionado.comprobantePago && (
-                <Card size="small" title="Comprobante de Pago" style={{ marginTop: '16px' }}>
+                <Card 
+                  size="small" 
+                  title={<span style={{ fontSize: '15px', fontWeight: '600' }}>Comprobante de Pago</span>} 
+                  style={{ marginTop: '16px' }}
+                  bodyStyle={{ padding: '12px', textAlign: 'center' }}
+                >
                   <Image 
                     src={pedidoSeleccionado.comprobantePago}
                     alt="Comprobante"
-                    style={{ maxWidth: '100%' }}
+                    style={{ maxWidth: '100%', borderRadius: '8px' }}
+                    preview={{
+                      mask: <div style={{ fontSize: '14px' }}>Click para ampliar</div>
+                    }}
                   />
                 </Card>
               )}
 
               {pedidoSeleccionado.estado !== 'cancelado' && pedidoSeleccionado.estado !== 'entregado' && (
-                <Card size="small" title="Cambiar Estado" style={{ marginTop: '16px' }}>
-                  <Space wrap>
+                <Card 
+                  size="small" 
+                  title={<span style={{ fontSize: '15px', fontWeight: '600' }}>Cambiar Estado</span>} 
+                  style={{ marginTop: '16px' }}
+                  bodyStyle={{ padding: '12px' }}
+                >
+                  <Space wrap style={{ width: '100%' }}>
                     {pedidoSeleccionado.estado === 'recibido' && (
-                      <Button onClick={() => { cambiarEstado(pedidoSeleccionado._id, 'en_preparacion'); setModalVisible(false); }}>
+                      <Button 
+                        onClick={() => { cambiarEstado(pedidoSeleccionado._id, 'en_preparacion'); setModalVisible(false); }}
+                        style={{ minHeight: '40px', fontSize: '14px' }}
+                        block
+                      >
                         Iniciar Preparación
                       </Button>
                     )}
                     {pedidoSeleccionado.estado === 'en_preparacion' && (
-                      <Button type="primary" onClick={() => { cambiarEstado(pedidoSeleccionado._id, 'listo'); setModalVisible(false); }}>
+                      <Button 
+                        type="primary" 
+                        onClick={() => { cambiarEstado(pedidoSeleccionado._id, 'listo'); setModalVisible(false); }}
+                        style={{ minHeight: '40px', fontSize: '14px' }}
+                        block
+                      >
                         Marcar como Listo
                       </Button>
                     )}
                     {pedidoSeleccionado.estado === 'listo' && (
-                      <Button onClick={() => { cambiarEstado(pedidoSeleccionado._id, 'entregado'); setModalVisible(false); }}>
+                      <Button 
+                        onClick={() => { cambiarEstado(pedidoSeleccionado._id, 'entregado'); setModalVisible(false); }}
+                        style={{ minHeight: '40px', fontSize: '14px' }}
+                        block
+                      >
                         Marcar como Entregado
                       </Button>
                     )}
