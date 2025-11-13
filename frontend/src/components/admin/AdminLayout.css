@@ -1,0 +1,152 @@
+/* Estilos para el menú móvil */
+.mobile-menu .ant-menu-item {
+  height: 48px !important;
+  line-height: 48px !important;
+  margin: 4px 0 !important;
+  border-radius: 8px !important;
+  padding-left: 20px !important;
+}
+
+.mobile-menu .ant-menu-item-icon {
+  font-size: 20px !important;
+  margin-right: 12px !important;
+}
+
+.mobile-menu .ant-menu-item-selected {
+  background: rgba(255, 255, 255, 0.15) !important;
+  font-weight: 600 !important;
+}
+
+.mobile-menu .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.mobile-menu .ant-menu-item a {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 15px !important;
+}
+
+.mobile-menu .ant-menu-item-selected a {
+  color: #ffffff !important;
+}
+
+/* Estilos para el drawer en móvil */
+.ant-drawer-body {
+  padding: 0 !important;
+}
+
+/* Mejoras para tablas en móvil */
+@media (max-width: 768px) {
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .ant-table {
+    min-width: 600px;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 12px 8px !important;
+    font-size: 13px !important;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 12px 8px !important;
+    font-size: 13px !important;
+  }
+  
+  /* Cards más compactos en móvil */
+  .ant-card {
+    margin-bottom: 12px !important;
+  }
+  
+  .ant-card-head {
+    padding: 12px 16px !important;
+    min-height: auto !important;
+  }
+  
+  .ant-card-body {
+    padding: 16px !important;
+  }
+  
+  /* Botones más grandes en móvil */
+  .ant-btn {
+    min-height: 40px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Formularios más espaciados */
+  .ant-form-item {
+    margin-bottom: 16px !important;
+  }
+  
+  /* Inputs más grandes */
+  .ant-input,
+  .ant-input-number,
+  .ant-select-selector {
+    min-height: 44px !important;
+    font-size: 15px !important;
+  }
+  
+  /* Modals más adaptados */
+  .ant-modal {
+    max-width: calc(100vw - 32px) !important;
+    margin: 16px auto !important;
+  }
+  
+  .ant-modal-body {
+    padding: 16px !important;
+  }
+  
+  /* Estadísticas más compactas */
+  .ant-statistic {
+    text-align: center;
+  }
+  
+  .ant-statistic-title {
+    font-size: 13px !important;
+  }
+  
+  .ant-statistic-content {
+    font-size: 20px !important;
+  }
+}
+
+/* Estilos para tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .ant-table-thead > tr > th {
+    padding: 14px 12px !important;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 14px 12px !important;
+  }
+}
+
+/* Animaciones suaves */
+.ant-drawer-content-wrapper {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Scroll suave en el menú */
+.ant-menu {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.ant-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ant-menu::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.ant-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.ant-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

@@ -4,6 +4,7 @@ import { ConfigProvider, Layout, Menu, Typography, Avatar, Dropdown, Drawer, But
 import { useAuth } from '../../context/AuthContext';
 import NotificacionesPedidos from './NotificacionesPedidos';
 import logo from '../../assets/logo.png';
+import './AdminLayout.css';
 import {
   DashboardOutlined,
   ShoppingCartOutlined,
@@ -147,13 +148,14 @@ const AdminLayout = ({ children, title, extra }) => {
     const menuContent = (
       <>
         <div className="logo" style={{
-          height: '64px',
+          height: '70px',
           padding: isMobile ? '16px' : '0 24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: isMobile ? 'space-between' : 'center',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-          marginBottom: '8px'
+          borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
+          marginBottom: '16px',
+          background: isMobile ? 'rgba(0, 0, 0, 0.1)' : 'transparent'
         }}>
           <div style={{ 
             display: 'flex',
@@ -164,7 +166,7 @@ const AdminLayout = ({ children, title, extra }) => {
               src={logo} 
               alt="Sierra Yara Logo" 
               style={{ 
-                height: collapsed && !isMobile ? '40px' : '45px',
+                height: collapsed && !isMobile ? '40px' : '48px',
                 width: 'auto',
                 objectFit: 'contain',
                 transition: 'all 0.2s'
@@ -173,8 +175,8 @@ const AdminLayout = ({ children, title, extra }) => {
             {(!collapsed || isMobile) && (
               <span style={{ 
                 color: '#ffffff', 
-                fontSize: '18px',
-                fontWeight: 'bold',
+                fontSize: '19px',
+                fontWeight: '600',
                 letterSpacing: '0.5px'
               }}>
                 Sierra Yara
@@ -184,9 +186,15 @@ const AdminLayout = ({ children, title, extra }) => {
           {isMobile && (
             <Button 
               type="text" 
-              icon={<CloseOutlined />} 
+              icon={<CloseOutlined style={{ fontSize: '18px', color: '#ffffff' }} />} 
               onClick={closeDrawer}
-              style={{ marginLeft: 'auto' }}
+              style={{ 
+                marginLeft: 'auto',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
             />
           )}
         </div>
@@ -200,9 +208,11 @@ const AdminLayout = ({ children, title, extra }) => {
           inlineCollapsed={collapsed && !isMobile}
           style={{ 
             borderRight: 0, 
-            padding: isMobile ? '8px' : 0,
-            background: 'transparent'
+            padding: isMobile ? '8px 12px' : 0,
+            background: 'transparent',
+            fontSize: isMobile ? '15px' : '14px'
           }}
+          className={isMobile ? 'mobile-menu' : ''}
         />
       </>
     );
@@ -210,17 +220,28 @@ const AdminLayout = ({ children, title, extra }) => {
     if (isMobile) {
       return (
         <Drawer
-          title="Menú"
           placement="left"
           onClose={closeDrawer}
           open={drawerVisible}
-          width={250}
+          width={280}
+          closable={false}
           styles={{ 
-            body: { padding: 0 },
-            header: { padding: '16px' }
+            body: { 
+              padding: 0,
+              background: '#3d5a5c'
+            },
+            header: { 
+              display: 'none'
+            }
+          }}
+          bodyStyle={{
+            padding: 0,
+            background: '#3d5a5c'
           }}
         >
-          {menuContent}
+          <div style={{ background: '#3d5a5c', minHeight: '100vh' }}>
+            {menuContent}
+          </div>
         </Drawer>
       );
     }
@@ -314,7 +335,7 @@ const AdminLayout = ({ children, title, extra }) => {
         >
           <Header
             style={{
-              padding: '0 16px',
+              padding: isMobile ? '0 12px' : '0 20px',
               background: '#456366',
               display: 'flex',
               alignItems: 'center',
@@ -323,24 +344,43 @@ const AdminLayout = ({ children, title, extra }) => {
               position: 'sticky',
               top: 0,
               zIndex: 9,
-              height: '56px',
-              lineHeight: '56px'
+              height: isMobile ? '60px' : '64px',
+              lineHeight: isMobile ? '60px' : '64px'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '16px' }}>
               {isMobile ? (
-                <MenuOutlined
-                  style={{ fontSize: '20px', cursor: 'pointer', color: '#ffffff' }}
+                <Button
+                  type="text"
+                  icon={<MenuOutlined style={{ fontSize: '22px', color: '#ffffff' }} />}
                   onClick={toggleDrawer}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '40px',
+                    width: '40px'
+                  }}
                 />
               ) : (
-                <MenuOutlined
-                  style={{ fontSize: '18px', marginRight: '16px', cursor: 'pointer', color: '#ffffff' }}
+                <Button
+                  type="text"
+                  icon={<MenuOutlined style={{ fontSize: '20px', color: '#ffffff' }} />}
                   onClick={() => setCollapsed(!collapsed)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
                 />
               )}
+              {isMobile && (
+                <Text style={{ color: '#ffffff', fontSize: '16px', fontWeight: '600' }}>
+                  Sierra Yara
+                </Text>
+              )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '16px' }}>
               <NotificacionesPedidos />
               <Dropdown menu={{ items: userMenuItems, onClick: handleMenuClick }} placement="bottomRight" trigger={['click']}>
                 <div style={{ 
@@ -349,17 +389,21 @@ const AdminLayout = ({ children, title, extra }) => {
                   gap: '8px', 
                   cursor: 'pointer',
                   padding: '4px 8px',
-                  borderRadius: '4px'
+                  borderRadius: '6px',
+                  transition: 'background 0.2s'
                 }}>
                   <Avatar 
                     icon={<UserOutlined />} 
+                    size={isMobile ? 36 : 40}
                     style={{ 
                       backgroundColor: '#2f4547',
                       verticalAlign: 'middle'
                     }} 
                   />
-                  {!isMobile && !collapsed && (
-                    <Text style={{ marginLeft: '4px', color: '#ffffff' }}>{admin?.nombre || 'Admin'}</Text>
+                  {!isMobile && (
+                    <Text style={{ marginLeft: '4px', color: '#ffffff', fontSize: '14px' }}>
+                      {admin?.nombre || 'Admin'}
+                    </Text>
                   )}
                 </div>
               </Dropdown>
