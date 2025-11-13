@@ -326,10 +326,16 @@ exports.generarReporteCompletoDetalladoPDF = async (req, res) => {
     doc.end();
   } catch (error) {
     console.error('Error al generar reporte completo detallado PDF:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error al generar el reporte PDF completo detallado'
-    });
+    console.error('Stack:', error.stack);
+    
+    // Asegurarse de que no se haya enviado ya una respuesta
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        error: 'Error al generar el reporte PDF completo detallado',
+        message: error.message
+      });
+    }
   }
 };
 
@@ -424,9 +430,15 @@ exports.generarReporteClientesPDF = async (req, res) => {
     doc.end();
   } catch (error) {
     console.error('Error al generar reporte de clientes PDF:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error al generar el reporte PDF de clientes'
-    });
+    console.error('Stack:', error.stack);
+    
+    // Asegurarse de que no se haya enviado ya una respuesta
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        error: 'Error al generar el reporte PDF de clientes',
+        message: error.message
+      });
+    }
   }
 };

@@ -256,6 +256,19 @@ const keepRenderAlive = async () => {
 cron.schedule('*/10 * * * *', keepRenderAlive);
 console.log('⏰ Cron job configurado: Keep-alive de Render cada 10 minutos');
 
+// Manejo de errores no capturados
+process.on('uncaughtException', (error) => {
+  console.error('❌ Error no capturado:', error);
+  console.error('Stack:', error.stack);
+  // No cerrar el proceso, solo registrar el error
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Promesa rechazada no manejada:', reason);
+  console.error('Promise:', promise);
+  // No cerrar el proceso, solo registrar el error
+});
+
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, '0.0.0.0', () => {
