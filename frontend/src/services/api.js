@@ -113,18 +113,45 @@ export const reportesAPI = {
     window.open(`${API_URL}/reportes/completo/excel?${queryString}`, '_blank');
   },
   
-  // Reportes en PDF
-  descargarReporteVentasPDF: (params) => {
+  // Reportes en PDF - Descarga directa
+  descargarReporteVentasPDF: async (params) => {
     const queryString = new URLSearchParams(params).toString();
-    window.open(`${API_URL}/reportes/ventas/pdf?${queryString}`, '_blank');
+    const response = await fetch(`${API_URL}/reportes/ventas/pdf?${queryString}`);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_ventas_${Date.now()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   },
-  descargarReporteProductosPDF: (params) => {
+  descargarReporteProductosPDF: async (params) => {
     const queryString = new URLSearchParams(params).toString();
-    window.open(`${API_URL}/reportes/productos/pdf?${queryString}`, '_blank');
+    const response = await fetch(`${API_URL}/reportes/productos/pdf?${queryString}`);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_productos_${Date.now()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   },
-  descargarReporteCompletoPDF: (params) => {
+  descargarReporteCompletoPDF: async (params) => {
     const queryString = new URLSearchParams(params).toString();
-    window.open(`${API_URL}/reportes/completo/pdf?${queryString}`, '_blank');
+    const response = await fetch(`${API_URL}/reportes/completo/pdf?${queryString}`);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_completo_${Date.now()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   },
 };
 

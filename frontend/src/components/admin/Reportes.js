@@ -33,7 +33,7 @@ const Reportes = () => {
   const [fechaFin, setFechaFin] = useState(null);
   const [descargando, setDescargando] = useState(null);
 
-  const handleDescargarReporte = (tipo, formato = 'excel') => {
+  const handleDescargarReporte = async (tipo, formato = 'excel') => {
     const key = `${tipo}-${formato}`;
     setDescargando(key);
     
@@ -59,21 +59,21 @@ const Reportes = () => {
       } else if (formato === 'pdf') {
         switch (tipo) {
           case 'ventas':
-            reportesAPI.descargarReporteVentasPDF(params);
+            await reportesAPI.descargarReporteVentasPDF(params);
             break;
           case 'productos':
-            reportesAPI.descargarReporteProductosPDF(params);
+            await reportesAPI.descargarReporteProductosPDF(params);
             break;
           case 'completo':
-            reportesAPI.descargarReporteCompletoPDF(params);
+            await reportesAPI.descargarReporteCompletoPDF(params);
             break;
           default:
             break;
         }
       }
       
-      message.success(`Descargando reporte en ${formato.toUpperCase()}...`);
-      setTimeout(() => setDescargando(null), 2000);
+      message.success(`Reporte en ${formato.toUpperCase()} descargado exitosamente`);
+      setTimeout(() => setDescargando(null), 1000);
     } catch (error) {
       console.error('Error al descargar reporte:', error);
       message.error('Error al generar el reporte. Por favor intenta de nuevo.');
