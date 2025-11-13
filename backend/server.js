@@ -5,6 +5,7 @@ const socketIo = require('socket.io');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cron = require('node-cron');
+const mongoose = require('mongoose');
 const connectDB = require('./config/database');
 const TasaBCV = require('./models/TasaBCV');
 const axios = require('axios');
@@ -206,6 +207,23 @@ const actualizarTasaBCVAuto = async () => {
 cron.schedule('0 6,12,18,0 * * *', actualizarTasaBCVAuto);
 console.log('⏰ Cron job configurado: Actualización de tasa BCV cada 6 horas');
 
+// Función para mantener MongoDB activa (evitar que entre en sleep mode)
+const keepMongoDBAlive = async () => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      // Hacer ping a la base de datos
+      await mongoose.connection.db.admin().ping();
+      console.log('🏓 Ping a MongoDB - Base de datos activa');
+    }
+  } catch (error) {
+    console.error('❌ Error en keep-alive de MongoDB:', error.message);
+  }
+};
+
+// Programar keep-alive cada 5 minutos para evitar que MongoDB entre en sleep mode
+cron.schedule('*/5 * * * *', keepMongoDBAlive);
+console.log('⏰ Cron job configurado: Keep-alive de MongoDB cada 5 minutos');
+
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, '0.0.0.0', () => {
@@ -216,11 +234,15 @@ server.listen(PORT, '0.0.0.0', () => {
 ║   📡 WebSocket habilitado                     ║
 ║   🌐 Acceso local: http://192.168.1.105:${PORT}  ║
 ║   💱 Actualización automática de tasa BCV     ║
+║   🏓 Keep-alive de MongoDB cada 5 minutos     ║
 ╚═══════════════════════════════════════════════╝
   `);
   
   // Actualizar tasa al iniciar el servidor
   actualizarTasaBCVAuto();
+  
+  // Ejecutar primer keep-alive inmediatamente
+  setTimeout(keepMongoDBAlive, 5000);
 });
 
 module.exports = { app, server, io };
